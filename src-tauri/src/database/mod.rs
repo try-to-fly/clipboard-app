@@ -15,7 +15,8 @@ impl Database {
             std::fs::create_dir_all(parent)?;
         }
 
-        let database_url = format!("sqlite:{}", db_path.display());
+        let database_url = format!("sqlite:{}?mode=rwc", db_path.display());
+        
         let pool = SqlitePool::connect(&database_url).await?;
         
         let db = Self { pool };

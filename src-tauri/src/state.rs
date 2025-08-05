@@ -5,8 +5,9 @@ use anyhow::Result;
 use arboard::Clipboard;
 use sqlx::Row;
 use std::sync::Arc;
-use tokio::sync::{broadcast, Mutex, RwLock};
-use tauri::{AppHandle, Manager};
+use tokio::sync::{broadcast, RwLock};
+use tokio::sync::Mutex;
+use tauri::{AppHandle, Emitter};
 
 pub struct AppState {
     pub db: Arc<Database>,
@@ -34,8 +35,11 @@ impl AppState {
     }
 
     pub fn set_app_handle(&self, handle: AppHandle) {
-        let mut app_handle = self.app_handle.blocking_lock();
-        *app_handle = Some(handle);
+        let app_handle = Arc::clone(&self.app_handle);
+        tauri::async_runtime::spawn(async move {
+            let mut guard = app_handle.lock().await;
+            *guard = Some(handle);
+        });
     }
 
     pub async fn start_monitoring(&self) -> Result<()> {
@@ -116,7 +120,7 @@ impl AppState {
                 
                 // 发送事件到前端
                 if let Some(handle) = app_handle.lock().await.as_ref() {
-                    let _ = handle.emit_all("clipboard-update", &entry);
+                    let _ = handle.emit("clipboard-update", &entry);
                 }
             }
         });
@@ -234,8 +238,11 @@ impl AppState {
     }
 
     pub async fn copy_to_clipboard(&self, content: String) -> Result<()> {
-        let mut clipboard = Clipboard::new()?;
-        clipboard.set_text(content)?;
+        tokio::task::spawn_blocking(move || -> Result<()> {
+            let mut clipboard = Clipboard::new()?;
+            clipboard.set_text(content)?;
+            Ok(())
+        }).await??;
         Ok(())
     }
 }

@@ -7,19 +7,23 @@ mod utils;
 
 use state::AppState;
 use commands::*;
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let runtime = tokio::runtime::Runtime::new().unwrap();
-            let state = runtime.block_on(AppState::new())?;
-            
-            let app_handle = app.handle();
-            state.set_app_handle(app_handle.clone());
-            
-            app.manage(state);
+            tauri::async_runtime::block_on(async {
+                let state = AppState::new().await?;
+                
+                let app_handle = app.handle().clone();
+                state.set_app_handle(app_handle);
+                
+                app.manage(state);
+                
+                Ok::<(), Box<dyn std::error::Error>>(())
+            })?;
             
             Ok(())
         })

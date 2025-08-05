@@ -1,6 +1,5 @@
 import React from 'react';
 import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
 import { 
   FileText, 
   Image, 
@@ -49,7 +48,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry }) => {
   };
 
   const formatDate = (timestamp: number) => {
-    return format(new Date(timestamp), 'MM-dd HH:mm', { locale: zhCN });
+    return format(new Date(timestamp), 'MM-dd HH:mm');
   };
 
   const handleCopy = async () => {
