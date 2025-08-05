@@ -32,6 +32,7 @@ arboard = "3.3"
 uuid = { version = "1.6", features = ["v4", "serde"] }
 anyhow = "1.0"
 base64 = "0.21"
-image = "0.24"
+image = { version = "0.25", features = ["webp"] }
+infer = "0.15"
 dirs = "5.0"
 
