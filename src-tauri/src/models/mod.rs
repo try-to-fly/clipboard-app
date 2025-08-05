@@ -1,0 +1,85 @@
+use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct ClipboardEntry {
+    pub id: String,
+    pub content_hash: String,
+    pub content_type: String,
+    pub content_data: Option<String>,
+    pub source_app: Option<String>,
+    pub created_at: i64,
+    pub copy_count: i32,
+    pub file_path: Option<String>,
+    pub is_favorite: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ContentType {
+    Text,
+    Image,
+    File,
+    Unknown,
+}
+
+impl ContentType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ContentType::Text => "text",
+            ContentType::Image => "image",
+            ContentType::File => "file",
+            ContentType::Unknown => "unknown",
+        }
+    }
+
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "text" => ContentType::Text,
+            "image" => ContentType::Image,
+            "file" => ContentType::File,
+            _ => ContentType::Unknown,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Statistics {
+    pub total_entries: i64,
+    pub total_copies: i64,
+    pub most_copied: Vec<ClipboardEntry>,
+    pub recent_apps: Vec<AppUsage>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AppUsage {
+    pub app_name: String,
+    pub count: i64,
+}
+
+impl ClipboardEntry {
+    pub fn new(
+        content_type: ContentType,
+        content_data: Option<String>,
+        content_hash: String,
+        source_app: Option<String>,
+        file_path: Option<String>,
+    ) -> Self {
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            content_hash,
+            content_type: content_type.as_str().to_string(),
+            content_data,
+            source_app,
+            created_at: Utc::now().timestamp_millis(),
+            copy_count: 1,
+            file_path,
+            is_favorite: false,
+        }
+    }
+
+    pub fn formatted_date(&self) -> String {
+        let dt = DateTime::<Utc>::from_timestamp_millis(self.created_at)
+            .unwrap_or_else(|| Utc::now());
+        dt.format("%Y-%m-%d %H:%M:%S").to_string()
+    }
+}
