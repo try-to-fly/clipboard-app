@@ -3,17 +3,20 @@ import { useClipboardStore } from '../../stores/clipboardStore';
 import './DetailView.css';
 
 export function DetailView() {
-  const { selectedEntry, getImageUrl } = useClipboardStore();
+  const { selectedEntry, getImageUrl, openFileWithSystem } = useClipboardStore();
   const [imageUrl, setImageUrl] = useState<string>('');
 
   useEffect(() => {
     const loadImage = async () => {
       if (selectedEntry?.file_path && selectedEntry.content_type.toLowerCase().includes('image')) {
         try {
+          console.log('[DetailView] 开始加载图片:', selectedEntry.file_path);
           const url = await getImageUrl(selectedEntry.file_path);
+          console.log('[DetailView] 图片URL获取成功，长度:', url.length);
           setImageUrl(url);
         } catch (error) {
-          console.error('Failed to load image:', error);
+          console.error('[DetailView] 图片加载失败:', error);
+          console.error('[DetailView] 文件路径:', selectedEntry.file_path);
           setImageUrl('');
         }
       } else {
@@ -54,6 +57,16 @@ export function DetailView() {
     return '未知';
   };
 
+  const handleImageClick = async () => {
+    if (selectedEntry?.file_path) {
+      try {
+        await openFileWithSystem(selectedEntry.file_path);
+      } catch (error) {
+        console.error('Failed to open image with system viewer:', error);
+      }
+    }
+  };
+
   return (
     <div className="detail-view">
       <div className="detail-header">
@@ -86,24 +99,41 @@ export function DetailView() {
                 src={imageUrl} 
                 alt="剪贴板图片" 
                 className="detail-image"
+                onClick={handleImageClick}
+                style={{ cursor: 'pointer' }}
+                title="点击用系统查看器打开"
                 onError={(e) => {
+                  console.error('[DetailView] 图片元素加载失败');
                   e.currentTarget.style.display = 'none';
                   const errorDiv = e.currentTarget.parentElement?.querySelector('.detail-image-error');
                   if (errorDiv) {
                     errorDiv.classList.remove('hidden');
                   }
                 }}
+                onLoad={() => {
+                  console.log('[DetailView] 图片元素加载成功');
+                }}
               />
               <div className="detail-image-error hidden">
                 <p>图片加载失败</p>
                 {selectedEntry.file_path && (
-                  <p className="detail-file-path">{selectedEntry.file_path}</p>
+                  <>
+                    <p className="detail-file-path">文件路径: {selectedEntry.file_path}</p>
+                    <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
+                      请尝试重新复制图片或检查图片文件是否存在
+                    </p>
+                  </>
                 )}
               </div>
             </div>
           ) : (
             <div className="detail-image-loading">
               <p>加载图片中...</p>
+              {selectedEntry.file_path && (
+                <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
+                  {selectedEntry.file_path}
+                </p>
+              )}
             </div>
           )
         ) : selectedEntry.content_type.toLowerCase().includes('file') ? (

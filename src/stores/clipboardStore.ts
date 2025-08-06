@@ -23,6 +23,7 @@ interface ClipboardStore {
   fetchStatistics: () => Promise<void>;
   copyToClipboard: (content: string) => Promise<void>;
   getImageUrl: (filePath: string) => Promise<string>;
+  openFileWithSystem: (filePath: string) => Promise<void>;
   setSearchTerm: (term: string) => void;
   setSelectedType: (type: string) => void;
   setSelectedEntry: (entry: ClipboardEntry | null) => void;
@@ -133,6 +134,14 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
   getImageUrl: async (filePath: string) => {
     try {
       return await invoke<string>('get_image_url', { filePath });
+    } catch (error) {
+      throw new Error(String(error));
+    }
+  },
+
+  openFileWithSystem: async (filePath: string) => {
+    try {
+      await invoke('open_file_with_system', { filePath });
     } catch (error) {
       throw new Error(String(error));
     }

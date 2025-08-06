@@ -63,6 +63,13 @@ impl ClipboardMonitor {
 
         if let Ok(text) = text_result {
             if !text.is_empty() {
+                // 检查是否是base64图片URL（避免循环记录）
+                let is_base64_image = text.starts_with("data:image/") && text.contains(";base64,");
+                if is_base64_image {
+                    println!("[ClipboardMonitor] 跳过base64图片URL，避免循环记录");
+                    return Ok(());
+                }
+                
                 let hash = Self::calculate_hash(text.as_bytes());
                 
                 let should_send = {
@@ -77,6 +84,15 @@ impl ClipboardMonitor {
 
                 if should_send {
                     let source_app = get_active_app();
+                    
+                    // 如果来源是自己的应用，跳过
+                    if let Some(ref app) = source_app {
+                        if app.contains("clipboard-app") || app.contains("Clipboard App") {
+                            println!("[ClipboardMonitor] 跳过自己应用的复制操作: {}", app);
+                            return Ok(());
+                        }
+                    }
+                    
                     let entry = ClipboardEntry::new(
                         ContentType::Text,
                         Some(text),
@@ -98,7 +114,11 @@ impl ClipboardMonitor {
         };
 
         if let Ok(image_data) = image_result {
+            // arboard 返回的图片数据包含宽高信息
+            let width = image_data.width;
+            let height = image_data.height;
             let bytes = image_data.bytes.as_ref();
+            
             let hash = Self::calculate_hash(bytes);
             
             let should_send = {
@@ -112,10 +132,21 @@ impl ClipboardMonitor {
             };
 
             if should_send {
-                // 处理图片
-                match processor.process_image(bytes).await {
+                println!("[ClipboardMonitor] 检测到新图片: {}x{}, 数据大小: {} 字节", 
+                        width, height, bytes.len());
+                let source_app = get_active_app();
+                
+                // 如果来源是自己的应用，跳过
+                if let Some(ref app) = source_app {
+                    if app.contains("clipboard-app") || app.contains("Clipboard App") {
+                        println!("[ClipboardMonitor] 跳过自己应用的图片复制操作: {}", app);
+                        return Ok(());
+                    }
+                }
+                
+                // 使用宽高信息处理图片
+                match processor.process_image_with_dimensions(bytes, width as u32, height as u32).await {
                     Ok(file_path) => {
-                        let source_app = get_active_app();
                         let entry = ClipboardEntry::new(
                             ContentType::Image,
                             Some(file_path.clone()),
@@ -126,7 +157,24 @@ impl ClipboardMonitor {
                         
                         let _ = tx.send(entry);
                     }
-                    Err(e) => eprintln!("处理图片失败: {}", e),
+                    Err(e) => {
+                        eprintln!("[ClipboardMonitor] 使用尺寸处理失败，尝试自动检测: {}", e);
+                        // 降级到自动检测
+                        match processor.process_image(bytes).await {
+                            Ok(file_path) => {
+                                let entry = ClipboardEntry::new(
+                                    ContentType::Image,
+                                    Some(file_path.clone()),
+                                    hash,
+                                    source_app,
+                                    Some(file_path),
+                                );
+                                
+                                let _ = tx.send(entry);
+                            }
+                            Err(e) => eprintln!("[ClipboardMonitor] 处理图片失败: {}", e),
+                        }
+                    }
                 }
                 return Ok(());
             }
