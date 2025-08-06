@@ -35,7 +35,8 @@ pub fn run() {
             delete_entry,
             clear_history,
             get_statistics,
-            copy_to_clipboard
+            copy_to_clipboard,
+            get_image_url
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

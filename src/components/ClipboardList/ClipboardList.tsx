@@ -5,12 +5,19 @@ import { ClipboardItem } from './ClipboardItem';
 import { EmptyState } from './EmptyState';
 
 export const ClipboardList: React.FC = () => {
-  const { entries, loading, fetchHistory, setupEventListener } = useClipboardStore();
+  const { loading, fetchHistory, setupEventListener, getFilteredEntries, selectedEntry, setSelectedEntry } = useClipboardStore();
+  const entries = getFilteredEntries();
 
   useEffect(() => {
     fetchHistory();
     setupEventListener();
   }, []);
+
+  useEffect(() => {
+    if (entries.length > 0 && !selectedEntry) {
+      setSelectedEntry(entries[0]);
+    }
+  }, [entries, selectedEntry, setSelectedEntry]);
 
   if (loading && entries.length === 0) {
     return (
@@ -30,7 +37,12 @@ export const ClipboardList: React.FC = () => {
       <ScrollArea.Viewport className="clipboard-list-viewport">
         <div className="clipboard-list">
           {entries.map((entry) => (
-            <ClipboardItem key={entry.id} entry={entry} />
+            <ClipboardItem 
+              key={entry.id} 
+              entry={entry} 
+              isSelected={selectedEntry?.id === entry.id}
+              onClick={() => setSelectedEntry(entry)}
+            />
           ))}
         </div>
       </ScrollArea.Viewport>

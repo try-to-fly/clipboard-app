@@ -1,0 +1,56 @@
+.type-filter {
+  width: 180px;
+  background: var(--card);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.type-filter-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.type-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.type-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.type-filter-item:hover {
+  background: var(--secondary);
+}
+
+.type-filter-item.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.type-filter-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.type-filter-label {
+  font-size: 14px;
+  font-weight: 500;
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { 
   FileText, 
@@ -17,27 +17,55 @@ import clsx from 'clsx';
 
 interface ClipboardItemProps {
   entry: ClipboardEntry;
+  isSelected?: boolean;
+  onClick?: () => void;
 }
 
-export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry }) => {
-  const { toggleFavorite, deleteEntry, copyToClipboard } = useClipboardStore();
+export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected, onClick }) => {
+  const { toggleFavorite, deleteEntry, copyToClipboard, getImageUrl } = useClipboardStore();
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (entry.content_type.toLowerCase().includes('image') && entry.file_path) {
+      getImageUrl(entry.file_path)
+        .then(setImageUrl)
+        .catch(() => setImageUrl(null));
+    }
+  }, [entry.content_type, entry.file_path, getImageUrl]);
 
   const getIcon = () => {
-    switch (entry.content_type) {
-      case 'text':
-        return <FileText size={20} />;
-      case 'image':
-        return <Image size={20} />;
-      case 'file':
-        return <File size={20} />;
-      default:
-        return <FileText size={20} />;
+    const type = entry.content_type.toLowerCase();
+    
+    if (type.includes('image') && imageUrl) {
+      return (
+        <div className="image-thumbnail">
+          <img 
+            src={imageUrl} 
+            alt="Clipboard image" 
+            style={{
+              width: '20px',
+              height: '20px',
+              objectFit: 'cover',
+              borderRadius: '2px'
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (type.includes('image')) {
+      return <Image size={20} />;
+    } else if (type.includes('file')) {
+      return <File size={20} />;
+    } else {
+      return <FileText size={20} />;
     }
   };
 
   const getDisplayContent = () => {
-    if (entry.content_type === 'image' && entry.file_path) {
-      return `[图片] ${entry.file_path}`;
+    if (entry.content_type.toLowerCase().includes('image') && entry.file_path) {
+      const fileName = entry.file_path.split('/').pop() || entry.file_path;
+      return `[图片] ${fileName}`;
     }
     if (entry.content_data) {
       return entry.content_data.length > 200
@@ -87,7 +115,9 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry }) => {
         <div 
           className={clsx('clipboard-item', {
             'is-favorite': entry.is_favorite,
+            'is-selected': isSelected,
           })}
+          onClick={onClick}
           onDoubleClick={handleCopy}
         >
           <div className="item-icon">{getIcon()}</div>

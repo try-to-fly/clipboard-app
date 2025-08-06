@@ -10,6 +10,8 @@ interface ClipboardStore {
   searchTerm: string;
   loading: boolean;
   error: string | null;
+  selectedType: string;
+  selectedEntry: ClipboardEntry | null;
 
   // Actions
   startMonitoring: () => Promise<void>;
@@ -20,7 +22,11 @@ interface ClipboardStore {
   clearHistory: () => Promise<void>;
   fetchStatistics: () => Promise<void>;
   copyToClipboard: (content: string) => Promise<void>;
+  getImageUrl: (filePath: string) => Promise<string>;
   setSearchTerm: (term: string) => void;
+  setSelectedType: (type: string) => void;
+  setSelectedEntry: (entry: ClipboardEntry | null) => void;
+  getFilteredEntries: () => ClipboardEntry[];
   setupEventListener: () => void;
 }
 
@@ -31,6 +37,8 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
   searchTerm: '',
   loading: false,
   error: null,
+  selectedType: 'all',
+  selectedEntry: null,
 
   startMonitoring: async () => {
     try {
@@ -122,9 +130,58 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
     }
   },
 
+  getImageUrl: async (filePath: string) => {
+    try {
+      return await invoke<string>('get_image_url', { filePath });
+    } catch (error) {
+      throw new Error(String(error));
+    }
+  },
+
   setSearchTerm: (term: string) => {
     set({ searchTerm: term });
     get().fetchHistory();
+  },
+
+  setSelectedType: (type: string) => {
+    set({ selectedType: type });
+    const filtered = get().getFilteredEntries();
+    if (filtered.length > 0) {
+      set({ selectedEntry: filtered[0] });
+    }
+  },
+
+  setSelectedEntry: (entry: ClipboardEntry | null) => {
+    set({ selectedEntry: entry });
+  },
+
+  getFilteredEntries: () => {
+    const state = get();
+    let filtered = state.entries;
+
+    if (state.selectedType !== 'all') {
+      filtered = filtered.filter(entry => {
+        const type = entry.content_type.toLowerCase();
+        if (state.selectedType === 'text') {
+          return type.includes('text') || type.includes('string');
+        } else if (state.selectedType === 'image') {
+          return type.includes('image');
+        } else if (state.selectedType === 'file') {
+          return type.includes('file') && !type.includes('image');
+        }
+        return true;
+      });
+    }
+
+    if (state.searchTerm) {
+      const searchLower = state.searchTerm.toLowerCase();
+      filtered = filtered.filter(entry => 
+        entry.content_data?.toLowerCase().includes(searchLower) ||
+        entry.source_app?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return filtered;
   },
 
   setupEventListener: () => {

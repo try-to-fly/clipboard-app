@@ -64,3 +64,43 @@ pub async fn copy_to_clipboard(
     state.copy_to_clipboard(content).await
         .map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn get_image_url(file_path: String) -> Result<String, String> {
+    use std::fs;
+    use std::path::{Path, PathBuf};
+    use base64::Engine;
+    
+    // 如果是相对路径（如 imgs/xxx.png），转换为绝对路径
+    let absolute_path = if file_path.starts_with("imgs/") {
+        let config_dir = dirs::config_dir()
+            .ok_or_else(|| "Unable to get config directory".to_string())?;
+        config_dir.join("clipboard-app").join(&file_path)
+    } else {
+        PathBuf::from(&file_path)
+    };
+    
+    if !absolute_path.exists() {
+        return Err(format!("File not found: {:?}", absolute_path));
+    }
+    
+    match fs::read(&absolute_path) {
+        Ok(data) => {
+            let extension = absolute_path.extension()
+                .and_then(|ext| ext.to_str())
+                .unwrap_or("png");
+            
+            let mime_type = match extension.to_lowercase().as_str() {
+                "png" => "image/png",
+                "jpg" | "jpeg" => "image/jpeg",
+                "gif" => "image/gif",
+                "webp" => "image/webp",
+                _ => "image/png",
+            };
+            
+            let base64_data = base64::engine::general_purpose::STANDARD.encode(&data);
+            Ok(format!("data:{};base64,{}", mime_type, base64_data))
+        }
+        Err(e) => Err(format!("Failed to read file: {}", e))
+    }
+}
