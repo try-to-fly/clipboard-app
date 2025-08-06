@@ -1,3 +1,5 @@
+#![allow(unexpected_cfgs)]
+
 mod clipboard;
 mod commands;
 mod database;

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct ClipboardEntry {
@@ -32,14 +32,6 @@ impl ContentType {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
-        match s {
-            "text" => ContentType::Text,
-            "image" => ContentType::Image,
-            "file" => ContentType::File,
-            _ => ContentType::Unknown,
-        }
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -77,9 +69,4 @@ impl ClipboardEntry {
         }
     }
 
-    pub fn formatted_date(&self) -> String {
-        let dt = DateTime::<Utc>::from_timestamp_millis(self.created_at)
-            .unwrap_or_else(|| Utc::now());
-        dt.format("%Y-%m-%d %H:%M:%S").to_string()
-    }
 }

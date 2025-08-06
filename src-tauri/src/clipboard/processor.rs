@@ -117,7 +117,7 @@ impl ContentProcessor {
                     ImageFormat::WebP,
                 ];
                 
-                let mut last_error = None;
+                let mut _last_error = None;
                 for format in formats.iter() {
                     match image::load_from_memory_with_format(image_data, *format) {
                         Ok(img) => {
@@ -126,7 +126,7 @@ impl ContentProcessor {
                         },
                         Err(e) => {
                             println!("[process_image] 尝试格式 {:?} 失败: {}", format, e);
-                            last_error = Some(e);
+                            _last_error = Some(e);
                         }
                     }
                 }
@@ -422,28 +422,4 @@ impl ContentProcessor {
         false
     }
 
-    pub fn get_image_full_path(&self, relative_path: &str) -> Result<PathBuf> {
-        let config_dir = dirs::config_dir()
-            .ok_or_else(|| anyhow::anyhow!("无法获取配置目录"))?;
-        Ok(config_dir.join("clipboard-app").join(relative_path))
-    }
-
-    pub async fn process_text(&self, text: &str) -> Result<String> {
-        // 文本内容直接返回，可以在这里添加额外的处理逻辑
-        Ok(text.to_string())
-    }
-
-    pub async fn process_file_paths(&self, paths: Vec<String>) -> Result<Vec<String>> {
-        // 验证文件路径是否存在
-        let mut valid_paths = Vec::new();
-        
-        for path in paths {
-            let path_buf = PathBuf::from(&path);
-            if path_buf.exists() {
-                valid_paths.push(path);
-            }
-        }
-        
-        Ok(valid_paths)
-    }
 }

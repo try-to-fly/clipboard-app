@@ -1,4 +1,4 @@
-use crate::models::{ClipboardEntry, Statistics, AppUsage};
+use crate::models::{ClipboardEntry, Statistics};
 use crate::state::AppState;
 use anyhow::Result;
 use tauri::State;
@@ -114,7 +114,7 @@ pub async fn open_file_with_system(file_path: String) -> Result<(), String> {
 #[tauri::command]
 pub async fn get_image_url(file_path: String) -> Result<String, String> {
     use std::fs;
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
     use base64::Engine;
     
     println!("[get_image_url] 请求加载图片: {}", file_path);

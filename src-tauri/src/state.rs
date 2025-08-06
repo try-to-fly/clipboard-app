@@ -1,6 +1,6 @@
 use crate::clipboard::{ClipboardMonitor, ContentProcessor};
 use crate::database::Database;
-use crate::models::{ClipboardEntry, Statistics, AppUsage, ContentType};
+use crate::models::{ClipboardEntry, Statistics, AppUsage};
 use anyhow::Result;
 use arboard::Clipboard;
 use sqlx::Row;
@@ -13,7 +13,7 @@ pub struct AppState {
     pub db: Arc<Database>,
     pub monitor: Arc<RwLock<Option<ClipboardMonitor>>>,
     pub tx: broadcast::Sender<ClipboardEntry>,
-    pub rx: Arc<Mutex<broadcast::Receiver<ClipboardEntry>>>,
+    pub _rx: Arc<Mutex<broadcast::Receiver<ClipboardEntry>>>,
     pub app_handle: Arc<Mutex<Option<AppHandle>>>,
     pub processor: Arc<ContentProcessor>,
 }
@@ -28,7 +28,7 @@ impl AppState {
             db,
             monitor: Arc::new(RwLock::new(None)),
             tx: tx.clone(),
-            rx: Arc::new(Mutex::new(rx)),
+            _rx: Arc::new(Mutex::new(rx)),
             app_handle: Arc::new(Mutex::new(None)),
             processor,
         })
