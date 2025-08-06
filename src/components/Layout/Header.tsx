@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Play, Pause, Trash2, BarChart } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { useClipboardStore } from '../../stores/clipboardStore';
+import { StatisticsModal } from '../Statistics/StatisticsModal';
 
 export const Header: React.FC = () => {
   const { isMonitoring, startMonitoring, stopMonitoring, clearHistory, fetchStatistics } = useClipboardStore();
+  const [showStatistics, setShowStatistics] = useState(false);
 
   const handleToggleMonitoring = async () => {
     if (isMonitoring) {
@@ -13,6 +15,11 @@ export const Header: React.FC = () => {
     } else {
       await startMonitoring();
     }
+  };
+
+  const handleShowStatistics = async () => {
+    await fetchStatistics();
+    setShowStatistics(true);
   };
 
   return (
@@ -41,7 +48,7 @@ export const Header: React.FC = () => {
             <Tooltip.Trigger asChild>
               <button
                 className="icon-button"
-                onClick={fetchStatistics}
+                onClick={handleShowStatistics}
               >
                 <BarChart size={20} />
               </button>
@@ -87,6 +94,11 @@ export const Header: React.FC = () => {
           </Dialog.Root>
         </Tooltip.Provider>
       </div>
+      
+      <StatisticsModal 
+        isOpen={showStatistics} 
+        onClose={() => setShowStatistics(false)} 
+      />
     </header>
   );
 };
