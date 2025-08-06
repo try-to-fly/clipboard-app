@@ -10,6 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm build` - Build production frontend bundle (TypeScript compilation + Vite build)
 - `pnpm preview` - Preview production build
 
+### Code Quality & Linting
+- `cd src-tauri && cargo fmt` - Format Rust code
+- `cd src-tauri && cargo clippy` - Run Rust linter
+- TypeScript checking is included in `pnpm build` command
+
 ### Full Application (Tauri)
 - `./start.sh` - Automated startup script (installs deps + runs dev)
 - `pnpm tauri dev` - Start full development environment (Rust backend + React frontend)
@@ -18,7 +23,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Rust Backend
 - `cd src-tauri && cargo check` - Verify Rust code compiles
 - `cd src-tauri && cargo test` - Run Rust unit tests (if any)
-- `cd src-tauri && cargo clippy` - Run Rust linter
 
 ## Architecture Overview
 
@@ -29,7 +33,7 @@ The Rust backend (`src-tauri/`) follows a modular async architecture:
 
 - **AppState**: Central application state using `Arc<T>` and `tokio::sync` primitives for thread-safe async operations
 - **Clipboard Monitor**: Uses macOS NSPasteboard API directly via `cocoa` and `objc` crates for system-level clipboard monitoring (non-polling)
-- **Database Layer**: SQLx with SQLite for async database operations, stored in `~/.config/clipboard-app/`
+- **Database Layer**: SQLx with SQLite for async database operations, stored in `~/Library/Application Support/clipboard-app/`
 - **Event System**: Tauri's built-in event system for real-time frontend-backend communication via `tauri::Emitter`
 
 Key async patterns:
@@ -44,6 +48,7 @@ The React frontend (`src/`) uses modern patterns:
 - **UI Components**: @radix-ui for accessible primitives, custom CSS with CSS variables for theming
 - **Real-time Updates**: Event listeners via `@tauri-apps/api/event` for live clipboard updates
 - **Type Safety**: Full TypeScript integration with shared types (`types/clipboard.ts`)
+- **Additional Dependencies**: date-fns for time formatting, lucide-react for icons, clsx for conditional classes
 
 ### Critical Integration Points
 
@@ -64,8 +69,10 @@ The React frontend (`src/`) uses modern patterns:
 - Rust async runtime is `tokio` with full features enabled
 - Frontend uses Vite for development server with HMR
 - Database schema auto-migrates on application startup
-- Image processing via `image` crate with PNG output format
+- Image processing via `image` crate with PNG output format, WebP support enabled
 - Content deduplication using SHA256 hashing (`sha2` crate)
+- File type detection using `infer` crate for content type identification
+- Base64 encoding for binary data transport between frontend and backend
 
 ### Common Patterns
 
@@ -79,3 +86,12 @@ When modifying database schema:
 - Update `database/mod.rs` init method
 - Ensure migrations are backwards compatible
 - Update `models/mod.rs` structs with `sqlx::FromRow` derive
+
+### Key File Locations
+
+- Database: `~/Library/Application Support/clipboard-app/clipboard.db`
+- Images: `~/Library/Application Support/clipboard-app/imgs/`
+- Main Zustand store: `src/stores/clipboardStore.ts`
+- Tauri commands: `src-tauri/src/commands.rs`
+- TypeScript types: `src/types/clipboard.ts`
+- Clipboard monitoring: `src-tauri/src/clipboard/monitor.rs`
