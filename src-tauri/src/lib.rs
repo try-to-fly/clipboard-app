@@ -42,7 +42,9 @@ pub fn run() {
             paste_image,
             get_image_url,
             open_file_with_system,
-            get_app_icon
+            get_app_icon,
+            convert_and_scale_image,
+            copy_converted_image
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

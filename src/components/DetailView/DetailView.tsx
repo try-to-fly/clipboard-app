@@ -13,15 +13,10 @@ import {
   MarkdownRenderer,
   CommandRenderer,
 } from './ContentRenderers';
+import { ImagePreview } from './ImagePreview';
 import './DetailView.css';
 import './ContentRenderers/ContentRenderers.css';
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-};
 
 const parseMetadata = (metadataString?: string | null): ContentMetadata | null => {
   if (!metadataString) return null;
@@ -138,76 +133,27 @@ export function DetailView() {
       const metadata = parseMetadata(selectedEntry.metadata);
       const imageMetadata = metadata?.image_metadata;
       
-      return (
-        <div>
-          {/* 图片元数据信息 */}
-          {imageMetadata && (
-            <div className="detail-image-metadata">
-              <div className="image-metadata-grid">
-                <div className="metadata-item">
-                  <span className="metadata-label">分辨率:</span>
-                  <span className="metadata-value">{imageMetadata.width} × {imageMetadata.height}</span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">文件大小:</span>
-                  <span className="metadata-value">{formatFileSize(imageMetadata.file_size)}</span>
-                </div>
-                {imageMetadata.format && (
-                  <div className="metadata-item">
-                    <span className="metadata-label">格式:</span>
-                    <span className="metadata-value">{imageMetadata.format.toUpperCase()}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* 图片预览 */}
-          {imageUrl ? (
-            <div className="detail-image-container">
-              <img 
-                src={imageUrl} 
-                alt="剪贴板图片" 
-                className="detail-image"
-                onClick={handleImageClick}
-                style={{ cursor: 'pointer' }}
-                title="点击用系统查看器打开"
-                onError={(e) => {
-                  console.error('[DetailView] 图片元素加载失败');
-                  e.currentTarget.style.display = 'none';
-                  const errorDiv = e.currentTarget.parentElement?.querySelector('.detail-image-error');
-                  if (errorDiv) {
-                    errorDiv.classList.remove('hidden');
-                  }
-                }}
-                onLoad={() => {
-                  console.log('[DetailView] 图片元素加载成功');
-                }}
-              />
-              <div className="detail-image-error hidden">
-                <p>图片加载失败</p>
-                {selectedEntry.file_path && (
-                  <>
-                    <p className="detail-file-path">文件路径: {selectedEntry.file_path}</p>
-                    <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
-                      请尝试重新复制图片或检查图片文件是否存在
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="detail-image-loading">
-              <p>加载图片中...</p>
-              {selectedEntry.file_path && (
-                <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
-                  {selectedEntry.file_path}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      );
+      if (imageUrl && selectedEntry.file_path) {
+        return (
+          <ImagePreview
+            imageUrl={imageUrl}
+            filePath={selectedEntry.file_path}
+            metadata={imageMetadata}
+            onOpenWithSystem={handleImageClick}
+          />
+        );
+      } else {
+        return (
+          <div className="detail-image-loading">
+            <p>加载图片中...</p>
+            {selectedEntry.file_path && (
+              <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
+                {selectedEntry.file_path}
+              </p>
+            )}
+          </div>
+        );
+      }
     }
 
     // 文件类型

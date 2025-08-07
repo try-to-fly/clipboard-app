@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import * as ContextMenu from '@radix-ui/react-context-menu';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { ClipboardEntry, ContentMetadata, ImageMetadata } from '../../types/clipboard';
+import { ClipboardEntry, ContentMetadata } from '../../types/clipboard';
 import { useClipboardStore } from '../../stores/clipboardStore';
 import clsx from 'clsx';
 

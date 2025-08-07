@@ -16,6 +16,7 @@ pub struct AppState {
     pub _rx: Arc<Mutex<broadcast::Receiver<ClipboardEntry>>>,
     pub app_handle: Arc<Mutex<Option<AppHandle>>>,
     pub processor: Arc<ContentProcessor>,
+    pub skip_next_change: Arc<Mutex<bool>>,
 }
 
 impl AppState {
@@ -31,6 +32,7 @@ impl AppState {
             _rx: Arc::new(Mutex::new(rx)),
             app_handle: Arc::new(Mutex::new(None)),
             processor,
+            skip_next_change: Arc::new(Mutex::new(false)),
         })
     }
 
@@ -255,6 +257,48 @@ impl AppState {
         })
         .await??;
         Ok(())
+    }
+
+    pub async fn copy_image_to_clipboard(&self, file_path: String) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        {
+            use std::process::Command;
+            
+            tokio::task::spawn_blocking(move || -> Result<()> {
+                // 使用osascript复制图片到剪贴板
+                let script = format!(
+                    r#"
+                    set the clipboard to (read (POSIX file "{}") as «class PNGf»)
+                    "#,
+                    file_path
+                );
+                
+                let output = Command::new("osascript")
+                    .arg("-e")
+                    .arg(&script)
+                    .output()?;
+                
+                if !output.status.success() {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    return Err(anyhow::anyhow!("Failed to copy image: {}", stderr));
+                }
+                
+                Ok(())
+            })
+            .await??;
+        }
+        
+        #[cfg(not(target_os = "macos"))]
+        {
+            return Err(anyhow::anyhow!("Image copy only supported on macOS"));
+        }
+        
+        Ok(())
+    }
+
+    pub async fn set_skip_next_clipboard_change(&self, skip: bool) {
+        let mut skip_guard = self.skip_next_change.lock().await;
+        *skip_guard = skip;
     }
 
     pub async fn paste_text(

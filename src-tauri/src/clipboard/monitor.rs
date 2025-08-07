@@ -38,6 +38,19 @@ impl ClipboardMonitor {
         })
     }
 
+    fn get_saved_file_size(file_path: &str) -> Option<u64> {
+        // 将相对路径转换为绝对路径
+        let absolute_path = if file_path.starts_with("imgs/") {
+            let config_dir = dirs::config_dir()?;
+            let app_dir = config_dir.join("clipboard-app");
+            app_dir.join(file_path)
+        } else {
+            std::path::PathBuf::from(file_path)
+        };
+
+        std::fs::metadata(absolute_path).ok().map(|meta| meta.len())
+    }
+
     pub async fn start_monitoring(&self) {
         let clipboard = Arc::clone(&self.clipboard);
         let last_hash = Arc::clone(&self.last_hash);
@@ -193,23 +206,23 @@ impl ClipboardMonitor {
                     .process_image_with_dimensions(bytes, width as u32, height as u32)
                     .await
                 {
-                    Ok(file_path) => {
-                        // 创建图片元数据
+                    Ok(image_info) => {
+                        // 创建图片元数据，使用实际压缩后的文件大小
                         let image_metadata = serde_json::json!({
                             "image_metadata": {
-                                "width": width as u32,
-                                "height": height as u32,
-                                "file_size": bytes.len(),
+                                "width": image_info.width,
+                                "height": image_info.height,
+                                "file_size": image_info.actual_size,
                                 "format": "png"
                             }
                         });
 
                         let mut entry = ClipboardEntry::new(
                             ContentType::Image,
-                            Some(file_path.clone()),
+                            Some(image_info.file_path.clone()),
                             hash,
                             app_info.as_ref().map(|info| info.name.clone()),
-                            Some(file_path),
+                            Some(image_info.file_path),
                         );
                         entry.app_bundle_id =
                             app_info.as_ref().and_then(|info| info.bundle_id.clone());
@@ -222,12 +235,15 @@ impl ClipboardMonitor {
                         // 降级到自动检测
                         match processor.process_image(bytes).await {
                             Ok(file_path) => {
-                                // 创建图片元数据（使用原始宽高数据）
+                                // 获取实际保存的文件大小
+                                let actual_size = Self::get_saved_file_size(&file_path).unwrap_or(bytes.len() as u64);
+                                
+                                // 创建图片元数据（使用压缩后的文件大小）
                                 let image_metadata = serde_json::json!({
                                     "image_metadata": {
                                         "width": width as u32,
                                         "height": height as u32,
-                                        "file_size": bytes.len(),
+                                        "file_size": actual_size,
                                         "format": "png"
                                     }
                                 });
