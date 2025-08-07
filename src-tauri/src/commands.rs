@@ -1,9 +1,28 @@
+use crate::config::AppConfig;
 use crate::models::{ClipboardEntry, Statistics};
 use crate::state::AppState;
 use crate::utils::app_icon_extractor::AppIconExtractor;
+use crate::utils::app_list::{AppListManager, InstalledApp};
 use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
+use serde::{Deserialize, Serialize};
 use tauri::State;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CacheStatistics {
+    pub db_size_bytes: u64,
+    pub images_size_bytes: u64,
+    pub total_entries: i64,
+    pub text_entries: i64,
+    pub image_entries: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CleanupResult {
+    pub entries_removed: u32,
+    pub images_removed: u32,
+    pub size_freed_bytes: u64,
+}
 
 #[tauri::command]
 pub async fn start_monitoring(state: State<'_, AppState>) -> Result<(), String> {
@@ -130,7 +149,7 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
     use std::fs;
     use std::path::PathBuf;
 
-    println!("[get_image_url] 请求加载图片: {}", file_path);
+    // println!("[get_image_url] 请求加载图片: {}", file_path);
 
     // 如果是相对路径（如 imgs/xxx.png），转换为绝对路径
     let absolute_path = if file_path.starts_with("imgs/") {
@@ -152,7 +171,7 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
         PathBuf::from(&file_path)
     };
 
-    println!("[get_image_url] 绝对路径: {:?}", absolute_path);
+    // println!("[get_image_url] 绝对路径: {:?}", absolute_path);
 
     if !absolute_path.exists() {
         println!("[get_image_url] 文件不存在: {:?}", absolute_path);
@@ -174,7 +193,7 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
 
     match fs::read(&absolute_path) {
         Ok(data) => {
-            println!("[get_image_url] 成功读取文件，大小: {} 字节", data.len());
+            // println!("[get_image_url] 成功读取文件，大小: {} 字节", data.len());
 
             let extension = absolute_path
                 .extension()
@@ -210,7 +229,7 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
                 _ => "image/png",
             };
 
-            println!("[get_image_url] MIME 类型: {}", mime_type);
+            // println!("[get_image_url] MIME 类型: {}", mime_type);
 
             let base64_data = base64::engine::general_purpose::STANDARD.encode(&data);
             Ok(format!("data:{};base64,{}", mime_type, base64_data))
@@ -227,13 +246,13 @@ pub async fn get_app_icon(bundle_id: String) -> Result<Option<String>, String> {
     use base64::Engine;
     use std::fs;
 
-    println!("[get_app_icon] 请求应用图标: {}", bundle_id);
+    // println!("[get_app_icon] 请求应用图标: {}", bundle_id);
 
     let extractor = AppIconExtractor::new().map_err(|e| e.to_string())?;
 
     // 首先检查缓存
     if let Some(cached_path) = extractor.get_cached_icon_path(&bundle_id) {
-        println!("[get_app_icon] 找到缓存图标: {:?}", cached_path);
+        // println!("[get_app_icon] 找到缓存图标: {:?}", cached_path);
 
         match fs::read(&cached_path) {
             Ok(data) => {
@@ -455,4 +474,126 @@ pub async fn fetch_url_content(url: String) -> Result<String, String> {
             Err(format!("Network request failed: {}", e))
         }
     }
+}
+
+// Configuration commands
+#[tauri::command]
+pub async fn get_config(state: State<'_, AppState>) -> Result<AppConfig, String> {
+    state.get_config().await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn update_config(state: State<'_, AppState>, config: AppConfig) -> Result<(), String> {
+    state.update_config(config).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_cache_statistics(state: State<'_, AppState>) -> Result<CacheStatistics, String> {
+    state
+        .get_cache_statistics()
+        .await
+        .map_err(|e| e.to_string())
+}
+
+// Global shortcut commands
+#[tauri::command]
+pub async fn register_global_shortcut(
+    app_handle: tauri::AppHandle,
+    state: State<'_, AppState>,
+    shortcut: String,
+) -> Result<(), String> {
+    state
+        .register_global_shortcut(app_handle, shortcut)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn unregister_global_shortcut(state: State<'_, AppState>) -> Result<(), String> {
+    state
+        .unregister_global_shortcut()
+        .await
+        .map_err(|e| e.to_string())
+}
+
+// Auto startup commands
+#[tauri::command]
+pub async fn set_auto_startup(state: State<'_, AppState>, enabled: bool) -> Result<(), String> {
+    state
+        .set_auto_startup(enabled)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_auto_startup_status(state: State<'_, AppState>) -> Result<bool, String> {
+    state
+        .get_auto_startup_status()
+        .await
+        .map_err(|e| e.to_string())
+}
+
+// Cache cleanup command
+#[tauri::command]
+pub async fn cleanup_expired_entries(state: State<'_, AppState>) -> Result<CleanupResult, String> {
+    state
+        .cleanup_expired_entries()
+        .await
+        .map_err(|e| e.to_string())
+}
+
+// App list commands
+#[tauri::command]
+pub async fn get_installed_applications() -> Result<Vec<InstalledApp>, String> {
+    println!("[get_installed_applications] Starting to load applications...");
+    
+    match AppListManager::get_installed_applications() {
+        Ok(apps) => {
+            println!("[get_installed_applications] Successfully loaded {} applications", apps.len());
+            Ok(apps)
+        }
+        Err(e) => {
+            println!("[get_installed_applications] Error loading applications: {}", e);
+            Err(e.to_string())
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn get_common_excluded_apps() -> Result<Vec<InstalledApp>, String> {
+    Ok(AppListManager::get_common_excluded_apps())
+}
+
+// Shortcut validation command
+#[tauri::command]
+pub async fn validate_shortcut(shortcut: String) -> Result<bool, String> {
+    // Basic validation for shortcut format
+    if shortcut.is_empty() {
+        return Ok(false);
+    }
+
+    // Check for required modifier keys (at least one)
+    let has_modifier = shortcut.contains("Cmd")
+        || shortcut.contains("Ctrl")
+        || shortcut.contains("Alt")
+        || shortcut.contains("Shift");
+
+    if !has_modifier {
+        return Ok(false);
+    }
+
+    // Check for system shortcut conflicts (basic check)
+    let system_shortcuts = vec![
+        "CmdOrCtrl+Q",   // Quit
+        "CmdOrCtrl+W",   // Close window
+        "CmdOrCtrl+H",   // Hide window
+        "CmdOrCtrl+M",   // Minimize
+        "CmdOrCtrl+Tab", // Switch apps
+    ];
+
+    if system_shortcuts.contains(&shortcut.as_str()) {
+        return Ok(false);
+    }
+
+    Ok(true)
 }

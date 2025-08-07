@@ -2,6 +2,7 @@
 
 mod clipboard;
 mod commands;
+mod config;
 mod database;
 mod models;
 mod state;
@@ -9,13 +10,16 @@ mod utils;
 
 use commands::*;
 use state::AppState;
-use tauri::{Manager, Emitter, menu::{Menu, MenuItem, PredefinedMenuItem, Submenu}, AppHandle};
+use tauri::{
+    menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
+    AppHandle, Emitter, Manager,
+};
 
 async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
     println!("Menu event: {}", event_id);
-    
+
     let state = app_handle.state::<AppState>();
-    
+
     match event_id {
         "clear_history" => {
             if let Err(e) = state.clear_history().await {
@@ -25,16 +29,19 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
                 let _ = app_handle.emit("history_cleared", ());
             }
         }
-        "show_statistics" => {
-            match state.get_statistics().await {
-                Ok(stats) => {
-                    if let Err(e) = app_handle.emit("show_statistics", &stats) {
-                        eprintln!("Failed to emit statistics event: {}", e);
-                    }
+        "show_statistics" => match state.get_statistics().await {
+            Ok(stats) => {
+                if let Err(e) = app_handle.emit("show_statistics", &stats) {
+                    eprintln!("Failed to emit statistics event: {}", e);
                 }
-                Err(e) => {
-                    eprintln!("Failed to get statistics: {}", e);
-                }
+            }
+            Err(e) => {
+                eprintln!("Failed to get statistics: {}", e);
+            }
+        },
+        "show_preferences" => {
+            if let Err(e) = app_handle.emit("show_preferences", ()) {
+                eprintln!("Failed to emit preferences event: {}", e);
             }
         }
         "toggle_monitoring" => {
@@ -44,7 +51,7 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
             } else {
                 state.start_monitoring().await
             };
-            
+
             if let Err(e) = result {
                 eprintln!("Failed to toggle monitoring: {}", e);
             } else {
@@ -65,6 +72,11 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
         .setup(|app| {
             // Create macOS menu
             #[cfg(target_os = "macos")]
@@ -75,6 +87,14 @@ pub fn run() {
                     true,
                     &[
                         &PredefinedMenuItem::about(app, Some("关于剪切板管理器"), None)?,
+                        &PredefinedMenuItem::separator(app)?,
+                        &MenuItem::with_id(
+                            app,
+                            "show_preferences",
+                            "偏好设置...",
+                            true,
+                            Some("CmdOrCtrl+,"),
+                        )?,
                         &PredefinedMenuItem::separator(app)?,
                         &PredefinedMenuItem::hide(app, Some("隐藏剪切板管理器"))?,
                         &PredefinedMenuItem::hide_others(app, Some("隐藏其他"))?,
@@ -88,27 +108,39 @@ pub fn run() {
                     app,
                     "编辑",
                     true,
-                    &[
-                        &MenuItem::with_id(app, "clear_history", "清空历史", true, Some("CmdOrCtrl+Shift+Delete"))?,
-                    ],
+                    &[&MenuItem::with_id(
+                        app,
+                        "clear_history",
+                        "清空历史",
+                        true,
+                        Some("CmdOrCtrl+Shift+Delete"),
+                    )?],
                 )?;
 
                 let view_submenu = Submenu::with_items(
                     app,
                     "查看",
                     true,
-                    &[
-                        &MenuItem::with_id(app, "show_statistics", "查看统计", true, Some("CmdOrCtrl+I"))?,
-                    ],
+                    &[&MenuItem::with_id(
+                        app,
+                        "show_statistics",
+                        "查看统计",
+                        true,
+                        Some("CmdOrCtrl+I"),
+                    )?],
                 )?;
 
                 let control_submenu = Submenu::with_items(
                     app,
                     "控制",
                     true,
-                    &[
-                        &MenuItem::with_id(app, "toggle_monitoring", "开始监听", true, Some("CmdOrCtrl+Space"))?,
-                    ],
+                    &[&MenuItem::with_id(
+                        app,
+                        "toggle_monitoring",
+                        "开始监听",
+                        true,
+                        Some("CmdOrCtrl+Space"),
+                    )?],
                 )?;
 
                 let menu = Menu::with_items(
@@ -160,7 +192,18 @@ pub fn run() {
             get_app_icon,
             convert_and_scale_image,
             copy_converted_image,
-            fetch_url_content
+            fetch_url_content,
+            get_config,
+            update_config,
+            get_cache_statistics,
+            register_global_shortcut,
+            unregister_global_shortcut,
+            set_auto_startup,
+            get_auto_startup_status,
+            cleanup_expired_entries,
+            get_installed_applications,
+            get_common_excluded_apps,
+            validate_shortcut
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

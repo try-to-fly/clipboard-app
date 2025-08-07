@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { StatisticsModal } from '../Statistics/StatisticsModal';
+import { PreferencesModal } from '../Preferences/PreferencesModal';
+import { useConfigStore } from '../../stores/configStore';
 import type { Statistics } from '../../types/clipboard';
 
 export const MenuEventHandler: React.FC = () => {
   const [showStatistics, setShowStatistics] = useState(false);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const { setShowPreferences } = useConfigStore();
 
   useEffect(() => {
     const setupListeners = async () => {
@@ -27,10 +30,16 @@ export const MenuEventHandler: React.FC = () => {
         // The clipboard store will automatically refresh
       });
 
+      // Listen for preferences event
+      const unlistenPreferences = await listen('show_preferences', () => {
+        setShowPreferences(true);
+      });
+
       return () => {
         unlistenStats();
         unlistenMonitoring();
         unlistenHistory();
+        unlistenPreferences();
       };
     };
 
@@ -46,6 +55,7 @@ export const MenuEventHandler: React.FC = () => {
           statistics={statistics}
         />
       )}
+      <PreferencesModal />
     </>
   );
 };

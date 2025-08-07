@@ -12,6 +12,7 @@ use tokio::time::sleep;
 
 use crate::clipboard::content_detector::ContentDetector;
 use crate::clipboard::processor::ContentProcessor;
+use crate::config::ConfigManager;
 use crate::models::{ClipboardEntry, ContentType};
 use crate::utils::app_detector::{get_active_app, get_active_app_info};
 
@@ -20,12 +21,14 @@ pub struct ClipboardMonitor {
     last_hash: Arc<Mutex<Option<String>>>,
     tx: broadcast::Sender<ClipboardEntry>,
     processor: Arc<ContentProcessor>,
+    config_manager: Arc<Mutex<ConfigManager>>,
 }
 
 impl ClipboardMonitor {
     pub fn new(
         tx: broadcast::Sender<ClipboardEntry>,
         processor: Arc<ContentProcessor>,
+        config_manager: Arc<Mutex<ConfigManager>>,
     ) -> Result<Self> {
         let clipboard = Arc::new(Mutex::new(Clipboard::new()?));
         let last_hash = Arc::new(Mutex::new(None));
@@ -35,6 +38,7 @@ impl ClipboardMonitor {
             last_hash,
             tx,
             processor,
+            config_manager,
         })
     }
 
@@ -56,10 +60,13 @@ impl ClipboardMonitor {
         let last_hash = Arc::clone(&self.last_hash);
         let tx = self.tx.clone();
         let processor = Arc::clone(&self.processor);
+        let config_manager = Arc::clone(&self.config_manager);
 
         tokio::spawn(async move {
             loop {
-                if let Err(e) = Self::check_clipboard(&clipboard, &last_hash, &tx, &processor).await
+                if let Err(e) =
+                    Self::check_clipboard(&clipboard, &last_hash, &tx, &processor, &config_manager)
+                        .await
                 {
                     eprintln!("剪切板检查错误: {}", e);
                 }
@@ -73,6 +80,7 @@ impl ClipboardMonitor {
         last_hash: &Arc<Mutex<Option<String>>>,
         tx: &broadcast::Sender<ClipboardEntry>,
         processor: &Arc<ContentProcessor>,
+        config_manager: &Arc<Mutex<ConfigManager>>,
     ) -> Result<()> {
         // 检查文本内容
         let text_result = {
@@ -117,6 +125,27 @@ impl ClipboardMonitor {
                                 app_info.name
                             );
                             return Ok(());
+                        }
+
+                        // 检查是否是被排除的应用
+                        if let Some(bundle_id) = &app_info.bundle_id {
+                            let config_guard = config_manager.lock().await;
+                            if config_guard.is_app_excluded(bundle_id) {
+                                println!(
+                                    "[ClipboardMonitor] 跳过被排除的应用: {} ({})",
+                                    app_info.name, bundle_id
+                                );
+                                return Ok(());
+                            }
+
+                            // 检查文本大小限制
+                            if !config_guard.is_text_size_valid(trimmed_text) {
+                                println!(
+                                    "[ClipboardMonitor] 跳过过大的文本内容: {} 字符",
+                                    trimmed_text.len()
+                                );
+                                return Ok(());
+                            }
                         }
                     }
 
@@ -199,6 +228,18 @@ impl ClipboardMonitor {
                         );
                         return Ok(());
                     }
+
+                    // 检查是否是被排除的应用
+                    if let Some(bundle_id) = &app_info.bundle_id {
+                        let config_guard = config_manager.lock().await;
+                        if config_guard.is_app_excluded(bundle_id) {
+                            println!(
+                                "[ClipboardMonitor] 跳过被排除应用的图片: {} ({})",
+                                app_info.name, bundle_id
+                            );
+                            return Ok(());
+                        }
+                    }
                 }
 
                 // 使用宽高信息处理图片
@@ -270,40 +311,6 @@ impl ClipboardMonitor {
             }
         }
 
-        // 检查文件路径
-        let file_paths = Self::get_file_paths_from_pasteboard();
-
-        if let Some(file_paths) = file_paths {
-            if !file_paths.is_empty() {
-                let content = file_paths.join("\n");
-                let hash = Self::calculate_hash(content.as_bytes());
-
-                let should_send = {
-                    let mut last = last_hash.lock().await;
-                    if last.as_ref() != Some(&hash) {
-                        *last = Some(hash.clone());
-                        true
-                    } else {
-                        false
-                    }
-                };
-
-                if should_send {
-                    let app_info = get_active_app_info();
-                    let mut entry = ClipboardEntry::new(
-                        ContentType::File,
-                        Some(content.clone()),
-                        hash,
-                        app_info.as_ref().map(|info| info.name.clone()),
-                        Some(content),
-                    );
-                    entry.app_bundle_id = app_info.as_ref().and_then(|info| info.bundle_id.clone());
-
-                    let _ = tx.send(entry);
-                }
-            }
-        }
-
         Ok(())
     }
 
@@ -311,76 +318,5 @@ impl ClipboardMonitor {
         let mut hasher = Sha256::new();
         hasher.update(data);
         format!("{:x}", hasher.finalize())
-    }
-
-    fn get_file_paths_from_pasteboard() -> Option<Vec<String>> {
-        // 使用 std::panic::catch_unwind 来捕获可能的外部异常
-        let result = std::panic::catch_unwind(|| {
-            unsafe {
-                let pasteboard: id = msg_send![class!(NSPasteboard), generalPasteboard];
-                if pasteboard == nil {
-                    return None;
-                }
-
-                let types: id = msg_send![pasteboard, types];
-                if types == nil {
-                    return None;
-                }
-
-                let file_url_type: id = NSString::alloc(nil).init_str("public.file-url");
-                if file_url_type == nil {
-                    return None;
-                }
-
-                let has_files: bool = msg_send![types, containsObject:file_url_type];
-
-                if has_files {
-                    let urls: id = msg_send![pasteboard, propertyListForType:file_url_type];
-                    if urls != nil {
-                        let count: usize = msg_send![urls, count];
-
-                        let mut paths = Vec::new();
-                        for i in 0..count {
-                            // 为每个索引访问添加边界检查
-                            if i >= count {
-                                break;
-                            }
-
-                            let url: id = msg_send![urls, objectAtIndex:i];
-                            if url == nil {
-                                continue;
-                            }
-
-                            let path: id = msg_send![url, path];
-                            if path == nil {
-                                continue;
-                            }
-
-                            let c_str: *const i8 = msg_send![path, UTF8String];
-
-                            if !c_str.is_null() {
-                                match std::ffi::CStr::from_ptr(c_str).to_str() {
-                                    Ok(path_str) => paths.push(path_str.to_string()),
-                                    Err(_) => continue, // 跳过无效的UTF-8字符串
-                                }
-                            }
-                        }
-                        Some(paths)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            }
-        });
-
-        match result {
-            Ok(value) => value,
-            Err(_) => {
-                eprintln!("从剪切板获取文件路径时发生异常，已安全处理");
-                None
-            }
-        }
     }
 }

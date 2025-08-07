@@ -21,7 +21,6 @@ pub struct ClipboardEntry {
 pub enum ContentType {
     Text,
     Image,
-    File,
     Unknown,
 }
 
@@ -30,7 +29,6 @@ impl ContentType {
         match self {
             ContentType::Text => "text",
             ContentType::Image => "image",
-            ContentType::File => "file",
             ContentType::Unknown => "unknown",
         }
     }

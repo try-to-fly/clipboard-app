@@ -1,11 +1,17 @@
 use crate::clipboard::{ClipboardMonitor, ContentProcessor};
+use crate::commands::{CacheStatistics, CleanupResult};
+use crate::config::{AppConfig, ConfigManager};
 use crate::database::Database;
 use crate::models::{AppUsage, ClipboardEntry, Statistics};
 use anyhow::Result;
 use arboard::Clipboard;
+use chrono::Utc;
 use sqlx::Row;
+use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager};
+use tauri_plugin_autostart::ManagerExt;
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 use tokio::sync::Mutex;
 use tokio::sync::{broadcast, RwLock};
 
@@ -17,6 +23,9 @@ pub struct AppState {
     pub app_handle: Arc<Mutex<Option<AppHandle>>>,
     pub processor: Arc<ContentProcessor>,
     pub skip_next_change: Arc<Mutex<bool>>,
+    pub config_manager: Arc<Mutex<ConfigManager>>,
+    pub current_shortcut: Arc<Mutex<Option<String>>>,
+    pub last_cleanup_date: Arc<Mutex<Option<chrono::DateTime<Utc>>>>,
 }
 
 impl AppState {
@@ -24,8 +33,9 @@ impl AppState {
         let db = Arc::new(Database::new().await?);
         let (tx, rx) = broadcast::channel(100);
         let processor = Arc::new(ContentProcessor::new()?);
+        let config_manager = Arc::new(Mutex::new(ConfigManager::new().await?));
 
-        Ok(Self {
+        let instance = Self {
             db,
             monitor: Arc::new(RwLock::new(None)),
             tx: tx.clone(),
@@ -33,7 +43,15 @@ impl AppState {
             app_handle: Arc::new(Mutex::new(None)),
             processor,
             skip_next_change: Arc::new(Mutex::new(false)),
-        })
+            config_manager,
+            current_shortcut: Arc::new(Mutex::new(None)),
+            last_cleanup_date: Arc::new(Mutex::new(None)),
+        };
+
+        // 初始化清理日期
+        instance.check_and_cleanup_daily().await?;
+
+        Ok(instance)
     }
 
     pub fn set_app_handle(&self, handle: AppHandle) {
@@ -48,7 +66,11 @@ impl AppState {
         let mut monitor_guard = self.monitor.write().await;
 
         if monitor_guard.is_none() {
-            let monitor = ClipboardMonitor::new(self.tx.clone(), Arc::clone(&self.processor))?;
+            let monitor = ClipboardMonitor::new(
+                self.tx.clone(),
+                Arc::clone(&self.processor),
+                Arc::clone(&self.config_manager),
+            )?;
             monitor.start_monitoring().await;
             *monitor_guard = Some(monitor);
 
@@ -479,5 +501,276 @@ impl AppState {
         }
 
         Ok(())
+    }
+
+    // Configuration management methods
+    pub async fn get_config(&self) -> Result<AppConfig> {
+        let config_manager = self.config_manager.lock().await;
+        Ok(config_manager.config.clone())
+    }
+
+    pub async fn update_config(&self, config: AppConfig) -> Result<()> {
+        let mut config_manager = self.config_manager.lock().await;
+        config_manager.update_config(config).await?;
+        Ok(())
+    }
+
+    // Global shortcut methods
+    pub async fn register_global_shortcut(
+        &self,
+        app_handle: AppHandle,
+        shortcut: String,
+    ) -> Result<()> {
+        let parsed_shortcut = shortcut
+            .parse::<Shortcut>()
+            .map_err(|e| anyhow::anyhow!("Invalid shortcut format: {}", e))?;
+
+        let global_shortcut_manager = app_handle.global_shortcut();
+
+        // Unregister existing shortcut if any
+        if let Some(current) = self.current_shortcut.lock().await.as_ref() {
+            let current_shortcut = current
+                .parse::<Shortcut>()
+                .map_err(|e| anyhow::anyhow!("Invalid current shortcut: {}", e))?;
+            global_shortcut_manager
+                .unregister(current_shortcut)
+                .map_err(|e| anyhow::anyhow!("Failed to unregister shortcut: {}", e))?;
+        }
+
+        // Register new shortcut - the API only takes the shortcut, callback is handled via events
+        global_shortcut_manager
+            .register(parsed_shortcut)
+            .map_err(|e| anyhow::anyhow!("Failed to register shortcut: {}", e))?;
+
+        // Update stored shortcut
+        let mut current_shortcut = self.current_shortcut.lock().await;
+        *current_shortcut = Some(shortcut);
+
+        Ok(())
+    }
+
+    pub async fn unregister_global_shortcut(&self) -> Result<()> {
+        if let Some(app_handle) = self.app_handle.lock().await.as_ref() {
+            if let Some(current) = self.current_shortcut.lock().await.as_ref() {
+                let current_shortcut = current
+                    .parse::<Shortcut>()
+                    .map_err(|e| anyhow::anyhow!("Invalid current shortcut: {}", e))?;
+                let global_shortcut_manager = app_handle.global_shortcut();
+                global_shortcut_manager
+                    .unregister(current_shortcut)
+                    .map_err(|e| anyhow::anyhow!("Failed to unregister shortcut: {}", e))?;
+
+                let mut current_shortcut_guard = self.current_shortcut.lock().await;
+                *current_shortcut_guard = None;
+            }
+        }
+        Ok(())
+    }
+
+    // Auto startup methods
+    pub async fn set_auto_startup(&self, enabled: bool) -> Result<()> {
+        if let Some(app_handle) = self.app_handle.lock().await.as_ref() {
+            let autolaunch_manager = app_handle.autolaunch();
+            if enabled {
+                autolaunch_manager
+                    .enable()
+                    .map_err(|e| anyhow::anyhow!("Failed to enable auto startup: {}", e))?;
+            } else {
+                autolaunch_manager
+                    .disable()
+                    .map_err(|e| anyhow::anyhow!("Failed to disable auto startup: {}", e))?;
+            }
+        }
+        Ok(())
+    }
+
+    pub async fn get_auto_startup_status(&self) -> Result<bool> {
+        if let Some(app_handle) = self.app_handle.lock().await.as_ref() {
+            let autolaunch_manager = app_handle.autolaunch();
+            let status = autolaunch_manager
+                .is_enabled()
+                .map_err(|e| anyhow::anyhow!("Failed to get auto startup status: {}", e))?;
+            Ok(status)
+        } else {
+            Ok(false)
+        }
+    }
+
+    // Cache statistics
+    pub async fn get_cache_statistics(&self) -> Result<CacheStatistics> {
+        // Get database size
+        let db_path = self.get_db_path()?;
+        let db_size = std::fs::metadata(&db_path).map(|m| m.len()).unwrap_or(0);
+
+        // Get images directory size
+        let images_path = self.get_images_path()?;
+        let images_size = if images_path.exists() {
+            self.calculate_directory_size(&images_path)?
+        } else {
+            0
+        };
+
+        // Get entry counts
+        let total_entries: i64 = sqlx::query("SELECT COUNT(*) as count FROM clipboard_entries")
+            .fetch_one(self.db.pool())
+            .await?
+            .get("count");
+
+        let text_entries: i64 = sqlx::query(
+            "SELECT COUNT(*) as count FROM clipboard_entries WHERE content_type LIKE 'text%'",
+        )
+        .fetch_one(self.db.pool())
+        .await?
+        .get("count");
+
+        let image_entries: i64 = sqlx::query(
+            "SELECT COUNT(*) as count FROM clipboard_entries WHERE content_type LIKE 'image%'",
+        )
+        .fetch_one(self.db.pool())
+        .await?
+        .get("count");
+
+        Ok(CacheStatistics {
+            db_size_bytes: db_size,
+            images_size_bytes: images_size,
+            total_entries,
+            text_entries,
+            image_entries,
+        })
+    }
+
+    // Cleanup methods
+    pub async fn check_and_cleanup_daily(&self) -> Result<()> {
+        let now = Utc::now();
+        let mut last_cleanup = self.last_cleanup_date.lock().await;
+
+        let should_cleanup = match *last_cleanup {
+            Some(last) => (now.date_naive() - last.date_naive()).num_days() >= 1,
+            None => true,
+        };
+
+        if should_cleanup {
+            println!("[cleanup] Starting daily cleanup...");
+            let result = self.cleanup_expired_entries().await?;
+            println!("[cleanup] Cleanup completed: {} entries removed, {} images removed, {} bytes freed", 
+                     result.entries_removed, result.images_removed, result.size_freed_bytes);
+            *last_cleanup = Some(now);
+        }
+
+        Ok(())
+    }
+
+    pub async fn cleanup_expired_entries(&self) -> Result<CleanupResult> {
+        let config = self.get_config().await?;
+        let now = Utc::now().timestamp_millis();
+
+        // Get cutoff times, skip cleanup for Never expiry
+        let text_cutoff = match config.text.expiry.as_days() {
+            Some(days) => {
+                let expiry_ms = (days as i64) * 24 * 60 * 60 * 1000;
+                Some(now - expiry_ms)
+            }
+            None => None, // Never expire
+        };
+
+        let image_cutoff = match config.image.expiry.as_days() {
+            Some(days) => {
+                let expiry_ms = (days as i64) * 24 * 60 * 60 * 1000;
+                Some(now - expiry_ms)
+            }
+            None => None, // Never expire
+        };
+
+        // Get entries to remove
+        let expired_text_entries = match text_cutoff {
+            Some(cutoff) => sqlx::query("SELECT id, file_path FROM clipboard_entries WHERE content_type LIKE 'text%' AND created_at < ?")
+                .bind(cutoff)
+                .fetch_all(self.db.pool())
+                .await?,
+            None => vec![], // Never expire text
+        };
+
+        let expired_image_entries = match image_cutoff {
+            Some(cutoff) => sqlx::query("SELECT id, file_path FROM clipboard_entries WHERE content_type LIKE 'image%' AND created_at < ?")
+                .bind(cutoff)
+                .fetch_all(self.db.pool())
+                .await?,
+            None => vec![], // Never expire images
+        };
+
+        let mut entries_removed = 0;
+        let mut images_removed = 0;
+        let mut size_freed = 0u64;
+
+        // Remove text entries
+        for row in expired_text_entries {
+            let id: String = row.get("id");
+            sqlx::query("DELETE FROM clipboard_entries WHERE id = ?")
+                .bind(&id)
+                .execute(self.db.pool())
+                .await?;
+            entries_removed += 1;
+        }
+
+        // Remove image entries and files
+        for row in expired_image_entries {
+            let id: String = row.get("id");
+            let file_path: Option<String> = row.get("file_path");
+
+            sqlx::query("DELETE FROM clipboard_entries WHERE id = ?")
+                .bind(&id)
+                .execute(self.db.pool())
+                .await?;
+            entries_removed += 1;
+
+            // Remove image file if exists
+            if let Some(relative_path) = file_path {
+                let images_dir = self.get_images_path()?;
+                let full_path = images_dir.join(&relative_path.replace("imgs/", ""));
+
+                if full_path.exists() {
+                    if let Ok(metadata) = std::fs::metadata(&full_path) {
+                        size_freed += metadata.len();
+                    }
+                    let _ = std::fs::remove_file(&full_path);
+                    images_removed += 1;
+                }
+            }
+        }
+
+        Ok(CleanupResult {
+            entries_removed,
+            images_removed,
+            size_freed_bytes: size_freed,
+        })
+    }
+
+    // Helper methods
+    fn get_db_path(&self) -> Result<PathBuf> {
+        let config_dir =
+            dirs::config_dir().ok_or_else(|| anyhow::anyhow!("Unable to get config directory"))?;
+        Ok(config_dir.join("clipboard-app").join("clipboard.db"))
+    }
+
+    fn get_images_path(&self) -> Result<PathBuf> {
+        let config_dir =
+            dirs::config_dir().ok_or_else(|| anyhow::anyhow!("Unable to get config directory"))?;
+        Ok(config_dir.join("clipboard-app").join("imgs"))
+    }
+
+    fn calculate_directory_size(&self, path: &PathBuf) -> Result<u64> {
+        let mut size = 0u64;
+        if path.is_dir() {
+            for entry in std::fs::read_dir(path)? {
+                let entry = entry?;
+                let metadata = entry.metadata()?;
+                if metadata.is_file() {
+                    size += metadata.len();
+                } else if metadata.is_dir() {
+                    size += self.calculate_directory_size(&entry.path())?;
+                }
+            }
+        }
+        Ok(size)
     }
 }

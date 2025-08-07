@@ -1,0 +1,168 @@
+.shortcut-recorder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shortcut-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  min-height: 36px;
+}
+
+.shortcut-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-color);
+  font-size: 14px;
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+.shortcut-value svg {
+  color: var(--text-secondary);
+}
+
+.change-button {
+  padding: 4px 12px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.change-button:hover {
+  background: var(--accent-color-hover);
+}
+
+.shortcut-recording {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recording-input {
+  padding: 12px 16px;
+  background: var(--input-background);
+  border: 2px solid var(--accent-color);
+  border-radius: 6px;
+  color: var(--text-color);
+  font-size: 14px;
+  font-family: ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  text-align: center;
+  outline: none;
+  cursor: text;
+  min-height: 20px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.recording-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.recording-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-button.cancel {
+  background: var(--error-color);
+  color: white;
+}
+
+.action-button.cancel:hover:not(:disabled) {
+  background: var(--error-color-hover);
+}
+
+.action-button.reset {
+  background: var(--text-secondary);
+  color: white;
+}
+
+.action-button.reset:hover:not(:disabled) {
+  background: var(--text-color);
+}
+
+.action-button.confirm {
+  background: var(--success-color);
+  color: white;
+}
+
+.action-button.confirm:hover:not(:disabled) {
+  background: var(--success-color-hover);
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.validation-error {
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error-color);
+  border-radius: 4px;
+  color: var(--error-color);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.recording-hint {
+  padding: 6px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+  .shortcut-recorder {
+    --input-background: #2d3748;
+    --accent-color: #3b82f6;
+    --accent-color-hover: #2563eb;
+    --error-color: #ef4444;
+    --error-color-hover: #dc2626;
+    --success-color: #10b981;
+    --success-color-hover: #059669;
+  }
+}
