@@ -2,25 +2,52 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Critical Directory Navigation Rules
+
+**IMPORTANT**: This project has two main directories:
+- **Project Root**: `./` (contains package.json, CLAUDE.md, src/, src-tauri/)
+- **Rust Backend**: `./src-tauri/` (contains Cargo.toml, src/, target/)
+
+**Working Directory Context**:
+- The project root contains package.json and CLAUDE.md 
+- Most commands assume you're already in the project root directory
+- Always verify your current working directory before running commands
+
+**Command Execution Guidelines**:
+1. **Frontend commands** (pnpm, npm, node) require project root as working directory
+2. **Rust commands** (cargo) require `src-tauri/` directory as working directory  
+3. **ALWAYS** check current directory before executing commands
+4. Use `pwd` or equivalent to verify your location if unsure
+
+**Correct Command Patterns**:
+- ✅ From project root: `cd src-tauri && cargo fmt`
+- ✅ From project root: `pnpm build`  
+- ❌ From wrong directory: `cargo fmt` (will fail if not in src-tauri)
+- ❌ From src-tauri: `pnpm build` (will fail, no package.json)
+
 ## Development Commands
 
 ### Frontend (React + TypeScript)
+**Working Directory**: Project root (where package.json is located)
 - `pnpm install` - Install all dependencies
 - `pnpm dev` - Start Vite development server (frontend only)
 - `pnpm build` - Build production frontend bundle (TypeScript compilation + Vite build)
 - `pnpm preview` - Preview production build
 
 ### Code Quality & Linting
+**Note**: Always run from project root, then navigate to appropriate directory
 - `cd src-tauri && cargo fmt` - Format Rust code
 - `cd src-tauri && cargo clippy` - Run Rust linter
 - TypeScript checking is included in `pnpm build` command
 
 ### Full Application (Tauri)
+**Working Directory**: Project root (where package.json and start.sh are located)
 - `./start.sh` - Automated startup script (installs deps + runs dev)
 - `pnpm tauri dev` - Start full development environment (Rust backend + React frontend)
 - `pnpm tauri build` - Build production application bundle
 
 ### Rust Backend
+**Working Directory**: Project root, then navigate to src-tauri/
 - `cd src-tauri && cargo check` - Verify Rust code compiles
 - `cd src-tauri && cargo test` - Run Rust unit tests (if any)
 
