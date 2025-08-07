@@ -72,7 +72,23 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, shortcut, event| {
+                    println!("Global shortcut triggered: {:?}", shortcut);
+                    
+                    // Show/focus the main window when global shortcut is pressed
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                        let _ = window.unminimize();
+                    }
+                    
+                    // Also emit event to frontend
+                    let _ = app.emit("global-shortcut", shortcut);
+                })
+                .build()
+        )
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![]),
@@ -160,7 +176,18 @@ pub fn run() {
                 let state = AppState::new().await?;
 
                 let app_handle = app.handle().clone();
-                state.set_app_handle(app_handle);
+                state.set_app_handle(app_handle.clone());
+
+                // Load config and register global shortcut on startup
+                if let Ok(config) = state.get_config().await {
+                    if !config.global_shortcut.is_empty() {
+                        if let Err(e) = state.register_global_shortcut(app_handle.clone(), config.global_shortcut.clone()).await {
+                            eprintln!("Failed to register global shortcut on startup: {}", e);
+                        } else {
+                            println!("Global shortcut registered on startup: {}", config.global_shortcut);
+                        }
+                    }
+                }
 
                 app.manage(state);
 

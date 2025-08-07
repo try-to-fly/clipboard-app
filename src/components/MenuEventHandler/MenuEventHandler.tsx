@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { listen } from '@tauri-apps/api/event';
-import { StatisticsModal } from '../Statistics/StatisticsModal';
-import { PreferencesModal } from '../Preferences/PreferencesModal';
-import { useConfigStore } from '../../stores/configStore';
-import type { Statistics } from '../../types/clipboard';
+import { useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
+import { StatisticsModal } from "../Statistics/StatisticsModal";
+import { PreferencesModal } from "../Preferences/PreferencesModal";
+import { useConfigStore } from "../../stores/configStore";
+import type { Statistics } from "../../types/clipboard";
 
 export const MenuEventHandler: React.FC = () => {
   const [showStatistics, setShowStatistics] = useState(false);
@@ -13,33 +13,44 @@ export const MenuEventHandler: React.FC = () => {
   useEffect(() => {
     const setupListeners = async () => {
       // Listen for statistics display event
-      const unlistenStats = await listen('show_statistics', (event) => {
+      const unlistenStats = await listen("show_statistics", (event) => {
         setStatistics(event.payload as Statistics);
         setShowStatistics(true);
       });
 
       // Listen for monitoring toggle updates
-      const unlistenMonitoring = await listen('monitoring_toggled', (event) => {
+      const unlistenMonitoring = await listen("monitoring_toggled", (event) => {
         const isMonitoringNow = event.payload as boolean;
-        console.log('Monitoring toggled:', isMonitoringNow);
+        console.log("Monitoring toggled:", isMonitoringNow);
       });
 
       // Listen for history cleared event
-      const unlistenHistory = await listen('history_cleared', () => {
-        console.log('History cleared from menu');
+      const unlistenHistory = await listen("history_cleared", () => {
+        console.log("History cleared from menu");
         // The clipboard store will automatically refresh
       });
 
       // Listen for preferences event
-      const unlistenPreferences = await listen('show_preferences', () => {
+      const unlistenPreferences = await listen("show_preferences", () => {
         setShowPreferences(true);
       });
+
+      // Listen for global shortcut events
+      const unlistenGlobalShortcut = await listen(
+        "global-shortcut",
+        (event) => {
+          // Show/focus the main window when global shortcut is pressed
+          window.focus();
+          window.scrollTo(0, 0);
+        },
+      );
 
       return () => {
         unlistenStats();
         unlistenMonitoring();
         unlistenHistory();
         unlistenPreferences();
+        unlistenGlobalShortcut();
       };
     };
 
