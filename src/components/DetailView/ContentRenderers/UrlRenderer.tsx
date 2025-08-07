@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Copy, ExternalLink } from 'lucide-react';
 import queryString from 'query-string';
 import { useClipboardStore } from '../../../stores/clipboardStore';
 import { UrlParts } from '../../../types/clipboard';
+
+const MonacoEditor = lazy(() => import('@monaco-editor/react'));
 
 interface UrlRendererProps {
   content: string;
@@ -54,12 +56,25 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
 
   const fetchJsonContent = async (fetchUrl: string) => {
     try {
-      // 这里只是模拟，实际需要通过后端代理请求
-      setPreviewType('json');
-      setJsonContent('// JSON预览功能需要后端支持');
-      console.log('预览URL:', fetchUrl);
+      // 尝试直接获取URL内容
+      const response = await fetch(fetchUrl);
+      const data = await response.text();
+      
+      // 检查是否是有效的JSON
+      try {
+        const parsed = JSON.parse(data);
+        setJsonContent(JSON.stringify(parsed, null, 2));
+        setPreviewType('json');
+      } catch (e) {
+        // 如果不是JSON，就显示原始内容
+        setJsonContent(data);
+        setPreviewType('json');
+      }
     } catch (e) {
-      console.error('获取JSON失败:', e);
+      console.error('获取URL内容失败:', e);
+      // 如果获取失败，显示提示信息
+      setJsonContent('// 无法获取URL内容\n// 可能由于CORS限制或网络问题');
+      setPreviewType('json');
     }
   };
 
@@ -143,8 +158,27 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
 
         {previewType === 'json' && jsonContent && (
           <div className="url-preview">
-            <span className="url-label">JSON预览:</span>
-            <pre className="json-preview">{jsonContent}</pre>
+            <span className="url-label">内容预览:</span>
+            <div className="url-json-preview">
+              <Suspense fallback={<div className="json-loading">加载编辑器...</div>}>
+                <MonacoEditor
+                  height="300px"
+                  language="json"
+                  value={jsonContent}
+                  theme="vs-dark"
+                  options={{
+                    readOnly: true,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    fontSize: 13,
+                    lineNumbers: 'on',
+                    automaticLayout: true,
+                    folding: true,
+                  }}
+                />
+              </Suspense>
+            </div>
           </div>
         )}
       </div>

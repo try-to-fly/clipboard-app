@@ -44,7 +44,7 @@ export function CodeRenderer({ content, metadata }: CodeRendererProps) {
       <div className="code-content">
         <Suspense fallback={<div className="code-loading">加载编辑器...</div>}>
           <MonacoEditor
-            height="400px"
+            height="500px"
             language={detectedLanguage}
             value={content}
             theme="vs-dark"

@@ -3,8 +3,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -163,6 +162,14 @@
   margin-top: 8px;
 }
 
+.url-json-preview {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 300px;
+}
+
 /* Color Renderer */
 .color-renderer {
   padding: 16px;
@@ -244,13 +251,14 @@
 
 /* Code Renderer */
 .code-renderer {
-  padding: 16px;
+  padding: 0;
 }
 
 .code-content {
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+  margin-top: 16px;
 }
 
 .code-language {
@@ -273,13 +281,14 @@
 
 /* JSON Renderer */
 .json-renderer {
-  padding: 16px;
+  padding: 0;
 }
 
 .json-content {
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+  margin-top: 16px;
 }
 
 .json-label {

@@ -36,7 +36,7 @@ export function JsonRenderer({ content }: JsonRendererProps) {
       <div className="json-content">
         <Suspense fallback={<div className="json-loading">加载编辑器...</div>}>
           <MonacoEditor
-            height="400px"
+            height="500px"
             language="json"
             value={formattedJson}
             theme="vs-dark"
