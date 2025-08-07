@@ -32,6 +32,14 @@ export interface ContentMetadata {
   url_parts?: UrlParts;
   color_formats?: ColorFormats;
   timestamp_formats?: TimestampFormats;
+  image_metadata?: ImageMetadata;
+}
+
+export interface ImageMetadata {
+  width: number;
+  height: number;
+  file_size: number;
+  format?: string;
 }
 
 export interface UrlParts {

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import * as ContextMenu from '@radix-ui/react-context-menu';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { ClipboardEntry } from '../../types/clipboard';
+import { ClipboardEntry, ContentMetadata, ImageMetadata } from '../../types/clipboard';
 import { useClipboardStore } from '../../stores/clipboardStore';
 import clsx from 'clsx';
 
@@ -22,6 +22,22 @@ interface ClipboardItemProps {
   showNumber?: boolean;
   number?: number;
 }
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}GB`;
+};
+
+const parseMetadata = (metadataString?: string | null): ContentMetadata | null => {
+  if (!metadataString) return null;
+  try {
+    return JSON.parse(metadataString) as ContentMetadata;
+  } catch {
+    return null;
+  }
+};
 
 export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected, onClick, showNumber, number }) => {
   const { toggleFavorite, deleteEntry, copyToClipboard, getImageUrl, pasteSelectedEntry, getAppIcon } = useClipboardStore();
@@ -76,6 +92,15 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
   const getDisplayContent = () => {
     if (entry.content_type.toLowerCase().includes('image') && entry.file_path) {
       const fileName = entry.file_path.split('/').pop() || entry.file_path;
+      const metadata = parseMetadata(entry.metadata);
+      const imageMetadata = metadata?.image_metadata;
+      
+      if (imageMetadata) {
+        const { width, height, file_size } = imageMetadata;
+        const formattedSize = formatFileSize(file_size);
+        return `[图片 ${width}×${height}, ${formattedSize}] ${fileName}`;
+      }
+      
       return `[图片] ${fileName}`;
     }
     if (entry.content_data) {

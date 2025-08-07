@@ -3,6 +3,7 @@ use arboard::Clipboard;
 use cocoa::base::{id, nil};
 use cocoa::foundation::NSString;
 use objc::{class, msg_send, sel, sel_impl};
+use serde_json;
 use sha2::{Digest, Sha256};
 use std::sync::Arc;
 use std::time::Duration;
@@ -191,6 +192,16 @@ impl ClipboardMonitor {
                     .await
                 {
                     Ok(file_path) => {
+                        // 创建图片元数据
+                        let image_metadata = serde_json::json!({
+                            "image_metadata": {
+                                "width": width as u32,
+                                "height": height as u32,
+                                "file_size": bytes.len(),
+                                "format": "png"
+                            }
+                        });
+
                         let mut entry = ClipboardEntry::new(
                             ContentType::Image,
                             Some(file_path.clone()),
@@ -200,6 +211,7 @@ impl ClipboardMonitor {
                         );
                         entry.app_bundle_id =
                             app_info.as_ref().and_then(|info| info.bundle_id.clone());
+                        entry.metadata = Some(image_metadata.to_string());
 
                         let _ = tx.send(entry);
                     }
@@ -208,6 +220,16 @@ impl ClipboardMonitor {
                         // 降级到自动检测
                         match processor.process_image(bytes).await {
                             Ok(file_path) => {
+                                // 创建图片元数据（使用原始宽高数据）
+                                let image_metadata = serde_json::json!({
+                                    "image_metadata": {
+                                        "width": width as u32,
+                                        "height": height as u32,
+                                        "file_size": bytes.len(),
+                                        "format": "png"
+                                    }
+                                });
+
                                 let mut entry = ClipboardEntry::new(
                                     ContentType::Image,
                                     Some(file_path.clone()),
@@ -217,6 +239,7 @@ impl ClipboardMonitor {
                                 );
                                 entry.app_bundle_id =
                                     app_info.as_ref().and_then(|info| info.bundle_id.clone());
+                                entry.metadata = Some(image_metadata.to_string());
 
                                 let _ = tx.send(entry);
                             }

@@ -250,20 +250,30 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
           (entry) => entry.content_hash === event.payload.content_hash
         );
 
+        let newEntries;
+        let updatedEntry;
+
         if (existingIndex >= 0) {
           // 更新现有条目，使用后端发送的正确数据
-          const newEntries = [...state.entries];
+          newEntries = [...state.entries];
           newEntries[existingIndex] = {
             ...event.payload, // 使用后端发送的完整数据，包括正确的copy_count
           };
           // 移到最前面
           const [updated] = newEntries.splice(existingIndex, 1);
           newEntries.unshift(updated);
-          return { entries: newEntries };
+          updatedEntry = updated;
         } else {
           // 添加新条目到最前面
-          return { entries: [event.payload, ...state.entries] };
+          newEntries = [event.payload, ...state.entries];
+          updatedEntry = event.payload;
         }
+
+        // 自动选中最新的素材
+        return { 
+          entries: newEntries,
+          selectedEntry: updatedEntry
+        };
       });
     });
   },
