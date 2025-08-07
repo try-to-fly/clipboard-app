@@ -24,8 +24,9 @@ interface ClipboardItemProps {
 }
 
 export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected, onClick, showNumber, number }) => {
-  const { toggleFavorite, deleteEntry, copyToClipboard, getImageUrl, pasteSelectedEntry } = useClipboardStore();
+  const { toggleFavorite, deleteEntry, copyToClipboard, getImageUrl, pasteSelectedEntry, getAppIcon } = useClipboardStore();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [appIconUrl, setAppIconUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (entry.content_type.toLowerCase().includes('image') && entry.file_path) {
@@ -34,6 +35,14 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
         .catch(() => setImageUrl(null));
     }
   }, [entry.content_type, entry.file_path, getImageUrl]);
+
+  useEffect(() => {
+    if (entry.app_bundle_id && getAppIcon) {
+      getAppIcon(entry.app_bundle_id)
+        .then(setAppIconUrl)
+        .catch(() => setAppIconUrl(null));
+    }
+  }, [entry.app_bundle_id, getAppIcon]);
 
   const getIcon = () => {
     const type = entry.content_type.toLowerCase();
@@ -135,7 +144,27 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
             <div className="item-meta">
               <span className="meta-time">{formatDate(entry.created_at)}</span>
               {entry.source_app && (
-                <span className="meta-app">来自 {entry.source_app}</span>
+                <span className="meta-app">
+                  来自
+                  {appIconUrl ? (
+                    <img 
+                      src={appIconUrl} 
+                      alt={entry.source_app} 
+                      className="app-icon"
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        marginLeft: '4px',
+                        marginRight: '4px',
+                        borderRadius: '2px',
+                        verticalAlign: 'middle'
+                      }}
+                    />
+                  ) : (
+                    <span style={{ marginLeft: '4px' }}></span>
+                  )}
+                  {entry.source_app}
+                </span>
               )}
               {entry.copy_count > 1 && (
                 <span className="meta-count">复制 {entry.copy_count} 次</span>

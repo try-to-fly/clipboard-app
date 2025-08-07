@@ -25,6 +25,7 @@ interface ClipboardStore {
   pasteSelectedEntry: (entry: ClipboardEntry) => Promise<void>;
   getImageUrl: (filePath: string) => Promise<string>;
   openFileWithSystem: (filePath: string) => Promise<void>;
+  getAppIcon: (bundleId: string) => Promise<string | null>;
   setSearchTerm: (term: string) => void;
   setSelectedType: (type: string) => void;
   setSelectedEntry: (entry: ClipboardEntry | null) => void;
@@ -160,6 +161,15 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
     }
   },
 
+  getAppIcon: async (bundleId: string) => {
+    try {
+      return await invoke<string | null>('get_app_icon', { bundleId });
+    } catch (error) {
+      console.error('Failed to get app icon:', error);
+      return null;
+    }
+  },
+
   setSearchTerm: (term: string) => {
     set({ searchTerm: term });
     get().fetchHistory();
@@ -241,12 +251,10 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
         );
 
         if (existingIndex >= 0) {
-          // 更新现有条目
+          // 更新现有条目，使用后端发送的正确数据
           const newEntries = [...state.entries];
           newEntries[existingIndex] = {
-            ...newEntries[existingIndex],
-            copy_count: newEntries[existingIndex].copy_count + 1,
-            created_at: event.payload.created_at,
+            ...event.payload, // 使用后端发送的完整数据，包括正确的copy_count
           };
           // 移到最前面
           const [updated] = newEntries.splice(existingIndex, 1);

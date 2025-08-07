@@ -10,6 +10,7 @@ export interface ClipboardEntry {
   is_favorite: boolean;
   content_subtype?: string | null;
   metadata?: string | null;
+  app_bundle_id?: string | null;
 }
 
 export type ContentType = 'text' | 'image' | 'file' | 'unknown';

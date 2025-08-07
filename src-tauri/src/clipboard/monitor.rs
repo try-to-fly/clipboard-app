@@ -12,7 +12,7 @@ use tokio::time::sleep;
 use crate::clipboard::content_detector::ContentDetector;
 use crate::clipboard::processor::ContentProcessor;
 use crate::models::{ClipboardEntry, ContentType};
-use crate::utils::app_detector::get_active_app;
+use crate::utils::app_detector::{get_active_app, get_active_app_info};
 
 pub struct ClipboardMonitor {
     clipboard: Arc<Mutex<Clipboard>>,
@@ -91,19 +91,28 @@ impl ClipboardMonitor {
                 };
 
                 if should_send {
-                    let source_app = get_active_app();
+                    let app_info = get_active_app_info();
 
                     // 如果来源是自己的应用，跳过
-                    if let Some(ref app) = source_app {
-                        if app.contains("clipboard-app") || app.contains("Clipboard App") {
-                            println!("[ClipboardMonitor] 跳过自己应用的复制操作: {}", app);
+                    if let Some(ref app_info) = app_info {
+                        if app_info.name.contains("clipboard-app")
+                            || app_info.name.contains("Clipboard App")
+                        {
+                            println!(
+                                "[ClipboardMonitor] 跳过自己应用的复制操作: {}",
+                                app_info.name
+                            );
                             return Ok(());
                         }
                     }
 
                     // 检测内容子类型
                     let (subtype, metadata) = ContentDetector::detect(trimmed_text);
-                    println!("[ClipboardMonitor] 检测到内容类型: {:?}, 内容: {}", subtype, trimmed_text.chars().take(50).collect::<String>());
+                    println!(
+                        "[ClipboardMonitor] 检测到内容类型: {:?}, 内容: {}",
+                        subtype,
+                        trimmed_text.chars().take(50).collect::<String>()
+                    );
 
                     // 将metadata转换为JSON字符串
                     let metadata_json = metadata.map(|m| serde_json::to_string(&m).ok()).flatten();
@@ -112,16 +121,17 @@ impl ClipboardMonitor {
                         ContentType::Text,
                         Some(trimmed_text.to_string()),
                         hash,
-                        source_app,
+                        app_info.as_ref().map(|info| info.name.clone()),
                         None,
                     );
 
-                    // 设置子类型和元数据
+                    // 设置子类型、元数据和bundle ID
                     entry.content_subtype = Some(
                         serde_json::to_string(&subtype)
                             .unwrap_or_else(|_| "plain_text".to_string()),
                     );
                     entry.metadata = metadata_json;
+                    entry.app_bundle_id = app_info.as_ref().and_then(|info| info.bundle_id.clone());
 
                     let _ = tx.send(entry);
                     return Ok(());
@@ -160,12 +170,17 @@ impl ClipboardMonitor {
                     height,
                     bytes.len()
                 );
-                let source_app = get_active_app();
+                let app_info = get_active_app_info();
 
                 // 如果来源是自己的应用，跳过
-                if let Some(ref app) = source_app {
-                    if app.contains("clipboard-app") || app.contains("Clipboard App") {
-                        println!("[ClipboardMonitor] 跳过自己应用的图片复制操作: {}", app);
+                if let Some(ref app_info) = app_info {
+                    if app_info.name.contains("clipboard-app")
+                        || app_info.name.contains("Clipboard App")
+                    {
+                        println!(
+                            "[ClipboardMonitor] 跳过自己应用的图片复制操作: {}",
+                            app_info.name
+                        );
                         return Ok(());
                     }
                 }
@@ -176,13 +191,15 @@ impl ClipboardMonitor {
                     .await
                 {
                     Ok(file_path) => {
-                        let entry = ClipboardEntry::new(
+                        let mut entry = ClipboardEntry::new(
                             ContentType::Image,
                             Some(file_path.clone()),
                             hash,
-                            source_app,
+                            app_info.as_ref().map(|info| info.name.clone()),
                             Some(file_path),
                         );
+                        entry.app_bundle_id =
+                            app_info.as_ref().and_then(|info| info.bundle_id.clone());
 
                         let _ = tx.send(entry);
                     }
@@ -191,13 +208,15 @@ impl ClipboardMonitor {
                         // 降级到自动检测
                         match processor.process_image(bytes).await {
                             Ok(file_path) => {
-                                let entry = ClipboardEntry::new(
+                                let mut entry = ClipboardEntry::new(
                                     ContentType::Image,
                                     Some(file_path.clone()),
                                     hash,
-                                    source_app,
+                                    app_info.as_ref().map(|info| info.name.clone()),
                                     Some(file_path),
                                 );
+                                entry.app_bundle_id =
+                                    app_info.as_ref().and_then(|info| info.bundle_id.clone());
 
                                 let _ = tx.send(entry);
                             }
@@ -228,14 +247,15 @@ impl ClipboardMonitor {
                 };
 
                 if should_send {
-                    let source_app = get_active_app();
-                    let entry = ClipboardEntry::new(
+                    let app_info = get_active_app_info();
+                    let mut entry = ClipboardEntry::new(
                         ContentType::File,
                         Some(content.clone()),
                         hash,
-                        source_app,
+                        app_info.as_ref().map(|info| info.name.clone()),
                         Some(content),
                     );
+                    entry.app_bundle_id = app_info.as_ref().and_then(|info| info.bundle_id.clone());
 
                     let _ = tx.send(entry);
                 }

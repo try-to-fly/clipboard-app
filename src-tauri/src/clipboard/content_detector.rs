@@ -124,16 +124,18 @@ impl ContentDetector {
 
     fn is_url(text: &str) -> bool {
         // 简化URL检测逻辑
-        if text.starts_with("http://") || text.starts_with("https://") || text.starts_with("ftp://") {
+        if text.starts_with("http://") || text.starts_with("https://") || text.starts_with("ftp://")
+        {
             return true;
         }
-        
+
         // 检查是否包含域名模式
-        let domain_regex = Regex::new(r"^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}").unwrap();
+        let domain_regex =
+            Regex::new(r"^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}").unwrap();
         if domain_regex.is_match(text) && text.contains(".") {
             return true;
         }
-        
+
         false
     }
 
@@ -225,14 +227,15 @@ impl ContentDetector {
 
     fn is_json(text: &str) -> bool {
         let trimmed = text.trim();
-        
+
         // 检查是否以 { 或 [ 开头并以相应字符结尾
-        if (trimmed.starts_with('{') && trimmed.ends_with('}')) ||
-           (trimmed.starts_with('[') && trimmed.ends_with(']')) {
+        if (trimmed.starts_with('{') && trimmed.ends_with('}'))
+            || (trimmed.starts_with('[') && trimmed.ends_with(']'))
+        {
             // 尝试解析JSON
             return serde_json::from_str::<Value>(trimmed).is_ok();
         }
-        
+
         false
     }
 

@@ -78,29 +78,38 @@ impl AppState {
                 .fetch_optional(db.pool())
                 .await;
 
+                let mut updated_entry = entry.clone();
+
                 match existing {
                     Ok(Some(row)) => {
                         // 更新复制次数
                         let id: String = row.get("id");
                         let count: i32 = row.get("copy_count");
+                        let new_count = count + 1;
 
                         let _ = sqlx::query(
                             "UPDATE clipboard_entries SET copy_count = ?, created_at = ? WHERE id = ?"
                         )
-                        .bind(count + 1)
+                        .bind(new_count)
                         .bind(entry.created_at)
                         .bind(&id)
                         .execute(db.pool())
                         .await;
+
+                        // 更新条目信息以便发送正确的数据到前端
+                        updated_entry.id = id;
+                        updated_entry.copy_count = new_count;
                     }
                     Ok(None) => {
-                        // 插入新记录
+                        // 插入新记录 - 新记录的copy_count应该是1
+                        updated_entry.copy_count = 1;
+
                         let _ = sqlx::query(
                             r#"
                             INSERT INTO clipboard_entries 
                             (id, content_hash, content_type, content_data, source_app, 
-                             created_at, copy_count, file_path, is_favorite, content_subtype, metadata)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                             created_at, copy_count, file_path, is_favorite, content_subtype, metadata, app_bundle_id)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             "#,
                         )
                         .bind(&entry.id)
@@ -109,20 +118,21 @@ impl AppState {
                         .bind(&entry.content_data)
                         .bind(&entry.source_app)
                         .bind(entry.created_at)
-                        .bind(entry.copy_count)
+                        .bind(1) // 新记录的copy_count设为1
                         .bind(&entry.file_path)
                         .bind(entry.is_favorite as i32)
                         .bind(&entry.content_subtype)
                         .bind(&entry.metadata)
+                        .bind(&entry.app_bundle_id)
                         .execute(db.pool())
                         .await;
                     }
                     Err(e) => eprintln!("数据库查询错误: {}", e),
                 }
 
-                // 发送事件到前端
+                // 发送更新后的条目到前端
                 if let Some(handle) = app_handle.lock().await.as_ref() {
-                    let _ = handle.emit("clipboard-update", &entry);
+                    let _ = handle.emit("clipboard-update", &updated_entry);
                 }
             }
         });

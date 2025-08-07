@@ -41,7 +41,8 @@ pub fn run() {
             paste_text,
             paste_image,
             get_image_url,
-            open_file_with_system
+            open_file_with_system,
+            get_app_icon
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

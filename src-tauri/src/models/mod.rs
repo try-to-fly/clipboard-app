@@ -14,6 +14,7 @@ pub struct ClipboardEntry {
     pub is_favorite: bool,
     pub content_subtype: Option<String>,
     pub metadata: Option<String>,
+    pub app_bundle_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -69,6 +70,7 @@ impl ClipboardEntry {
             is_favorite: false,
             content_subtype: None,
             metadata: None,
+            app_bundle_id: None,
         }
     }
 }

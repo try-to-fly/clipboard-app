@@ -85,9 +85,20 @@ impl Database {
             .execute(&self.pool)
             .await;
 
+        // 添加 app_bundle_id 字段（如果不存在）
+        let _ = sqlx::query("ALTER TABLE clipboard_entries ADD COLUMN app_bundle_id TEXT")
+            .execute(&self.pool)
+            .await;
+
         // 为新字段创建索引
         let _ = sqlx::query(
             "CREATE INDEX IF NOT EXISTS idx_content_subtype ON clipboard_entries(content_subtype)",
+        )
+        .execute(&self.pool)
+        .await;
+
+        let _ = sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_app_bundle_id ON clipboard_entries(app_bundle_id)",
         )
         .execute(&self.pool)
         .await;

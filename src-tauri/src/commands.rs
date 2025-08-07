@@ -1,5 +1,6 @@
 use crate::models::{ClipboardEntry, Statistics};
 use crate::state::AppState;
+use crate::utils::app_icon_extractor::AppIconExtractor;
 use anyhow::Result;
 use tauri::State;
 
@@ -216,6 +217,58 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
         Err(e) => {
             println!("[get_image_url] 读取文件失败: {}", e);
             Err(format!("Failed to read file: {}", e))
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn get_app_icon(bundle_id: String) -> Result<Option<String>, String> {
+    use base64::Engine;
+    use std::fs;
+
+    println!("[get_app_icon] 请求应用图标: {}", bundle_id);
+
+    let extractor = AppIconExtractor::new().map_err(|e| e.to_string())?;
+
+    // 首先检查缓存
+    if let Some(cached_path) = extractor.get_cached_icon_path(&bundle_id) {
+        println!("[get_app_icon] 找到缓存图标: {:?}", cached_path);
+
+        match fs::read(&cached_path) {
+            Ok(data) => {
+                let base64_data = base64::engine::general_purpose::STANDARD.encode(&data);
+                return Ok(Some(format!("data:image/png;base64,{}", base64_data)));
+            }
+            Err(e) => {
+                println!("[get_app_icon] 读取缓存图标失败: {}", e);
+                // 继续尝试提取新图标
+            }
+        }
+    }
+
+    // 提取并缓存图标
+    match extractor.extract_and_cache_icon(&bundle_id) {
+        Ok(Some(icon_path)) => {
+            println!("[get_app_icon] 成功提取图标: {:?}", icon_path);
+
+            match fs::read(&icon_path) {
+                Ok(data) => {
+                    let base64_data = base64::engine::general_purpose::STANDARD.encode(&data);
+                    Ok(Some(format!("data:image/png;base64,{}", base64_data)))
+                }
+                Err(e) => {
+                    println!("[get_app_icon] 读取图标文件失败: {}", e);
+                    Ok(None)
+                }
+            }
+        }
+        Ok(None) => {
+            println!("[get_app_icon] 无法为 {} 获取图标", bundle_id);
+            Ok(None)
+        }
+        Err(e) => {
+            println!("[get_app_icon] 提取图标出错: {}", e);
+            Ok(None)
         }
     }
 }
