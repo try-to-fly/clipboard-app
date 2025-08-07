@@ -123,11 +123,18 @@ impl ContentDetector {
     }
 
     fn is_url(text: &str) -> bool {
-        let url_regex = Regex::new(
-            r"^(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]$",
-        )
-        .unwrap();
-        url_regex.is_match(text) || text.starts_with("http://") || text.starts_with("https://")
+        // 简化URL检测逻辑
+        if text.starts_with("http://") || text.starts_with("https://") || text.starts_with("ftp://") {
+            return true;
+        }
+        
+        // 检查是否包含域名模式
+        let domain_regex = Regex::new(r"^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}").unwrap();
+        if domain_regex.is_match(text) && text.contains(".") {
+            return true;
+        }
+        
+        false
     }
 
     fn parse_url_metadata(url: &str) -> ContentMetadata {
@@ -180,11 +187,15 @@ impl ContentDetector {
             hsl: None,
         };
 
-        // HEX颜色
-        let hex_regex = Regex::new(r"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$").unwrap();
-        if hex_regex.is_match(text) {
-            formats.hex = Some(text.to_string());
-            return Some(formats);
+        // HEX颜色 - 支持 #333, #ffffff 等格式
+        if text.starts_with('#') && text.len() >= 4 {
+            let hex_part = &text[1..];
+            if hex_part.len() == 3 || hex_part.len() == 6 {
+                if hex_part.chars().all(|c| c.is_ascii_hexdigit()) {
+                    formats.hex = Some(text.to_string());
+                    return Some(formats);
+                }
+            }
         }
 
         // RGB/RGBA颜色
@@ -213,12 +224,16 @@ impl ContentDetector {
     }
 
     fn is_json(text: &str) -> bool {
-        if let Ok(_value) = serde_json::from_str::<Value>(text) {
-            // 额外检查是否是对象或数组
-            text.trim().starts_with('{') || text.trim().starts_with('[')
-        } else {
-            false
+        let trimmed = text.trim();
+        
+        // 检查是否以 { 或 [ 开头并以相应字符结尾
+        if (trimmed.starts_with('{') && trimmed.ends_with('}')) ||
+           (trimmed.starts_with('[') && trimmed.ends_with(']')) {
+            // 尝试解析JSON
+            return serde_json::from_str::<Value>(trimmed).is_ok();
         }
+        
+        false
     }
 
     fn is_command(text: &str) -> bool {

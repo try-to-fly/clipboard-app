@@ -13,13 +13,15 @@ export function TextRenderer({ content }: TextRendererProps) {
   };
 
   return (
-    <div className="detail-text-container">
+    <div className="text-renderer">
       <div className="detail-actions">
         <button className="detail-action-btn" onClick={handleCopy} title="复制">
           <Copy size={16} />
         </button>
       </div>
-      <pre className="detail-text">{content}</pre>
+      <div className="text-content">
+        <pre className="detail-text">{content}</pre>
+      </div>
     </div>
   );
 }

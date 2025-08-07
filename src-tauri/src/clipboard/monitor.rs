@@ -103,6 +103,7 @@ impl ClipboardMonitor {
 
                     // 检测内容子类型
                     let (subtype, metadata) = ContentDetector::detect(trimmed_text);
+                    println!("[ClipboardMonitor] 检测到内容类型: {:?}, 内容: {}", subtype, trimmed_text.chars().take(50).collect::<String>());
 
                     // 将metadata转换为JSON字符串
                     let metadata_json = metadata.map(|m| serde_json::to_string(&m).ok()).flatten();
