@@ -1,6 +1,7 @@
 use crate::config::AppConfig;
 use crate::models::{ClipboardEntry, Statistics};
 use crate::state::AppState;
+use crate::updater::{UpdateInfo, UpdateManager};
 use crate::utils::app_icon_extractor::AppIconExtractor;
 use crate::utils::app_list::{AppListManager, InstalledApp};
 use anyhow::Result;
@@ -596,4 +597,42 @@ pub async fn validate_shortcut(shortcut: String) -> Result<bool, String> {
     }
 
     Ok(true)
+}
+
+// Update commands
+#[tauri::command]
+pub async fn check_for_update(
+    app_handle: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<Option<UpdateInfo>, String> {
+    // Update last check time in config
+    let mut config = state.get_config().await.map_err(|e| e.to_string())?;
+    config.last_update_check = Some(UpdateManager::get_current_timestamp());
+    let _ = state.update_config(config).await;
+    
+    UpdateManager::check_for_updates(&app_handle)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn install_update(app_handle: tauri::AppHandle) -> Result<(), String> {
+    UpdateManager::download_and_install(&app_handle)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn should_check_for_updates(state: State<'_, AppState>) -> Result<bool, String> {
+    let config = state.get_config().await.map_err(|e| e.to_string())?;
+    
+    // Check if auto-update is enabled
+    if !config.auto_update {
+        return Ok(false);
+    }
+    
+    // Check if enough time has passed since last check
+    Ok(UpdateManager::should_check_for_updates(
+        config.last_update_check.as_deref(),
+    ))
 }

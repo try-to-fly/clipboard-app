@@ -6,6 +6,7 @@ mod config;
 mod database;
 mod models;
 mod state;
+mod updater;
 mod utils;
 
 use commands::*;
@@ -72,6 +73,8 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
@@ -230,7 +233,10 @@ pub fn run() {
             cleanup_expired_entries,
             get_installed_applications,
             get_common_excluded_apps,
-            validate_shortcut
+            validate_shortcut,
+            check_for_update,
+            install_update,
+            should_check_for_updates
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

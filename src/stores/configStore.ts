@@ -26,6 +26,8 @@ export interface AppConfig {
   excluded_apps_v2: ExcludedApp[]; // New format with name and bundle_id
   global_shortcut: string;
   auto_startup: boolean;
+  auto_update: boolean;
+  last_update_check?: string; // ISO 8601 date string
 }
 
 export interface CacheStatistics {
@@ -79,6 +81,8 @@ const defaultConfig: AppConfig = {
   ],
   global_shortcut: 'CmdOrCtrl+Shift+V',
   auto_startup: false,
+  auto_update: true,
+  last_update_check: undefined,
 };
 
 export const useConfigStore = create<ConfigStore>((set, get) => ({

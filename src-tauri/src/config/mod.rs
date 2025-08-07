@@ -20,6 +20,10 @@ pub struct AppConfig {
     pub excluded_apps_v2: Vec<ExcludedApp>, // New format with name and bundle_id
     pub global_shortcut: String,
     pub auto_startup: bool,
+    #[serde(default)]
+    pub auto_update: bool,
+    #[serde(default)]
+    pub last_update_check: Option<String>, // ISO 8601 date string
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -77,6 +81,8 @@ impl Default for AppConfig {
             ],
             global_shortcut: "CmdOrCtrl+Shift+V".to_string(),
             auto_startup: false,
+            auto_update: true,
+            last_update_check: None,
         }
     }
 }

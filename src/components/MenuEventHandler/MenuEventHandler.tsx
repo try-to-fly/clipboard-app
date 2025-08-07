@@ -38,7 +38,7 @@ export const MenuEventHandler: React.FC = () => {
       // Listen for global shortcut events
       const unlistenGlobalShortcut = await listen(
         "global-shortcut",
-        (event) => {
+        (_event) => {
           // Show/focus the main window when global shortcut is pressed
           window.focus();
           window.scrollTo(0, 0);

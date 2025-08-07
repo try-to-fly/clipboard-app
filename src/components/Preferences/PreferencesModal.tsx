@@ -30,6 +30,7 @@ export function PreferencesModal() {
 
   const [localConfig, setLocalConfig] = useState(config);
   const [autoStartupEnabled, setAutoStartupEnabled] = useState(false);
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(config?.auto_update ?? true);
   const [shortcutError, setShortcutError] = useState<string | null>(null);
   const [availableApps, setAvailableApps] = useState<{name: string, bundle_id: string}[]>([]);
 
@@ -43,6 +44,7 @@ export function PreferencesModal() {
   useEffect(() => {
     if (config) {
       setLocalConfig(config);
+      setAutoUpdateEnabled(config.auto_update ?? true);
     }
   }, [config]);
 
@@ -77,7 +79,13 @@ export function PreferencesModal() {
     if (!localConfig) return;
 
     try {
-      await updateConfig(localConfig);
+      // Update config with auto_update setting
+      const updatedConfig = {
+        ...localConfig,
+        auto_update: autoUpdateEnabled,
+      };
+      
+      await updateConfig(updatedConfig);
       
       // Update global shortcut if changed
       if (config && localConfig.global_shortcut !== config.global_shortcut) {
@@ -363,6 +371,61 @@ export function PreferencesModal() {
                       开机自动启动
                     </label>
                   </div>
+                </div>
+
+                <h3>更新设置</h3>
+                <div className="preference-item">
+                  <div className="switch-item">
+                    <Switch.Root
+                      checked={autoUpdateEnabled}
+                      onCheckedChange={setAutoUpdateEnabled}
+                      className="switch-root"
+                    >
+                      <Switch.Thumb className="switch-thumb" />
+                    </Switch.Root>
+                    <label className="switch-label">
+                      自动检查更新
+                    </label>
+                  </div>
+                  <span className="slider-hint">
+                    启用后，应用将在每天首次启动时自动检查更新
+                  </span>
+                  <button
+                    onClick={async () => {
+                      const { invoke } = await import('@tauri-apps/api/core');
+                      const { ask } = await import('@tauri-apps/plugin-dialog');
+                      
+                      try {
+                        const updateInfo = await invoke<any>('check_for_update');
+                        if (updateInfo && updateInfo.available) {
+                          const yes = await ask(
+                            `发现新版本 ${updateInfo.version}！\n\n${updateInfo.notes || ''}\n\n是否立即更新？`,
+                            { title: '软件更新', okLabel: '更新', cancelLabel: '稍后' }
+                          );
+                          if (yes) {
+                            await invoke('install_update');
+                          }
+                        } else {
+                          await ask('当前已是最新版本', { 
+                            title: '检查更新',
+                            okLabel: '确定',
+                            cancelLabel: undefined
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Failed to check for updates:', error);
+                        await ask('检查更新失败，请稍后重试', { 
+                          title: '错误',
+                          okLabel: '确定',
+                          cancelLabel: undefined
+                        });
+                      }
+                    }}
+                    className="action-btn secondary"
+                    style={{ marginTop: '10px' }}
+                  >
+                    立即检查更新
+                  </button>
                 </div>
 
                 <h3>缓存统计</h3>

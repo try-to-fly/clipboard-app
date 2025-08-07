@@ -4,7 +4,11 @@
       "Bash(mkdir:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm build:*)",
-      "Bash(cargo fmt:*)"
+      "Bash(cargo fmt:*)",
+      "WebFetch(domain:v2.tauri.app)",
+      "WebFetch(domain:thatgurjot.com)",
+      "Bash(pnpm tauri signer generate:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

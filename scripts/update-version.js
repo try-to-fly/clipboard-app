@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Function to get the next version based on version type
 function getNextVersion(currentVersion, versionType) {
@@ -76,7 +79,7 @@ function main() {
     execSync(`git commit -m "chore: bump version to ${newVersion}"`, { stdio: 'inherit' });
     
     console.log('\n🏷️  Creating git tag...');
-    execSync(`git tag v${newVersion}`, { stdio: 'inherit' });
+    execSync(`git tag -a v${newVersion} -m "Release version ${newVersion}"`, { stdio: 'inherit' });
     
     console.log(`\n✨ Version update complete!`);
     console.log(`📋 Next steps:`);
