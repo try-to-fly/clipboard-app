@@ -35,4 +35,6 @@ base64 = "0.21"
 image = { version = "0.25", features = ["webp"] }
 infer = "0.15"
 dirs = "5.0"
+regex = "1.10"
+url = "2.5"
 

@@ -9,6 +9,7 @@ use std::time::Duration;
 use tokio::sync::{broadcast, Mutex};
 use tokio::time::sleep;
 
+use crate::clipboard::content_detector::ContentDetector;
 use crate::clipboard::processor::ContentProcessor;
 use crate::models::{ClipboardEntry, ContentType};
 use crate::utils::app_detector::get_active_app;
@@ -66,15 +67,18 @@ impl ClipboardMonitor {
         };
 
         if let Ok(text) = text_result {
-            if !text.is_empty() {
+            // 先trim处理文本
+            let trimmed_text = text.trim();
+            if !trimmed_text.is_empty() {
                 // 检查是否是base64图片URL（避免循环记录）
-                let is_base64_image = text.starts_with("data:image/") && text.contains(";base64,");
+                let is_base64_image =
+                    trimmed_text.starts_with("data:image/") && trimmed_text.contains(";base64,");
                 if is_base64_image {
                     println!("[ClipboardMonitor] 跳过base64图片URL，避免循环记录");
                     return Ok(());
                 }
 
-                let hash = Self::calculate_hash(text.as_bytes());
+                let hash = Self::calculate_hash(trimmed_text.as_bytes());
 
                 let should_send = {
                     let mut last = last_hash.lock().await;
@@ -97,8 +101,26 @@ impl ClipboardMonitor {
                         }
                     }
 
-                    let entry =
-                        ClipboardEntry::new(ContentType::Text, Some(text), hash, source_app, None);
+                    // 检测内容子类型
+                    let (subtype, metadata) = ContentDetector::detect(trimmed_text);
+
+                    // 将metadata转换为JSON字符串
+                    let metadata_json = metadata.map(|m| serde_json::to_string(&m).ok()).flatten();
+
+                    let mut entry = ClipboardEntry::new(
+                        ContentType::Text,
+                        Some(trimmed_text.to_string()),
+                        hash,
+                        source_app,
+                        None,
+                    );
+
+                    // 设置子类型和元数据
+                    entry.content_subtype = Some(
+                        serde_json::to_string(&subtype)
+                            .unwrap_or_else(|_| "plain_text".to_string()),
+                    );
+                    entry.metadata = metadata_json;
 
                     let _ = tx.send(entry);
                     return Ok(());
@@ -289,7 +311,7 @@ impl ClipboardMonitor {
                 }
             }
         });
-        
+
         match result {
             Ok(value) => value,
             Err(_) => {

@@ -642,6 +642,7 @@ dependencies = [
  "image",
  "infer 0.15.0",
  "objc",
+ "regex",
  "serde",
  "serde_json",
  "sha2",
@@ -650,6 +651,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-opener",
  "tokio",
+ "url",
  "uuid",
 ]
 

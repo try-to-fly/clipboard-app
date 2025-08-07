@@ -68,6 +68,30 @@ impl Database {
         .execute(&self.pool)
         .await?;
 
+        // 执行数据库迁移
+        self.migrate().await?;
+
+        Ok(())
+    }
+
+    async fn migrate(&self) -> Result<()> {
+        // 添加 content_subtype 字段（如果不存在）
+        let _ = sqlx::query("ALTER TABLE clipboard_entries ADD COLUMN content_subtype TEXT")
+            .execute(&self.pool)
+            .await;
+
+        // 添加 metadata 字段（如果不存在）
+        let _ = sqlx::query("ALTER TABLE clipboard_entries ADD COLUMN metadata TEXT")
+            .execute(&self.pool)
+            .await;
+
+        // 为新字段创建索引
+        let _ = sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_content_subtype ON clipboard_entries(content_subtype)",
+        )
+        .execute(&self.pool)
+        .await;
+
         Ok(())
     }
 }

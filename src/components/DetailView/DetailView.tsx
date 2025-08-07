@@ -1,10 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useClipboardStore } from '../../stores/clipboardStore';
+import { ContentSubType } from '../../types/clipboard';
+import {
+  TextRenderer,
+  UrlRenderer,
+  ColorRenderer,
+  CodeRenderer,
+  IpRenderer,
+  EmailRenderer,
+  TimeRenderer,
+  JsonRenderer,
+  MarkdownRenderer,
+  CommandRenderer,
+} from './ContentRenderers';
 import './DetailView.css';
+import './ContentRenderers/ContentRenderers.css';
 
 export function DetailView() {
   const { selectedEntry, getImageUrl, openFileWithSystem } = useClipboardStore();
   const [imageUrl, setImageUrl] = useState<string>('');
+  const [contentSubType, setContentSubType] = useState<ContentSubType>('plain_text');
 
   useEffect(() => {
     const loadImage = async () => {
@@ -25,6 +40,18 @@ export function DetailView() {
     };
     
     loadImage();
+
+    // 解析内容子类型
+    if (selectedEntry?.content_subtype) {
+      try {
+        const subtype = JSON.parse(selectedEntry.content_subtype.replace(/"/g, ''));
+        setContentSubType(subtype as ContentSubType);
+      } catch (e) {
+        setContentSubType('plain_text');
+      }
+    } else {
+      setContentSubType('plain_text');
+    }
   }, [selectedEntry, getImageUrl]);
 
   if (!selectedEntry) {
@@ -67,6 +94,95 @@ export function DetailView() {
     }
   };
 
+  const renderContent = () => {
+    if (!selectedEntry) return null;
+
+    // 图片类型
+    if (selectedEntry.content_type.toLowerCase().includes('image')) {
+      return imageUrl ? (
+        <div className="detail-image-container">
+          <img 
+            src={imageUrl} 
+            alt="剪贴板图片" 
+            className="detail-image"
+            onClick={handleImageClick}
+            style={{ cursor: 'pointer' }}
+            title="点击用系统查看器打开"
+            onError={(e) => {
+              console.error('[DetailView] 图片元素加载失败');
+              e.currentTarget.style.display = 'none';
+              const errorDiv = e.currentTarget.parentElement?.querySelector('.detail-image-error');
+              if (errorDiv) {
+                errorDiv.classList.remove('hidden');
+              }
+            }}
+            onLoad={() => {
+              console.log('[DetailView] 图片元素加载成功');
+            }}
+          />
+          <div className="detail-image-error hidden">
+            <p>图片加载失败</p>
+            {selectedEntry.file_path && (
+              <>
+                <p className="detail-file-path">文件路径: {selectedEntry.file_path}</p>
+                <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
+                  请尝试重新复制图片或检查图片文件是否存在
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="detail-image-loading">
+          <p>加载图片中...</p>
+          {selectedEntry.file_path && (
+            <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
+              {selectedEntry.file_path}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    // 文件类型
+    if (selectedEntry.content_type.toLowerCase().includes('file')) {
+      return (
+        <div className="detail-file">
+          <div className="detail-file-icon">📁</div>
+          <p className="detail-file-path">{selectedEntry.file_path || selectedEntry.content_data}</p>
+        </div>
+      );
+    }
+
+    // 文本类型 - 根据子类型选择不同的渲染器
+    const content = selectedEntry.content_data || '';
+    const metadata = selectedEntry.metadata;
+
+    switch (contentSubType) {
+      case 'url':
+        return <UrlRenderer content={content} metadata={metadata} />;
+      case 'ip_address':
+        return <IpRenderer content={content} />;
+      case 'email':
+        return <EmailRenderer content={content} />;
+      case 'color':
+        return <ColorRenderer content={content} metadata={metadata} />;
+      case 'code':
+        return <CodeRenderer content={content} metadata={metadata} />;
+      case 'command':
+        return <CommandRenderer content={content} />;
+      case 'timestamp':
+        return <TimeRenderer content={content} metadata={metadata} />;
+      case 'json':
+        return <JsonRenderer content={content} />;
+      case 'markdown':
+        return <MarkdownRenderer content={content} />;
+      case 'plain_text':
+      default:
+        return <TextRenderer content={content} />;
+    }
+  };
+
   return (
     <div className="detail-view">
       <div className="detail-header">
@@ -92,60 +208,7 @@ export function DetailView() {
       </div>
 
       <div className="detail-content">
-        {selectedEntry.content_type.toLowerCase().includes('image') ? (
-          imageUrl ? (
-            <div className="detail-image-container">
-              <img 
-                src={imageUrl} 
-                alt="剪贴板图片" 
-                className="detail-image"
-                onClick={handleImageClick}
-                style={{ cursor: 'pointer' }}
-                title="点击用系统查看器打开"
-                onError={(e) => {
-                  console.error('[DetailView] 图片元素加载失败');
-                  e.currentTarget.style.display = 'none';
-                  const errorDiv = e.currentTarget.parentElement?.querySelector('.detail-image-error');
-                  if (errorDiv) {
-                    errorDiv.classList.remove('hidden');
-                  }
-                }}
-                onLoad={() => {
-                  console.log('[DetailView] 图片元素加载成功');
-                }}
-              />
-              <div className="detail-image-error hidden">
-                <p>图片加载失败</p>
-                {selectedEntry.file_path && (
-                  <>
-                    <p className="detail-file-path">文件路径: {selectedEntry.file_path}</p>
-                    <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
-                      请尝试重新复制图片或检查图片文件是否存在
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="detail-image-loading">
-              <p>加载图片中...</p>
-              {selectedEntry.file_path && (
-                <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
-                  {selectedEntry.file_path}
-                </p>
-              )}
-            </div>
-          )
-        ) : selectedEntry.content_type.toLowerCase().includes('file') ? (
-          <div className="detail-file">
-            <div className="detail-file-icon">📁</div>
-            <p className="detail-file-path">{selectedEntry.file_path || selectedEntry.content_data}</p>
-          </div>
-        ) : (
-          <div className="detail-text-container">
-            <pre className="detail-text">{selectedEntry.content_data}</pre>
-          </div>
-        )}
+        {renderContent()}
       </div>
     </div>
   );

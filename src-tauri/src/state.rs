@@ -99,8 +99,8 @@ impl AppState {
                             r#"
                             INSERT INTO clipboard_entries 
                             (id, content_hash, content_type, content_data, source_app, 
-                             created_at, copy_count, file_path, is_favorite)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                             created_at, copy_count, file_path, is_favorite, content_subtype, metadata)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             "#,
                         )
                         .bind(&entry.id)
@@ -112,6 +112,8 @@ impl AppState {
                         .bind(entry.copy_count)
                         .bind(&entry.file_path)
                         .bind(entry.is_favorite as i32)
+                        .bind(&entry.content_subtype)
+                        .bind(&entry.metadata)
                         .execute(db.pool())
                         .await;
                     }

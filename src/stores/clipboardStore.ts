@@ -184,6 +184,32 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
     if (state.selectedType !== 'all') {
       filtered = filtered.filter(entry => {
         const type = entry.content_type.toLowerCase();
+        
+        // 处理子类型筛选
+        if (state.selectedType.startsWith('text:')) {
+          if (!type.includes('text') && !type.includes('string')) {
+            return false;
+          }
+          
+          const subtype = state.selectedType.replace('text:', '');
+          if (subtype === 'all') {
+            return true;
+          }
+          
+          // 检查content_subtype字段
+          let entrySubtype = 'plain_text';
+          if (entry.content_subtype) {
+            try {
+              entrySubtype = JSON.parse(entry.content_subtype.replace(/"/g, ''));
+            } catch (e) {
+              // 如果解析失败，使用默认值
+            }
+          }
+          
+          return entrySubtype === subtype;
+        }
+        
+        // 处理主类型筛选
         if (state.selectedType === 'text') {
           return type.includes('text') || type.includes('string');
         } else if (state.selectedType === 'image') {

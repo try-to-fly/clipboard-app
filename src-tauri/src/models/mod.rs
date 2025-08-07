@@ -12,6 +12,8 @@ pub struct ClipboardEntry {
     pub copy_count: i32,
     pub file_path: Option<String>,
     pub is_favorite: bool,
+    pub content_subtype: Option<String>,
+    pub metadata: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,6 +67,8 @@ impl ClipboardEntry {
             copy_count: 1,
             file_path,
             is_favorite: false,
+            content_subtype: None,
+            metadata: None,
         }
     }
 }

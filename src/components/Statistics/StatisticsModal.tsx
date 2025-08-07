@@ -1,7 +1,6 @@
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Copy, Star } from 'lucide-react';
-import { Statistics } from '../../types/clipboard';
 import { useClipboardStore } from '../../stores/clipboardStore';
 
 interface StatisticsModalProps {
