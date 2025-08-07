@@ -103,6 +103,58 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
       
       return `[图片] ${fileName}`;
     }
+
+    // 颜色预览
+    if (entry.content_subtype === 'color' && entry.content_data) {
+      console.log('[ClipboardItem] Showing color preview for:', entry.content_data, 'subtype:', entry.content_subtype);
+      const metadata = parseMetadata(entry.metadata);
+      const colorFormats = metadata?.color_formats;
+      const colorValue = colorFormats?.hex || entry.content_data;
+      
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div 
+            style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '2px',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: colorValue,
+              flexShrink: 0
+            }}
+          />
+          <span>{entry.content_data}</span>
+        </div>
+      );
+    }
+
+    // 时间戳预览
+    if (entry.content_subtype === 'timestamp' && entry.content_data) {
+      console.log('[ClipboardItem] Showing timestamp preview for:', entry.content_data, 'subtype:', entry.content_subtype);
+      const metadata = parseMetadata(entry.metadata);
+      const timestampFormats = metadata?.timestamp_formats;
+      
+      if (timestampFormats?.unix_ms) {
+        const date = new Date(timestampFormats.unix_ms);
+        const dateStr = date.toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: '#888', fontSize: '0.9em' }}>🕐</span>
+            <span>{entry.content_data}</span>
+            <span style={{ color: '#666', fontSize: '0.8em' }}>({dateStr})</span>
+          </div>
+        );
+      }
+    }
+    
     if (entry.content_data) {
       return entry.content_data.length > 200
         ? entry.content_data.substring(0, 200) + '...'

@@ -263,7 +263,7 @@ impl AppState {
         #[cfg(target_os = "macos")]
         {
             use std::process::Command;
-            
+
             tokio::task::spawn_blocking(move || -> Result<()> {
                 // 使用osascript复制图片到剪贴板
                 let script = format!(
@@ -272,27 +272,24 @@ impl AppState {
                     "#,
                     file_path
                 );
-                
-                let output = Command::new("osascript")
-                    .arg("-e")
-                    .arg(&script)
-                    .output()?;
-                
+
+                let output = Command::new("osascript").arg("-e").arg(&script).output()?;
+
                 if !output.status.success() {
                     let stderr = String::from_utf8_lossy(&output.stderr);
                     return Err(anyhow::anyhow!("Failed to copy image: {}", stderr));
                 }
-                
+
                 Ok(())
             })
             .await??;
         }
-        
+
         #[cfg(not(target_os = "macos"))]
         {
             return Err(anyhow::anyhow!("Image copy only supported on macOS"));
         }
-        
+
         Ok(())
     }
 

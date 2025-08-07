@@ -236,8 +236,9 @@ impl ClipboardMonitor {
                         match processor.process_image(bytes).await {
                             Ok(file_path) => {
                                 // 获取实际保存的文件大小
-                                let actual_size = Self::get_saved_file_size(&file_path).unwrap_or(bytes.len() as u64);
-                                
+                                let actual_size = Self::get_saved_file_size(&file_path)
+                                    .unwrap_or(bytes.len() as u64);
+
                                 // 创建图片元数据（使用压缩后的文件大小）
                                 let image_metadata = serde_json::json!({
                                     "image_metadata": {

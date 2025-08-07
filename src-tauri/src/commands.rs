@@ -2,8 +2,8 @@ use crate::models::{ClipboardEntry, Statistics};
 use crate::state::AppState;
 use crate::utils::app_icon_extractor::AppIconExtractor;
 use anyhow::Result;
+use base64::{engine::general_purpose, Engine as _};
 use tauri::State;
-use base64::{Engine as _, engine::general_purpose};
 
 #[tauri::command]
 pub async fn start_monitoring(state: State<'_, AppState>) -> Result<(), String> {
@@ -284,72 +284,95 @@ pub async fn convert_and_scale_image(
     use image::DynamicImage;
     use std::fs;
     use std::path::PathBuf;
-    
-    println!("[convert_and_scale_image] 转换图片: {}, 格式: {}, 缩放: {}%", 
-        file_path, format, (scale * 100.0) as i32);
-    
+
+    println!(
+        "[convert_and_scale_image] 转换图片: {}, 格式: {}, 缩放: {}%",
+        file_path,
+        format,
+        (scale * 100.0) as i32
+    );
+
     // 转换为绝对路径
     let absolute_path = if file_path.starts_with("imgs/") {
-        let config_dir = dirs::config_dir()
-            .ok_or_else(|| "Unable to get config directory".to_string())?;
+        let config_dir =
+            dirs::config_dir().ok_or_else(|| "Unable to get config directory".to_string())?;
         config_dir.join("clipboard-app").join(&file_path)
     } else {
         PathBuf::from(&file_path)
     };
-    
+
     if !absolute_path.exists() {
         return Err(format!("File not found: {:?}", absolute_path));
     }
-    
+
     // 读取原始图片
-    let img_data = fs::read(&absolute_path)
-        .map_err(|e| format!("Failed to read image: {}", e))?;
-    
-    let img = image::load_from_memory(&img_data)
-        .map_err(|e| format!("Failed to decode image: {}", e))?;
-    
+    let img_data = fs::read(&absolute_path).map_err(|e| format!("Failed to read image: {}", e))?;
+
+    let img =
+        image::load_from_memory(&img_data).map_err(|e| format!("Failed to decode image: {}", e))?;
+
     // 缩放图片
     let (width, height) = (img.width(), img.height());
     let new_width = ((width as f32) * scale) as u32;
     let new_height = ((height as f32) * scale) as u32;
-    
+
     let scaled_img = if scale != 1.0 {
-        println!("[convert_and_scale_image] 缩放从 {}x{} 到 {}x{}", 
-            width, height, new_width, new_height);
+        println!(
+            "[convert_and_scale_image] 缩放从 {}x{} 到 {}x{}",
+            width, height, new_width, new_height
+        );
         img.resize_exact(new_width, new_height, image::imageops::FilterType::Lanczos3)
     } else {
         img
     };
-    
+
     // 转换格式并编码
     let mut buffer = Vec::new();
     let output_format = match format.to_lowercase().as_str() {
         "jpeg" | "jpg" => {
             // JPEG不支持透明度，需要先转换
             let rgb_img = DynamicImage::ImageRgb8(scaled_img.to_rgb8());
-            rgb_img.write_to(&mut std::io::Cursor::new(&mut buffer), image::ImageFormat::Jpeg)
+            rgb_img
+                .write_to(
+                    &mut std::io::Cursor::new(&mut buffer),
+                    image::ImageFormat::Jpeg,
+                )
                 .map_err(|e| format!("Failed to encode JPEG: {}", e))?;
             "jpeg"
-        },
+        }
         "webp" => {
             // WebP支持透明度
-            scaled_img.write_to(&mut std::io::Cursor::new(&mut buffer), image::ImageFormat::WebP)
+            scaled_img
+                .write_to(
+                    &mut std::io::Cursor::new(&mut buffer),
+                    image::ImageFormat::WebP,
+                )
                 .map_err(|e| format!("Failed to encode WebP: {}", e))?;
             "webp"
-        },
+        }
         _ => {
             // 默认PNG
-            scaled_img.write_to(&mut std::io::Cursor::new(&mut buffer), image::ImageFormat::Png)
+            scaled_img
+                .write_to(
+                    &mut std::io::Cursor::new(&mut buffer),
+                    image::ImageFormat::Png,
+                )
                 .map_err(|e| format!("Failed to encode PNG: {}", e))?;
             "png"
         }
     };
-    
-    println!("[convert_and_scale_image] 转换完成，输出大小: {} 字节", buffer.len());
-    
+
+    println!(
+        "[convert_and_scale_image] 转换完成，输出大小: {} 字节",
+        buffer.len()
+    );
+
     // 返回base64编码的图片数据
     let base64_data = general_purpose::STANDARD.encode(&buffer);
-    Ok(format!("data:image/{};base64,{}", output_format, base64_data))
+    Ok(format!(
+        "data:image/{};base64,{}",
+        output_format, base64_data
+    ))
 }
 
 #[tauri::command]
@@ -359,32 +382,35 @@ pub async fn copy_converted_image(
     _skip_recording: bool,
 ) -> Result<(), String> {
     println!("[copy_converted_image] 复制转换后的图片到剪贴板");
-    
+
     // 解析base64数据
     let data_parts: Vec<&str> = base64_data.split(',').collect();
     if data_parts.len() != 2 {
         return Err("Invalid base64 data format".to_string());
     }
-    
+
     let base64_content = data_parts[1];
-    let image_data = general_purpose::STANDARD.decode(base64_content)
+    let image_data = general_purpose::STANDARD
+        .decode(base64_content)
         .map_err(|e| format!("Failed to decode base64: {}", e))?;
-    
+
     // 将图片数据写入临时文件
     let temp_dir = std::env::temp_dir();
     let temp_file = temp_dir.join(format!("clipboard_temp_{}.png", uuid::Uuid::new_v4()));
-    
+
     std::fs::write(&temp_file, &image_data)
         .map_err(|e| format!("Failed to write temp file: {}", e))?;
-    
+
     // 暂时禁用监控以避免记录
     state.set_skip_next_clipboard_change(true).await;
-    
+
     // 复制到剪贴板
-    let result = state.copy_image_to_clipboard(temp_file.to_str().unwrap().to_string()).await;
-    
+    let result = state
+        .copy_image_to_clipboard(temp_file.to_str().unwrap().to_string())
+        .await;
+
     // 清理临时文件
     let _ = std::fs::remove_file(&temp_file);
-    
+
     result.map_err(|e| e.to_string())
 }

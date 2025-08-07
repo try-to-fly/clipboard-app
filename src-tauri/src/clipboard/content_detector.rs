@@ -263,8 +263,8 @@ impl ContentDetector {
                 // 秒级时间戳（2000-2100年）
                 formats.unix_ms = Some(num * 1000);
                 return Some(formats);
-            } else if num > 946684800000 && num < 4102444800000 {
-                // 毫秒级时间戳
+            } else if num > 946684800000 && num < 7258118400000 {
+                // 毫秒级时间戳（2000-2200年）
                 formats.unix_ms = Some(num);
                 return Some(formats);
             }
@@ -337,5 +337,30 @@ impl ContentDetector {
         }
 
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_timestamp_detection() {
+        // 测试毫秒级时间戳
+        let (sub_type, metadata) = ContentDetector::detect("1754568465706");
+        println!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
+        assert!(matches!(sub_type, ContentSubType::Timestamp));
+        
+        // 测试秒级时间戳
+        let (sub_type, metadata) = ContentDetector::detect("1754568465");
+        println!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
+        assert!(matches!(sub_type, ContentSubType::Timestamp));
+    }
+
+    #[test]
+    fn test_color_detection() {
+        let (sub_type, metadata) = ContentDetector::detect("#ff0000");
+        println!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
+        assert!(matches!(sub_type, ContentSubType::Color));
     }
 }

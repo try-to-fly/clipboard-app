@@ -54,14 +54,9 @@ export function DetailView() {
 
     // 解析内容子类型
     if (selectedEntry?.content_subtype) {
-      try {
-        const subtype = JSON.parse(selectedEntry.content_subtype);
-        console.log('[DetailView] 解析到的子类型:', subtype);
-        setContentSubType(subtype as ContentSubType);
-      } catch (e) {
-        console.error('[DetailView] 子类型解析失败:', e, selectedEntry.content_subtype);
-        setContentSubType('plain_text');
-      }
+      console.log('[DetailView] 收到的子类型:', selectedEntry.content_subtype);
+      // content_subtype是直接的字符串，不需要JSON.parse
+      setContentSubType(selectedEntry.content_subtype as ContentSubType);
     } else {
       console.log('[DetailView] 没有子类型信息，使用默认值');
       setContentSubType('plain_text');

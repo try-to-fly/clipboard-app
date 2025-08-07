@@ -1,8 +1,8 @@
 use anyhow::Result;
 use image::ImageFormat;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use uuid::Uuid;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SavedImageInfo {
@@ -43,7 +43,9 @@ impl ContentProcessor {
         let expected_size = (width * height * 4) as usize;
         if image_data.len() == expected_size {
             println!("[process_image_with_dimensions] 数据大小匹配RGBA格式，直接处理");
-            return self.process_raw_rgba_data_with_info(image_data, width, height).await;
+            return self
+                .process_raw_rgba_data_with_info(image_data, width, height)
+                .await;
         }
 
         // 如果不匹配，可能是其他格式，尝试标准处理
@@ -52,7 +54,8 @@ impl ContentProcessor {
             image_data.len(),
             expected_size
         );
-        self.process_image_with_info(image_data, width, height).await
+        self.process_image_with_info(image_data, width, height)
+            .await
     }
 
     pub async fn process_image(&self, image_data: &[u8]) -> Result<String> {
@@ -178,7 +181,12 @@ impl ContentProcessor {
         self.save_image(img, &file_path).await
     }
 
-    async fn process_image_with_info(&self, image_data: &[u8], expected_width: u32, expected_height: u32) -> Result<SavedImageInfo> {
+    async fn process_image_with_info(
+        &self,
+        image_data: &[u8],
+        expected_width: u32,
+        expected_height: u32,
+    ) -> Result<SavedImageInfo> {
         println!(
             "[process_image_with_info] 开始处理图片数据，大小: {} 字节",
             image_data.len()
@@ -201,12 +209,12 @@ impl ContentProcessor {
         // 尝试解析并保存图片
         let img = image::load_from_memory(image_data)?;
         let (actual_width, actual_height) = (img.width(), img.height());
-        
+
         self.save_image(img, &file_path).await?;
-        
+
         // 获取实际保存的文件大小
         let actual_size = std::fs::metadata(&file_path)?.len();
-        
+
         println!(
             "[process_image_with_info] 成功处理图片: {}x{}, 压缩后大小: {} 字节",
             actual_width, actual_height, actual_size
@@ -228,13 +236,13 @@ impl ContentProcessor {
         // 压缩图片：保持分辨率但优化质量和文件大小
         let compressed_img = self.compress_image(img)?;
         compressed_img.save(file_path)?;
-        
+
         // 记录压缩后的实际文件大小
         if let Ok(metadata) = std::fs::metadata(file_path) {
             let compressed_size = metadata.len();
             println!("[save_image] 压缩后文件大小: {} 字节", compressed_size);
         }
-        
+
         let filename = file_path
             .file_name()
             .and_then(|n| n.to_str())
@@ -244,11 +252,11 @@ impl ContentProcessor {
 
     fn compress_image(&self, img: image::DynamicImage) -> Result<image::DynamicImage> {
         use image::DynamicImage;
-        
+
         // 获取原始尺寸
         let (width, height) = (img.width(), img.height());
         println!("[compress_image] 原始图片尺寸: {}x{}", width, height);
-        
+
         // 如果图片太大（超过4K），缩小到合理尺寸但保持宽高比
         let max_dimension = 3840; // 4K 最大边长
         let img = if width > max_dimension || height > max_dimension {
@@ -260,10 +268,13 @@ impl ContentProcessor {
         } else {
             img
         };
-        
+
         // 检查是否有透明通道
-        let has_alpha = matches!(img, DynamicImage::ImageRgba8(_) | DynamicImage::ImageRgba16(_));
-        
+        let has_alpha = matches!(
+            img,
+            DynamicImage::ImageRgba8(_) | DynamicImage::ImageRgba16(_)
+        );
+
         if has_alpha {
             // PNG格式保留透明度，这里直接返回调整后的图片
             // PNG格式会在save时自动压缩
@@ -416,9 +427,7 @@ impl ContentProcessor {
                     None
                 }
             })
-            .ok_or_else(|| {
-                anyhow::anyhow!("无法从原始数据创建图像缓冲区")
-            })?;
+            .ok_or_else(|| anyhow::anyhow!("无法从原始数据创建图像缓冲区"))?;
 
         let dynamic_img = image::DynamicImage::ImageRgba8(img_buffer);
         let compressed_img = self.compress_image(dynamic_img)?;

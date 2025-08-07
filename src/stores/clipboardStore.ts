@@ -211,6 +211,7 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
           if (entry.content_subtype) {
             // content_subtype直接是字符串，不需要JSON解析
             entrySubtype = entry.content_subtype;
+            console.log('[Filter] Entry:', entry.content_data?.substring(0, 20), 'subtype:', entrySubtype, 'filtering for:', subtype);
           }
           
           return entrySubtype === subtype;
