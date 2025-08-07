@@ -414,3 +414,45 @@ pub async fn copy_converted_image(
 
     result.map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn fetch_url_content(url: String) -> Result<String, String> {
+    use std::time::Duration;
+
+    println!("[fetch_url_content] 请求获取URL内容: {}", url);
+
+    // 创建HTTP客户端，配置超时
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30))
+        .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
+
+    // 发起HTTP请求
+    match client.get(&url).send().await {
+        Ok(response) => {
+            if response.status().is_success() {
+                match response.text().await {
+                    Ok(content) => {
+                        println!(
+                            "[fetch_url_content] 成功获取内容，长度: {} 字符",
+                            content.len()
+                        );
+                        Ok(content)
+                    }
+                    Err(e) => {
+                        println!("[fetch_url_content] 读取响应内容失败: {}", e);
+                        Err(format!("Failed to read response content: {}", e))
+                    }
+                }
+            } else {
+                println!("[fetch_url_content] HTTP错误状态: {}", response.status());
+                Err(format!("HTTP error: {}", response.status()))
+            }
+        }
+        Err(e) => {
+            println!("[fetch_url_content] 网络请求失败: {}", e);
+            Err(format!("Network request failed: {}", e))
+        }
+    }
+}

@@ -22,6 +22,34 @@ export const ClipboardList: React.FC = () => {
     }
   }, [entries, selectedEntry, setSelectedEntry]);
 
+  // Auto-scroll to newly selected entry when it changes (e.g., from clipboard update)
+  useEffect(() => {
+    if (selectedEntry && entries.length > 0 && scrollViewportRef.current) {
+      const selectedIndex = entries.findIndex(entry => entry.id === selectedEntry.id);
+      if (selectedIndex >= 0 && selectedIndex === 0) {
+        // Only auto-scroll if the selected entry is at the top (newly added)
+        const container = scrollViewportRef.current;
+        
+        // Try multiple methods to ensure scrolling works
+        const scrollToTop = () => {
+          // Method 1: Direct scrollTop
+          container.scrollTop = 0;
+          
+          // Method 2: scrollTo with smooth behavior
+          container.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        };
+
+        // Execute immediately and with a small delay to ensure DOM updates
+        scrollToTop();
+        setTimeout(scrollToTop, 50);
+        setTimeout(scrollToTop, 200);
+      }
+    }
+  }, [selectedEntry, entries]);
+
   const updateVisibleRange = useCallback(() => {
     if (scrollViewportRef.current && entries.length > 0) {
       const itemHeight = 82; // 预估每个item的高度（包含margin）

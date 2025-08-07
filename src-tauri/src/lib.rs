@@ -44,7 +44,8 @@ pub fn run() {
             open_file_with_system,
             get_app_icon,
             convert_and_scale_image,
-            copy_converted_image
+            copy_converted_image,
+            fetch_url_content
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

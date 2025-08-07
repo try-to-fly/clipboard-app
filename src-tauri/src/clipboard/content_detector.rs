@@ -350,7 +350,7 @@ mod tests {
         let (sub_type, metadata) = ContentDetector::detect("1754568465706");
         println!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
         assert!(matches!(sub_type, ContentSubType::Timestamp));
-        
+
         // 测试秒级时间戳
         let (sub_type, metadata) = ContentDetector::detect("1754568465");
         println!("Detected: {:?}, metadata: {:?}", sub_type, metadata);

@@ -12,7 +12,7 @@ interface UrlRendererProps {
 }
 
 export function UrlRenderer({ content, metadata }: UrlRendererProps) {
-  const { copyToClipboard } = useClipboardStore();
+  const { copyToClipboard, fetchUrlContent } = useClipboardStore();
   const [urlParts, setUrlParts] = useState<UrlParts | null>(null);
   const [previewType, setPreviewType] = useState<'none' | 'image' | 'video' | 'json'>('none');
   const [jsonContent, setJsonContent] = useState<string>('');
@@ -56,9 +56,8 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
 
   const fetchJsonContent = async (fetchUrl: string) => {
     try {
-      // 尝试直接获取URL内容
-      const response = await fetch(fetchUrl);
-      const data = await response.text();
+      // 使用Tauri命令获取URL内容，绕过浏览器CORS限制
+      const data = await fetchUrlContent(fetchUrl);
       
       // 检查是否是有效的JSON
       try {
@@ -73,7 +72,7 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
     } catch (e) {
       console.error('获取URL内容失败:', e);
       // 如果获取失败，显示提示信息
-      setJsonContent('// 无法获取URL内容\n// 可能由于CORS限制或网络问题');
+      setJsonContent(`// 无法获取URL内容\n// 错误信息: ${String(e)}`);
       setPreviewType('json');
     }
   };
@@ -162,7 +161,7 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
             <div className="url-json-preview">
               <Suspense fallback={<div className="json-loading">加载编辑器...</div>}>
                 <MonacoEditor
-                  height="300px"
+                  height="600px"
                   language="json"
                   value={jsonContent}
                   theme="vs-dark"

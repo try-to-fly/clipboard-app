@@ -12,6 +12,7 @@ interface ClipboardStore {
   error: string | null;
   selectedType: string;
   selectedEntry: ClipboardEntry | null;
+  urlContentCache: Map<string, { content: string; timestamp: number }>;
 
   // Actions
   startMonitoring: () => Promise<void>;
@@ -26,6 +27,7 @@ interface ClipboardStore {
   getImageUrl: (filePath: string) => Promise<string>;
   openFileWithSystem: (filePath: string) => Promise<void>;
   getAppIcon: (bundleId: string) => Promise<string | null>;
+  fetchUrlContent: (url: string) => Promise<string>;
   setSearchTerm: (term: string) => void;
   setSelectedType: (type: string) => void;
   setSelectedEntry: (entry: ClipboardEntry | null) => void;
@@ -42,6 +44,7 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
   error: null,
   selectedType: 'all',
   selectedEntry: null,
+  urlContentCache: new Map(),
 
   startMonitoring: async () => {
     try {
@@ -167,6 +170,35 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
     } catch (error) {
       console.error('Failed to get app icon:', error);
       return null;
+    }
+  },
+
+  fetchUrlContent: async (url: string) => {
+    const state = get();
+    const now = Date.now();
+    const cacheExpiry = 5 * 60 * 1000; // 5分钟缓存过期时间
+    
+    // 检查缓存
+    const cached = state.urlContentCache.get(url);
+    if (cached && (now - cached.timestamp) < cacheExpiry) {
+      console.log(`[fetchUrlContent] 使用缓存内容: ${url}`);
+      return cached.content;
+    }
+    
+    try {
+      console.log(`[fetchUrlContent] 请求新内容: ${url}`);
+      const content = await invoke<string>('fetch_url_content', { url });
+      
+      // 更新缓存
+      set((state) => {
+        const newCache = new Map(state.urlContentCache);
+        newCache.set(url, { content, timestamp: now });
+        return { urlContentCache: newCache };
+      });
+      
+      return content;
+    } catch (error) {
+      throw new Error(String(error));
     }
   },
 
