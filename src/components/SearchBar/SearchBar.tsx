@@ -4,10 +4,20 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useClipboardStore } from '../../stores/clipboardStore';
 
 const filterTypes = [
-  { value: 'all', label: '全部' },
-  { value: 'text', label: '文本' },
-  { value: 'image', label: '图片' },
-  { value: 'file', label: '文件' },
+  { value: 'all', label: '全部', icon: '📋' },
+  { value: 'text', label: '全部文本', icon: '📝' },
+  { value: 'text:plain_text', label: '纯文本', icon: '📄' },
+  { value: 'text:url', label: 'URL链接', icon: '🔗' },
+  { value: 'text:ip_address', label: 'IP地址', icon: '🌐' },
+  { value: 'text:email', label: '邮箱地址', icon: '📧' },
+  { value: 'text:color', label: '颜色值', icon: '🎨' },
+  { value: 'text:code', label: '代码片段', icon: '💻' },
+  { value: 'text:command', label: '命令行', icon: '⌨️' },
+  { value: 'text:timestamp', label: '时间戳', icon: '🕐' },
+  { value: 'text:json', label: 'JSON数据', icon: '{}' },
+  { value: 'text:markdown', label: 'Markdown', icon: '📑' },
+  { value: 'image', label: '图片', icon: '🖼️' },
+  { value: 'file', label: '文件', icon: '📁' },
 ];
 
 export const SearchBar: React.FC = () => {
@@ -34,7 +44,7 @@ export const SearchBar: React.FC = () => {
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <button className="type-filter-dropdown">
-            <span>{currentFilter.label}</span>
+            <span>{currentFilter.icon} {currentFilter.label}</span>
             <ChevronDown size={16} />
           </button>
         </DropdownMenu.Trigger>
@@ -47,7 +57,7 @@ export const SearchBar: React.FC = () => {
                 className="dropdown-item"
                 onClick={() => setSelectedType(type.value)}
               >
-                {type.label}
+                <span>{type.icon} {type.label}</span>
                 {type.value === selectedType && <span className="dropdown-check">✓</span>}
               </DropdownMenu.Item>
             ))}

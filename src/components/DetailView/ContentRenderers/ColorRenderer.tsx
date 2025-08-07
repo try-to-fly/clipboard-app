@@ -15,11 +15,16 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
   const [rgbValues, setRgbValues] = useState<[number, number, number]>([0, 0, 0]);
 
   useEffect(() => {
+    console.log('[ColorRenderer] content:', content);
+    console.log('[ColorRenderer] metadata:', metadata);
+    
     if (metadata) {
       try {
         const parsed = JSON.parse(metadata);
+        console.log('[ColorRenderer] parsed metadata:', parsed);
         if (parsed.color_formats) {
           setColorFormats(parsed.color_formats);
+          console.log('[ColorRenderer] color_formats from metadata:', parsed.color_formats);
         }
       } catch (e) {
         console.error('解析颜色元数据失败:', e);
@@ -36,10 +41,18 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
 
     // HEX颜色
     if (color.startsWith('#')) {
-      const hex = color.substring(1);
-      if (hex.length === 3 || hex.length === 6) {
-        formats.hex = color;
-        rgb = colorConvert.hex.rgb(hex) as [number, number, number];
+      let hex = color.substring(1);
+      // 处理3位HEX颜色，转换为6位
+      if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+      }
+      if (hex.length === 6) {
+        formats.hex = '#' + hex;
+        try {
+          rgb = colorConvert.hex.rgb(hex) as [number, number, number];
+        } catch (e) {
+          console.error('解析HEX颜色失败:', e);
+        }
       }
     }
     // RGB/RGBA颜色

@@ -97,7 +97,24 @@ export function DetailView() {
 
   const getContentType = () => {
     const type = selectedEntry.content_type.toLowerCase();
-    if (type.includes('text') || type.includes('string')) return '文本';
+    
+    // 如果是文本类型，显示具体的子类型
+    if (type.includes('text') || type.includes('string')) {
+      const subtypeMap: Record<ContentSubType, string> = {
+        'plain_text': '纯文本',
+        'url': 'URL链接',
+        'ip_address': 'IP地址',
+        'email': '邮箱地址',
+        'color': '颜色值',
+        'code': '代码片段',
+        'command': '命令行',
+        'timestamp': '时间戳',
+        'json': 'JSON数据',
+        'markdown': 'Markdown',
+      };
+      return subtypeMap[contentSubType] || '文本';
+    }
+    
     if (type.includes('image')) return '图片';
     if (type.includes('file')) return '文件';
     return '未知';

@@ -209,11 +209,8 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
           // 检查content_subtype字段
           let entrySubtype = 'plain_text';
           if (entry.content_subtype) {
-            try {
-              entrySubtype = JSON.parse(entry.content_subtype.replace(/"/g, ''));
-            } catch (e) {
-              // 如果解析失败，使用默认值
-            }
+            // content_subtype直接是字符串，不需要JSON解析
+            entrySubtype = entry.content_subtype;
           }
           
           return entrySubtype === subtype;

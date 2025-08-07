@@ -127,10 +127,12 @@ impl ClipboardMonitor {
                     );
 
                     // 设置子类型、元数据和bundle ID
-                    entry.content_subtype = Some(
-                        serde_json::to_string(&subtype)
-                            .unwrap_or_else(|_| "plain_text".to_string()),
-                    );
+                    // 使用serde_json::to_value获取正确的snake_case字符串
+                    let subtype_str = serde_json::to_value(&subtype)
+                        .ok()
+                        .and_then(|v| v.as_str().map(|s| s.to_string()))
+                        .unwrap_or_else(|| "plain_text".to_string());
+                    entry.content_subtype = Some(subtype_str);
                     entry.metadata = metadata_json;
                     entry.app_bundle_id = app_info.as_ref().and_then(|info| info.bundle_id.clone());
 
