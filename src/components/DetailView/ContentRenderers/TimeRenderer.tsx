@@ -84,12 +84,6 @@ export function TimeRenderer({ content, metadata }: TimeRendererProps) {
 
   return (
     <div className="time-renderer">
-      <div className="detail-actions">
-        <button className="detail-action-btn" onClick={() => handleCopy(content)} title="复制原始值">
-          <Copy size={16} />
-        </button>
-      </div>
-
       <div className="time-content">
         <div className="time-header">
           <Clock size={24} className="time-icon" />
