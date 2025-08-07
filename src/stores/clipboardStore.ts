@@ -22,6 +22,7 @@ interface ClipboardStore {
   clearHistory: () => Promise<void>;
   fetchStatistics: () => Promise<void>;
   copyToClipboard: (content: string) => Promise<void>;
+  pasteSelectedEntry: (entry: ClipboardEntry) => Promise<void>;
   getImageUrl: (filePath: string) => Promise<string>;
   openFileWithSystem: (filePath: string) => Promise<void>;
   setSearchTerm: (term: string) => void;
@@ -126,6 +127,18 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
   copyToClipboard: async (content: string) => {
     try {
       await invoke('copy_to_clipboard', { content });
+    } catch (error) {
+      set({ error: String(error) });
+    }
+  },
+
+  pasteSelectedEntry: async (entry: ClipboardEntry) => {
+    try {
+      if (entry.content_type.toLowerCase().includes('image') && entry.file_path) {
+        await invoke('paste_image', { filePath: entry.file_path });
+      } else if (entry.content_data) {
+        await invoke('paste_text', { content: entry.content_data });
+      }
     } catch (error) {
       set({ error: String(error) });
     }

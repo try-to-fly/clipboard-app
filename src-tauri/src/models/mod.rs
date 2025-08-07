@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use chrono::Utc;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct ClipboardEntry {
@@ -31,7 +31,6 @@ impl ContentType {
             ContentType::Unknown => "unknown",
         }
     }
-
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -68,5 +67,4 @@ impl ClipboardEntry {
             is_favorite: false,
         }
     }
-
 }

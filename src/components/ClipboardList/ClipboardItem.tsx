@@ -19,10 +19,12 @@ interface ClipboardItemProps {
   entry: ClipboardEntry;
   isSelected?: boolean;
   onClick?: () => void;
+  showNumber?: boolean;
+  number?: number;
 }
 
-export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected, onClick }) => {
-  const { toggleFavorite, deleteEntry, copyToClipboard, getImageUrl } = useClipboardStore();
+export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected, onClick, showNumber, number }) => {
+  const { toggleFavorite, deleteEntry, copyToClipboard, getImageUrl, pasteSelectedEntry } = useClipboardStore();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -85,6 +87,12 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
     }
   };
 
+  const handlePaste = async () => {
+    if (pasteSelectedEntry) {
+      await pasteSelectedEntry(entry);
+    }
+  };
+
   const menuContent = (
     <>
       <ContextMenu.Item className="context-menu-item" onClick={handleCopy}>
@@ -118,7 +126,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
             'is-selected': isSelected,
           })}
           onClick={onClick}
-          onDoubleClick={handleCopy}
+          onDoubleClick={handlePaste}
         >
           <div className="item-icon">{getIcon()}</div>
           
@@ -154,6 +162,10 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
           </div>
+          
+          {showNumber && number && number <= 9 && (
+            <div className="item-number-badge">{number}</div>
+          )}
         </div>
       </ContextMenu.Trigger>
       

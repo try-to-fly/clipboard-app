@@ -323,6 +323,7 @@ body {
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
 }
 
 .clipboard-item:hover {
@@ -347,6 +348,24 @@ body {
 
 .clipboard-item.is-favorite {
   border-left: 3px solid var(--primary);
+}
+
+.item-number-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .item-icon {

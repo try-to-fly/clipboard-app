@@ -7,8 +7,8 @@ mod models;
 mod state;
 mod utils;
 
-use state::AppState;
 use commands::*;
+use state::AppState;
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -18,15 +18,15 @@ pub fn run() {
         .setup(|app| {
             tauri::async_runtime::block_on(async {
                 let state = AppState::new().await?;
-                
+
                 let app_handle = app.handle().clone();
                 state.set_app_handle(app_handle);
-                
+
                 app.manage(state);
-                
+
                 Ok::<(), Box<dyn std::error::Error>>(())
             })?;
-            
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -38,6 +38,8 @@ pub fn run() {
             clear_history,
             get_statistics,
             copy_to_clipboard,
+            paste_text,
+            paste_image,
             get_image_url,
             open_file_with_system
         ])
