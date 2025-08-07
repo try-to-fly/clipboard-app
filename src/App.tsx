@@ -4,6 +4,7 @@ import { MainLayout } from './components/Layout/MainLayout';
 import { SearchBar } from './components/SearchBar/SearchBar';
 import { ClipboardList } from './components/ClipboardList/ClipboardList';
 import { DetailView } from './components/DetailView/DetailView';
+import { MenuEventHandler } from './components/MenuEventHandler/MenuEventHandler';
 import { useClipboardStore } from './stores/clipboardStore';
 import './App.css';
 
@@ -19,6 +20,7 @@ function AppContent() {
 
   return (
     <MainLayout>
+      <MenuEventHandler />
       <div className="app-container">
         <div className="app-header">
           <SearchBar />

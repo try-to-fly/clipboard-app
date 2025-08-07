@@ -2,14 +2,19 @@ import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Copy, Star } from 'lucide-react';
 import { useClipboardStore } from '../../stores/clipboardStore';
+import type { Statistics } from '../../types/clipboard';
 
 interface StatisticsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  statistics?: Statistics | null;
 }
 
-export const StatisticsModal: React.FC<StatisticsModalProps> = ({ isOpen, onClose }) => {
-  const { statistics, copyToClipboard } = useClipboardStore();
+export const StatisticsModal: React.FC<StatisticsModalProps> = ({ isOpen, onClose, statistics: propStatistics }) => {
+  const { statistics: storeStatistics, copyToClipboard } = useClipboardStore();
+  
+  // Use prop statistics if provided, otherwise fall back to store statistics
+  const statistics = propStatistics || storeStatistics;
 
   if (!statistics) {
     return null;

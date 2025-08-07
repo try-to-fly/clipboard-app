@@ -1,5 +1,4 @@
 import React from 'react';
-import { Header } from './Header';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -8,7 +7,6 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="main-layout">
-      <Header />
       <main className="main-content">
         {children}
       </main>

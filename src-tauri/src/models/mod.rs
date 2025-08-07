@@ -36,7 +36,7 @@ impl ContentType {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Statistics {
     pub total_entries: i64,
     pub total_copies: i64,
@@ -44,7 +44,7 @@ pub struct Statistics {
     pub recent_apps: Vec<AppUsage>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppUsage {
     pub app_name: String,
     pub count: i64,

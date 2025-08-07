@@ -65,6 +65,11 @@ impl AppState {
         Ok(())
     }
 
+    pub async fn is_monitoring(&self) -> bool {
+        let monitor_guard = self.monitor.read().await;
+        monitor_guard.is_some()
+    }
+
     async fn start_database_save_task(&self) {
         let db = Arc::clone(&self.db);
         let mut rx = self.tx.subscribe();

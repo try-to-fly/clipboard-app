@@ -73,31 +73,7 @@ body {
   overflow: hidden;
 }
 
-/* Header */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  background-color: var(--card);
-  border-bottom: 1px solid var(--border);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.app-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+/* Header styles removed since we're using macOS native menu bar */
 
 /* Buttons */
 .button {
@@ -178,7 +154,7 @@ body {
 
 /* App Layout */
 .app-header {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   background: var(--background);
 }
 
@@ -186,7 +162,7 @@ body {
   flex: 1;
   display: flex;
   gap: 1rem;
-  padding: 1rem;
+  padding: 0 1rem 1rem 1rem;
   overflow: hidden;
 }
 
