@@ -1,5 +1,9 @@
 import { Copy, Terminal } from 'lucide-react';
 import { useClipboardStore } from '../../../stores/clipboardStore';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Card, CardContent, CardHeader } from '../../ui/card';
+import { ScrollArea } from '../../ui/scroll-area';
 
 interface CommandRendererProps {
   content: string;
@@ -23,39 +27,44 @@ export function CommandRenderer({ content }: CommandRendererProps) {
   else if (content.startsWith('kubectl ')) commandType = 'kubernetes';
 
   return (
-    <div className="command-renderer">
-      <div className="detail-actions">
-        <button className="detail-action-btn" onClick={handleCopy} title="复制命令">
-          <Copy size={16} />
-        </button>
-        <span className="command-type">
-          <Terminal size={16} />
-          {commandType}
-        </span>
-      </div>
-
-      <div className="command-content">
-        <div className="terminal-window">
-          <div className="terminal-header">
-            <div className="terminal-buttons">
-              <span className="terminal-button red"></span>
-              <span className="terminal-button yellow"></span>
-              <span className="terminal-button green"></span>
-            </div>
-            <span className="terminal-title">Terminal</span>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Terminal className="w-4 h-4" />
+            <Badge variant="secondary">{commandType} 命令</Badge>
           </div>
-          <div className="terminal-body">
-            <pre className="command-text">
+          <Button onClick={handleCopy} size="sm" variant="outline">
+            <Copy className="w-4 h-4 mr-2" />
+            复制命令
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="p-0">
+        <div className="bg-gray-900 text-gray-100 rounded-b-lg overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              </div>
+              <span className="text-sm text-gray-400">Terminal</span>
+            </div>
+          </div>
+          <ScrollArea className="max-h-64">
+            <div className="p-4 font-mono text-sm space-y-1">
               {lines.map((line, index) => (
-                <div key={index} className="command-line">
-                  <span className="command-prompt">$</span>
-                  <span className="command-content">{line}</span>
+                <div key={index} className="flex items-start gap-2">
+                  <span className="text-green-400 font-bold select-none">$</span>
+                  <span className="flex-1 whitespace-pre-wrap break-all">{line}</span>
                 </div>
               ))}
-            </pre>
-          </div>
+            </div>
+          </ScrollArea>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

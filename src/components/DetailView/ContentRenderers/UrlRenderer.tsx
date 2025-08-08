@@ -1,8 +1,12 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Copy, ExternalLink } from 'lucide-react';
+import { Copy, ExternalLink, Globe, FileJson } from 'lucide-react';
 import queryString from 'query-string';
 import { useClipboardStore } from '../../../stores/clipboardStore';
 import { UrlParts } from '../../../types/clipboard';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Card, CardContent, CardHeader } from '../../ui/card';
+import { ScrollArea } from '../../ui/scroll-area';
 
 const MonacoEditor = lazy(() => import('@monaco-editor/react'));
 
@@ -86,82 +90,135 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
   };
 
   return (
-    <div className="url-renderer">
-      <div className="detail-actions">
-        <button className="detail-action-btn" onClick={() => handleCopy(content)} title="复制URL">
-          <Copy size={16} />
-        </button>
-        <button className="detail-action-btn" onClick={handleOpenUrl} title="在浏览器中打开">
-          <ExternalLink size={16} />
-        </button>
-      </div>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              <Badge variant="secondary">URL链接</Badge>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={() => handleCopy(content)} size="sm" variant="outline">
+                <Copy className="w-4 h-4 mr-2" />
+                复制URL
+              </Button>
+              <Button onClick={handleOpenUrl} size="sm" variant="outline">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                打开链接
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
 
-      <div className="url-content">
-        <div className="url-full">
-          <span className="url-label">完整URL:</span>
-          <code className="url-value">{content}</code>
-        </div>
+        <CardContent className="space-y-4">
+          <div>
+            <span className="text-sm font-medium text-muted-foreground">完整URL:</span>
+            <code className="block mt-1 p-2 bg-muted rounded text-sm font-mono break-all">
+              {content}
+            </code>
+          </div>
 
-        {urlParts && (
-          <div className="url-parts">
-            <div className="url-part">
-              <span className="url-label">协议:</span>
-              <code className="url-value">{urlParts.protocol}</code>
-            </div>
-            <div className="url-part">
-              <span className="url-label">主机:</span>
-              <code className="url-value">{urlParts.host}</code>
-            </div>
-            <div className="url-part">
-              <span className="url-label">路径:</span>
-              <code className="url-value">{urlParts.path}</code>
-            </div>
-            
-            {urlParts.query_params.length > 0 && (
-              <div className="url-params">
-                <span className="url-label">查询参数:</span>
-                <div className="params-list">
-                  {urlParts.query_params.map(([key, value], index) => (
-                    <div key={index} className="param-item">
-                      <code className="param-key">{key}</code>
-                      <span className="param-separator">=</span>
-                      <code className="param-value">{value}</code>
-                      <button 
-                        className="param-copy-btn" 
-                        onClick={() => handleCopy(value)}
-                        title="复制值"
-                      >
-                        <Copy size={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+          {urlParts && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">协议:</span>
+                <code className="block mt-1 p-2 bg-muted rounded text-sm font-mono">
+                  {urlParts.protocol}
+                </code>
               </div>
-            )}
-          </div>
-        )}
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">主机:</span>
+                <code className="block mt-1 p-2 bg-muted rounded text-sm font-mono">
+                  {urlParts.host}
+                </code>
+              </div>
+              <div className="md:col-span-2">
+                <span className="text-sm font-medium text-muted-foreground">路径:</span>
+                <code className="block mt-1 p-2 bg-muted rounded text-sm font-mono break-all">
+                  {urlParts.path}
+                </code>
+              </div>
+              
+              {urlParts.query_params.length > 0 && (
+                <div className="md:col-span-2">
+                  <span className="text-sm font-medium text-muted-foreground">查询参数:</span>
+                  <ScrollArea className="mt-2 max-h-32">
+                    <div className="space-y-1">
+                      {urlParts.query_params.map(([key, value], index) => (
+                        <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
+                          <code className="font-medium text-primary">{key}</code>
+                          <span className="text-muted-foreground">=</span>
+                          <code className="flex-1 break-all">{value}</code>
+                          <Button 
+                            onClick={() => handleCopy(value)}
+                            size="sm" 
+                            variant="ghost"
+                            className="h-6 w-6 p-0"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {previewType === 'image' && (
-          <div className="url-preview">
-            <span className="url-label">图片预览:</span>
-            <img src={content} alt="预览" className="url-preview-image" />
-          </div>
-        )}
+      {previewType === 'image' && (
+        <Card>
+          <CardHeader className="pb-3">
+            <span className="text-sm font-medium">图片预览</span>
+          </CardHeader>
+          <CardContent>
+            <img 
+              src={content} 
+              alt="预览" 
+              className="max-w-full h-auto rounded border"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </CardContent>
+        </Card>
+      )}
 
-        {previewType === 'video' && (
-          <div className="url-preview">
-            <span className="url-label">视频预览:</span>
-            <video src={content} controls className="url-preview-video" />
-          </div>
-        )}
+      {previewType === 'video' && (
+        <Card>
+          <CardHeader className="pb-3">
+            <span className="text-sm font-medium">视频预览</span>
+          </CardHeader>
+          <CardContent>
+            <video 
+              src={content} 
+              controls 
+              className="max-w-full h-auto rounded border"
+            />
+          </CardContent>
+        </Card>
+      )}
 
-        {previewType === 'json' && jsonContent && (
-          <div className="url-preview">
-            <span className="url-label">内容预览:</span>
-            <div className="url-json-preview">
-              <Suspense fallback={<div className="json-loading">加载编辑器...</div>}>
+      {previewType === 'json' && jsonContent && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <FileJson className="w-4 h-4" />
+              <span className="text-sm font-medium">内容预览</span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="border-t">
+              <Suspense fallback={
+                <div className="flex items-center justify-center h-32">
+                  <div className="text-sm text-muted-foreground">加载编辑器...</div>
+                </div>
+              }>
                 <MonacoEditor
-                  height="600px"
+                  height="400px"
                   language="json"
                   value={jsonContent}
                   theme="vs-dark"
@@ -174,13 +231,14 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
                     lineNumbers: 'on',
                     automaticLayout: true,
                     folding: true,
+                    padding: { top: 16, bottom: 16 },
                   }}
                 />
               </Suspense>
             </div>
-          </div>
-        )}
-      </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

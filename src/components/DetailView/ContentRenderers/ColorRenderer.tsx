@@ -3,6 +3,9 @@ import { Copy, Palette } from 'lucide-react';
 import colorConvert from 'color-convert';
 import { useClipboardStore } from '../../../stores/clipboardStore';
 import { ColorFormats } from '../../../types/clipboard';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Card, CardContent, CardHeader } from '../../ui/card';
 
 interface ColorRendererProps {
   content: string;
@@ -111,85 +114,119 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
   };
 
   return (
-    <div className="color-renderer">
-      <div className="detail-actions">
-        <button className="detail-action-btn" onClick={() => handleCopy(content)} title="复制原始值">
-          <Copy size={16} />
-        </button>
-      </div>
-
-      <div className="color-content">
-        <div className="color-preview-section">
-          <span className="color-label">颜色预览:</span>
-          <div 
-            className="color-preview-box"
-            style={{ 
-              backgroundColor: colorFormats.hex || content,
-              color: getContrastColor()
-            }}
-          >
-            <Palette size={32} />
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Palette className="w-4 h-4" />
+              <Badge variant="secondary">颜色值</Badge>
+            </div>
+            <Button onClick={() => handleCopy(content)} size="sm" variant="outline">
+              <Copy className="w-4 h-4 mr-2" />
+              复制原始值
+            </Button>
           </div>
-        </div>
+        </CardHeader>
 
-        <div className="color-formats">
-          <span className="color-label">所有格式:</span>
-          <div className="formats-list">
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div 
+              className="w-24 h-24 rounded-lg border-2 border-muted flex items-center justify-center shadow-sm"
+              style={{ 
+                backgroundColor: colorFormats.hex || content,
+                color: getContrastColor()
+              }}
+            >
+              <Palette className="w-8 h-8" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-medium text-muted-foreground mb-2">RGB 值:</div>
+              <div className="text-2xl font-mono">
+                {rgbValues[0]}, {rgbValues[1]}, {rgbValues[2]}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {colorFormats.hex && (
-              <div className="format-item">
-                <span className="format-label">HEX:</span>
-                <code className="format-value">{colorFormats.hex}</code>
-                <button 
-                  className="format-copy-btn" 
-                  onClick={() => handleCopy(colorFormats.hex!)}
-                  title="复制HEX"
-                >
-                  <Copy size={12} />
-                </button>
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-muted-foreground">HEX:</span>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
+                    {colorFormats.hex}
+                  </code>
+                  <Button 
+                    onClick={() => handleCopy(colorFormats.hex!)}
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             )}
+            
             {colorFormats.rgb && (
-              <div className="format-item">
-                <span className="format-label">RGB:</span>
-                <code className="format-value">{colorFormats.rgb}</code>
-                <button 
-                  className="format-copy-btn" 
-                  onClick={() => handleCopy(colorFormats.rgb!)}
-                  title="复制RGB"
-                >
-                  <Copy size={12} />
-                </button>
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-muted-foreground">RGB:</span>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
+                    {colorFormats.rgb}
+                  </code>
+                  <Button 
+                    onClick={() => handleCopy(colorFormats.rgb!)}
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             )}
+            
             {colorFormats.rgba && (
-              <div className="format-item">
-                <span className="format-label">RGBA:</span>
-                <code className="format-value">{colorFormats.rgba}</code>
-                <button 
-                  className="format-copy-btn" 
-                  onClick={() => handleCopy(colorFormats.rgba!)}
-                  title="复制RGBA"
-                >
-                  <Copy size={12} />
-                </button>
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-muted-foreground">RGBA:</span>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
+                    {colorFormats.rgba}
+                  </code>
+                  <Button 
+                    onClick={() => handleCopy(colorFormats.rgba!)}
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             )}
+            
             {colorFormats.hsl && (
-              <div className="format-item">
-                <span className="format-label">HSL:</span>
-                <code className="format-value">{colorFormats.hsl}</code>
-                <button 
-                  className="format-copy-btn" 
-                  onClick={() => handleCopy(colorFormats.hsl!)}
-                  title="复制HSL"
-                >
-                  <Copy size={12} />
-                </button>
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-muted-foreground">HSL:</span>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
+                    {colorFormats.hsl}
+                  </code>
+                  <Button 
+                    onClick={() => handleCopy(colorFormats.hsl!)}
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

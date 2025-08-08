@@ -1,5 +1,8 @@
-import { Copy, Mail, User, AtSign } from 'lucide-react';
+import { Copy, Mail, User, AtSign, Send } from 'lucide-react';
 import { useClipboardStore } from '../../../stores/clipboardStore';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Card, CardContent, CardHeader } from '../../ui/card';
 
 interface EmailRendererProps {
   content: string;
@@ -16,60 +19,79 @@ export function EmailRenderer({ content }: EmailRendererProps) {
   const [username, domain] = content.split('@');
 
   return (
-    <div className="email-renderer">
-      <div className="detail-actions">
-        <button className="detail-action-btn" onClick={() => handleCopy(content)} title="复制邮箱">
-          <Copy size={16} />
-        </button>
-      </div>
-
-      <div className="email-content">
-        <div className="email-header">
-          <Mail size={24} className="email-icon" />
-          <span className="email-label">邮箱地址</span>
-        </div>
-
-        <div className="email-value-section">
-          <code className="email-value">{content}</code>
-        </div>
-
-        <div className="email-parts">
-          <div className="email-part">
-            <User size={16} className="email-part-icon" />
-            <span className="email-part-label">用户名:</span>
-            <code className="email-part-value">{username}</code>
-            <button 
-              className="email-copy-btn" 
-              onClick={() => handleCopy(username)}
-              title="复制用户名"
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Mail className="w-4 h-4" />
+            <Badge variant="secondary">邮箱地址</Badge>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => handleCopy(content)} size="sm" variant="outline">
+              <Copy className="w-4 h-4 mr-2" />
+              复制邮箱
+            </Button>
+            <Button 
+              onClick={() => window.location.href = `mailto:${content}`}
+              size="sm" 
+              variant="outline"
             >
-              <Copy size={12} />
-            </button>
+              <Send className="w-4 h-4 mr-2" />
+              发送邮件
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <div>
+          <code className="block p-3 bg-muted rounded font-mono text-lg text-center">
+            {content}
+          </code>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">用户名:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
+                {username}
+              </code>
+              <Button 
+                onClick={() => handleCopy(username)}
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0"
+              >
+                <Copy className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
           
-          <div className="email-part">
-            <AtSign size={16} className="email-part-icon" />
-            <span className="email-part-label">域名:</span>
-            <code className="email-part-value">{domain}</code>
-            <button 
-              className="email-copy-btn" 
-              onClick={() => handleCopy(domain)}
-              title="复制域名"
-            >
-              <Copy size={12} />
-            </button>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <AtSign className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">域名:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
+                {domain}
+              </code>
+              <Button 
+                onClick={() => handleCopy(domain)}
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0"
+              >
+                <Copy className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
         </div>
-
-        <div className="email-actions">
-          <button 
-            className="email-action-btn"
-            onClick={() => window.location.href = `mailto:${content}`}
-          >
-            发送邮件
-          </button>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

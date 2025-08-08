@@ -4,6 +4,10 @@ import { format, formatRelative, fromUnixTime } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { useClipboardStore } from '../../../stores/clipboardStore';
 import { TimestampFormats } from '../../../types/clipboard';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Card, CardContent, CardHeader } from '../../ui/card';
+import { ScrollArea } from '../../ui/scroll-area';
 
 interface TimeRendererProps {
   content: string;
@@ -76,94 +80,70 @@ export function TimeRenderer({ content, metadata }: TimeRendererProps) {
 
   if (!date) {
     return (
-      <div className="time-renderer">
-        <div className="time-error">无法解析时间格式</div>
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center p-8">
+          <div className="text-center text-muted-foreground">
+            <Clock className="w-8 h-8 mx-auto mb-2" />
+            <p>无法解析时间格式</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
+  const formatItems = [
+    { label: '标准格式', value: formats[0] },
+    { label: '中文格式', value: formats[1] },
+    { label: '相对时间', value: formats[4] },
+    { label: 'ISO 8601', value: formats[3] },
+    { label: 'Unix秒', value: formats[5] },
+    { label: 'Unix毫秒', value: formats[6] },
+  ];
+
   return (
-    <div className="time-renderer">
-      <div className="time-content">
-        <div className="time-header">
-          <Clock size={24} className="time-icon" />
-          <span className="time-label">时间戳</span>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            <Badge variant="secondary">时间戳</Badge>
+          </div>
+          <Button onClick={() => handleCopy(content)} size="sm" variant="outline">
+            <Copy className="w-4 h-4 mr-2" />
+            复制原始值
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <div className="text-center p-4 bg-muted rounded-lg">
+          <div className="text-2xl font-bold">{formats[0]}</div>
+          <div className="text-sm text-muted-foreground mt-1">{formats[4]}</div>
         </div>
 
-        <div className="time-formats">
-          <div className="format-item">
-            <span className="format-label">标准格式:</span>
-            <code className="format-value">{formats[0]}</code>
-            <button 
-              className="format-copy-btn" 
-              onClick={() => handleCopy(formats[0])}
-              title="复制"
-            >
-              <Copy size={12} />
-            </button>
+        <ScrollArea className="max-h-64">
+          <div className="space-y-3">
+            {formatItems.map((item, index) => (
+              <div key={index} className="space-y-2">
+                <span className="text-sm font-medium text-muted-foreground">{item.label}:</span>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-2 bg-muted rounded font-mono text-sm break-all">
+                    {item.value}
+                  </code>
+                  <Button 
+                    onClick={() => handleCopy(item.value)}
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0 flex-shrink-0"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div className="format-item">
-            <span className="format-label">中文格式:</span>
-            <code className="format-value">{formats[1]}</code>
-            <button 
-              className="format-copy-btn" 
-              onClick={() => handleCopy(formats[1])}
-              title="复制"
-            >
-              <Copy size={12} />
-            </button>
-          </div>
-
-          <div className="format-item">
-            <span className="format-label">相对时间:</span>
-            <code className="format-value">{formats[4]}</code>
-            <button 
-              className="format-copy-btn" 
-              onClick={() => handleCopy(formats[4])}
-              title="复制"
-            >
-              <Copy size={12} />
-            </button>
-          </div>
-
-          <div className="format-item">
-            <span className="format-label">ISO 8601:</span>
-            <code className="format-value">{formats[3]}</code>
-            <button 
-              className="format-copy-btn" 
-              onClick={() => handleCopy(formats[3])}
-              title="复制"
-            >
-              <Copy size={12} />
-            </button>
-          </div>
-
-          <div className="format-item">
-            <span className="format-label">Unix秒:</span>
-            <code className="format-value">{formats[5]}</code>
-            <button 
-              className="format-copy-btn" 
-              onClick={() => handleCopy(formats[5])}
-              title="复制"
-            >
-              <Copy size={12} />
-            </button>
-          </div>
-
-          <div className="format-item">
-            <span className="format-label">Unix毫秒:</span>
-            <code className="format-value">{formats[6]}</code>
-            <button 
-              className="format-copy-btn" 
-              onClick={() => handleCopy(formats[6])}
-              title="复制"
-            >
-              <Copy size={12} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 }
