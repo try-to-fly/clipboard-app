@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import * as ScrollArea from '@radix-ui/react-scroll-area';
+import { ScrollArea } from '../ui/scroll-area';
+import { Card } from '../ui/card';
 import { useClipboardStore } from '../../stores/clipboardStore';
 import { ClipboardItem } from './ClipboardItem';
 import { EmptyState } from './EmptyState';
@@ -194,10 +195,10 @@ export const ClipboardList: React.FC = () => {
 
   if (loading && entries.length === 0) {
     return (
-      <div className="loading-state">
-        <div className="loading-spinner" />
-        <p>加载中...</p>
-      </div>
+      <Card className="flex-1 flex flex-col items-center justify-center p-8">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-muted-foreground">加载中...</p>
+      </Card>
     );
   }
 
@@ -206,9 +207,12 @@ export const ClipboardList: React.FC = () => {
   }
 
   return (
-    <ScrollArea.Root className="clipboard-list-container">
-      <ScrollArea.Viewport className="clipboard-list-viewport" ref={scrollViewportRef}>
-        <div className="clipboard-list">
+    <Card className="flex-1 flex flex-col overflow-hidden border">
+      <ScrollArea className="flex-1">
+        <div 
+          className="p-2 space-y-2" 
+          ref={scrollViewportRef}
+        >
           {entries.map((entry, index) => {
             const isVisible = index >= visibleRange.start && index < visibleRange.end;
             const visibleIndex = index - visibleRange.start + 1;
@@ -225,10 +229,7 @@ export const ClipboardList: React.FC = () => {
             );
           })}
         </div>
-      </ScrollArea.Viewport>
-      <ScrollArea.Scrollbar className="scrollbar" orientation="vertical">
-        <ScrollArea.Thumb className="scrollbar-thumb" />
-      </ScrollArea.Scrollbar>
-    </ScrollArea.Root>
+      </ScrollArea>
+    </Card>
   );
 };

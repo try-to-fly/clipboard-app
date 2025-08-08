@@ -9,11 +9,26 @@ import {
   Trash2,
   MoreVertical 
 } from 'lucide-react';
-import * as ContextMenu from '@radix-ui/react-context-menu';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { 
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger
+} from '../ui/context-menu';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '../ui/dropdown-menu';
 import { ClipboardEntry, ContentMetadata } from '../../types/clipboard';
 import { useClipboardStore } from '../../stores/clipboardStore';
-import clsx from 'clsx';
+import { cn } from '../../lib/utils';
 
 interface ClipboardItemProps {
   entry: ClipboardEntry;
@@ -65,27 +80,22 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
     
     if (type.includes('image') && imageUrl) {
       return (
-        <div className="image-thumbnail">
+        <div className="w-8 h-8 flex items-center justify-center rounded bg-secondary">
           <img 
             src={imageUrl} 
             alt="Clipboard image" 
-            style={{
-              width: '20px',
-              height: '20px',
-              objectFit: 'cover',
-              borderRadius: '2px'
-            }}
+            className="w-5 h-5 object-cover rounded-sm"
           />
         </div>
       );
     }
 
     if (type.includes('image')) {
-      return <Image size={20} />;
+      return <Image className="w-5 h-5" />;
     } else if (type.includes('file')) {
-      return <File size={20} />;
+      return <File className="w-5 h-5" />;
     } else {
-      return <FileText size={20} />;
+      return <FileText className="w-5 h-5" />;
     }
   };
 
@@ -112,16 +122,10 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
       const colorValue = colorFormats?.hex || entry.content_data;
       
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="flex items-center gap-2">
           <div 
-            style={{
-              width: '16px',
-              height: '16px',
-              borderRadius: '2px',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              backgroundColor: colorValue,
-              flexShrink: 0
-            }}
+            className="w-4 h-4 rounded-sm border border-border/20 flex-shrink-0"
+            style={{ backgroundColor: colorValue }}
           />
           <span>{entry.content_data}</span>
         </div>
@@ -146,10 +150,10 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
         });
         
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: '#888', fontSize: '0.9em' }}>🕐</span>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">🕐</span>
             <span>{entry.content_data}</span>
-            <span style={{ color: '#666', fontSize: '0.8em' }}>({dateStr})</span>
+            <span className="text-muted-foreground text-xs">({dateStr})</span>
           </div>
         );
       }
@@ -181,105 +185,147 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
 
   const menuContent = (
     <>
-      <ContextMenu.Item className="context-menu-item" onClick={handleCopy}>
-        <Copy size={16} />
+      <ContextMenuItem className="flex items-center gap-2" onClick={handleCopy}>
+        <Copy className="w-4 h-4" />
         <span>复制</span>
-      </ContextMenu.Item>
-      <ContextMenu.Item 
-        className="context-menu-item" 
+      </ContextMenuItem>
+      <ContextMenuItem 
+        className="flex items-center gap-2" 
         onClick={() => toggleFavorite(entry.id)}
       >
-        <Star size={16} fill={entry.is_favorite ? 'currentColor' : 'none'} />
+        <Star className="w-4 h-4" fill={entry.is_favorite ? 'currentColor' : 'none'} />
         <span>{entry.is_favorite ? '取消收藏' : '收藏'}</span>
-      </ContextMenu.Item>
-      <ContextMenu.Separator className="context-menu-separator" />
-      <ContextMenu.Item 
-        className="context-menu-item danger" 
+      </ContextMenuItem>
+      <ContextMenuSeparator />
+      <ContextMenuItem 
+        className="flex items-center gap-2 text-destructive focus:text-destructive" 
         onClick={() => deleteEntry(entry.id)}
       >
-        <Trash2 size={16} />
+        <Trash2 className="w-4 h-4" />
         <span>删除</span>
-      </ContextMenu.Item>
+      </ContextMenuItem>
     </>
   );
 
   return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger asChild>
-        <div 
-          className={clsx('clipboard-item', {
-            'is-favorite': entry.is_favorite,
-            'is-selected': isSelected,
-          })}
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <Card 
+          className={cn(
+            'p-4 cursor-pointer transition-all duration-200 hover:bg-secondary/50 hover:border-primary/50 relative',
+            {
+              'border-l-4 border-l-primary': entry.is_favorite,
+              'bg-primary text-primary-foreground hover:bg-primary/90': isSelected,
+            }
+          )}
           onClick={onClick}
           onDoubleClick={handlePaste}
         >
-          <div className="item-icon">{getIcon()}</div>
-          
-          <div className="item-content">
-            <div className="content-preview">{getDisplayContent()}</div>
-            <div className="item-meta">
-              <span className="meta-time">{formatDate(entry.created_at)}</span>
-              {entry.source_app && (
-                <span className="meta-app">
-                  来自
-                  {appIconUrl ? (
-                    <img 
-                      src={appIconUrl} 
-                      alt={entry.source_app} 
-                      className="app-icon"
-                      style={{
-                        width: '16px',
-                        height: '16px',
-                        marginLeft: '4px',
-                        marginRight: '4px',
-                        borderRadius: '2px',
-                        verticalAlign: 'middle'
-                      }}
-                    />
-                  ) : (
-                    <span style={{ marginLeft: '4px' }}></span>
-                  )}
-                  {entry.source_app}
-                </span>
-              )}
-              {entry.copy_count > 1 && (
-                <span className="meta-count">复制 {entry.copy_count} 次</span>
-              )}
+          <div className="flex items-start gap-4">
+            <div className="w-8 h-8 flex items-center justify-center rounded bg-secondary text-muted-foreground shrink-0">
+              {getIcon()}
             </div>
-          </div>
-
-          <div className="item-actions">
-            {entry.is_favorite && (
-              <Star size={16} className="favorite-icon" fill="currentColor" />
-            )}
             
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <button className="more-button">
-                  <MoreVertical size={16} />
-                </button>
-              </DropdownMenu.Trigger>
+            <div className="flex-1 min-w-0">
+              <div className={cn(
+                'text-sm line-clamp-2 mb-2 break-words',
+                isSelected ? 'text-primary-foreground' : 'text-foreground'
+              )}>
+                {getDisplayContent()}
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <span className={cn(
+                  isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                )}>
+                  {formatDate(entry.created_at)}
+                </span>
+                {entry.source_app && (
+                  <span className={cn(
+                    'flex items-center gap-1',
+                    isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                  )}>
+                    来自
+                    {appIconUrl && (
+                      <img 
+                        src={appIconUrl} 
+                        alt={entry.source_app} 
+                        className="w-4 h-4 rounded-sm"
+                      />
+                    )}
+                    {entry.source_app}
+                  </span>
+                )}
+                {entry.copy_count > 1 && (
+                  <Badge variant="secondary" className="text-xs px-2 py-0">
+                    复制 {entry.copy_count} 次
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 absolute top-4 right-4">
+              {entry.is_favorite && (
+                <Star className={cn(
+                  'w-4 h-4',
+                  isSelected ? 'text-primary-foreground' : 'text-primary'
+                )} fill="currentColor" />
+              )}
               
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content className="dropdown-content">
-                  {menuContent}
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={cn(
+                      'h-8 w-8',
+                      isSelected 
+                        ? 'hover:bg-primary-foreground/20 text-primary-foreground' 
+                        : 'hover:bg-secondary text-muted-foreground'
+                    )}
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                
+                <DropdownMenuContent>
+                  <DropdownMenuItem className="flex items-center gap-2" onClick={handleCopy}>
+                    <Copy className="w-4 h-4" />
+                    <span>复制</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="flex items-center gap-2" 
+                    onClick={() => toggleFavorite(entry.id)}
+                  >
+                    <Star className="w-4 h-4" fill={entry.is_favorite ? 'currentColor' : 'none'} />
+                    <span>{entry.is_favorite ? '取消收藏' : '收藏'}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="flex items-center gap-2 text-destructive focus:text-destructive" 
+                    onClick={() => deleteEntry(entry.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>删除</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           
           {showNumber && number && number <= 9 && (
-            <div className="item-number-badge">{number}</div>
+            <Badge 
+              variant="default" 
+              className="absolute top-2 right-2 w-6 h-6 rounded-full p-0 text-xs font-semibold flex items-center justify-center"
+            >
+              {number}
+            </Badge>
           )}
-        </div>
-      </ContextMenu.Trigger>
+        </Card>
+      </ContextMenuTrigger>
       
-      <ContextMenu.Portal>
-        <ContextMenu.Content className="context-menu-content">
-          {menuContent}
-        </ContextMenu.Content>
-      </ContextMenu.Portal>
-    </ContextMenu.Root>
+      <ContextMenuContent>
+        {menuContent}
+      </ContextMenuContent>
+    </ContextMenu>
   );
 };

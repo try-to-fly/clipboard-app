@@ -1,7 +1,6 @@
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, Check } from 'lucide-react';
 import { useClipboardStore } from '../../stores/clipboardStore';
-import './TypeFilter.css';
 
 interface FilterOption {
   value: string;

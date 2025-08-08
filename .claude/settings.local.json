@@ -9,7 +9,8 @@
       "WebFetch(domain:thatgurjot.com)",
       "Bash(pnpm tauri signer generate:*)",
       "Bash(cat:*)",
-      "Bash(cargo check:*)"
+      "Bash(cargo check:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

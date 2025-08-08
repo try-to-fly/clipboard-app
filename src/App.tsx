@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from './components/theme-provider';
+import { ThemeToggle } from './components/theme-toggle';
 import { MainLayout } from './components/Layout/MainLayout';
 import { SearchBar } from './components/SearchBar/SearchBar';
 import { ClipboardList } from './components/ClipboardList/ClipboardList';
@@ -7,7 +9,6 @@ import { DetailView } from './components/DetailView/DetailView';
 import { MenuEventHandler } from './components/MenuEventHandler/MenuEventHandler';
 import { UpdateChecker } from './components/UpdateChecker/UpdateChecker';
 import { useClipboardStore } from './stores/clipboardStore';
-import './App.css';
 
 const queryClient = new QueryClient();
 
@@ -23,15 +24,20 @@ function AppContent() {
     <MainLayout>
       <MenuEventHandler />
       <UpdateChecker />
-      <div className="app-container">
-        <div className="app-header">
-          <SearchBar />
+      <div className="flex flex-col h-screen">
+        <div className="flex items-center justify-between p-3 bg-background border-b">
+          <div className="flex-1">
+            <SearchBar />
+          </div>
+          <div className="ml-4">
+            <ThemeToggle />
+          </div>
         </div>
-        <div className="app-body">
-          <div className="app-list">
+        <div className="flex flex-1 gap-4 p-4 overflow-hidden min-h-0">
+          <div className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden">
             <ClipboardList />
           </div>
-          <div className="app-detail">
+          <div className="flex-1 min-w-0 overflow-hidden">
             <DetailView />
           </div>
         </div>
@@ -43,7 +49,9 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <ThemeProvider defaultTheme="system" storageKey="clipboard-app-theme">
+        <AppContent />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

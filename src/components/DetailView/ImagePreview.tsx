@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Download, Copy, Maximize2 } from 'lucide-react';
-import './ImagePreview.css';
 
 interface ImagePreviewProps {
   imageUrl: string;

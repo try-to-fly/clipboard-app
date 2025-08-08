@@ -6,8 +6,8 @@ interface MainLayoutProps {
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
-    <div className="main-layout">
-      <main className="main-content">
+    <div className="flex flex-col h-screen">
+      <main className="flex-1 overflow-hidden">
         {children}
       </main>
     </div>

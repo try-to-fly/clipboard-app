@@ -4,7 +4,6 @@ import { ask, message } from '@tauri-apps/plugin-dialog';
 import { listen } from '@tauri-apps/api/event';
 import * as Toast from '@radix-ui/react-toast';
 import { Download, X } from 'lucide-react';
-import './UpdateChecker.css';
 
 interface UpdateInfo {
   version: string;

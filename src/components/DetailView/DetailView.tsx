@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { ScrollArea } from '../ui/scroll-area';
 import { useClipboardStore } from '../../stores/clipboardStore';
 import { ContentSubType, ContentMetadata } from '../../types/clipboard';
 import {
@@ -14,8 +17,6 @@ import {
   CommandRenderer,
 } from './ContentRenderers';
 import { ImagePreview } from './ImagePreview';
-import './DetailView.css';
-import './ContentRenderers/ContentRenderers.css';
 
 
 const parseMetadata = (metadataString?: string | null): ContentMetadata | null => {
@@ -65,11 +66,13 @@ export function DetailView() {
 
   if (!selectedEntry) {
     return (
-      <div className="detail-view">
-        <div className="detail-empty">
-          <p>选择一个项目查看详情</p>
-        </div>
-      </div>
+      <Card className="flex-1 flex flex-col">
+        <CardContent className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center text-muted-foreground">
+            <p>选择一个项目查看详情</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -139,10 +142,11 @@ export function DetailView() {
         );
       } else {
         return (
-          <div className="detail-image-loading">
-            <p>加载图片中...</p>
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-muted-foreground">加载图片中...</p>
             {selectedEntry.file_path && (
-              <p style={{ fontSize: '12px', marginTop: '8px', color: '#999' }}>
+              <p className="text-xs text-muted-foreground mt-2 break-all">
                 {selectedEntry.file_path}
               </p>
             )}
@@ -154,9 +158,11 @@ export function DetailView() {
     // 文件类型
     if (selectedEntry.content_type.toLowerCase().includes('file')) {
       return (
-        <div className="detail-file">
-          <div className="detail-file-icon">📁</div>
-          <p className="detail-file-path">{selectedEntry.file_path || selectedEntry.content_data}</p>
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <div className="text-4xl mb-4">📁</div>
+          <p className="text-sm text-muted-foreground break-all">
+            {selectedEntry.file_path || selectedEntry.content_data}
+          </p>
         </div>
       );
     }
@@ -191,32 +197,44 @@ export function DetailView() {
   };
 
   return (
-    <div className="detail-view">
-      <div className="detail-header">
-        <h3 className="detail-title">详情预览</h3>
-        <div className="detail-meta">
-          <div className="detail-meta-item">
-            <span className="detail-meta-label">类型:</span>
-            <span className="detail-meta-value">{getContentType()}</span>
+    <Card className="flex-1 flex flex-col overflow-hidden">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">详情预览</CardTitle>
+        <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">类型:</span>
+            <Badge variant="secondary" className="text-xs">
+              {getContentType()}
+            </Badge>
           </div>
-          <div className="detail-meta-item">
-            <span className="detail-meta-label">来源:</span>
-            <span className="detail-meta-value">{selectedEntry.source_app || '未知'}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">来源:</span>
+            <span className="text-foreground font-medium">
+              {selectedEntry.source_app || '未知'}
+            </span>
           </div>
-          <div className="detail-meta-item">
-            <span className="detail-meta-label">时间:</span>
-            <span className="detail-meta-value">{formatDate(selectedEntry.created_at)}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">时间:</span>
+            <span className="text-foreground font-mono text-xs">
+              {formatDate(selectedEntry.created_at)}
+            </span>
           </div>
-          <div className="detail-meta-item">
-            <span className="detail-meta-label">复制次数:</span>
-            <span className="detail-meta-value">{selectedEntry.copy_count}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">复制次数:</span>
+            <Badge variant="outline" className="text-xs">
+              {selectedEntry.copy_count}
+            </Badge>
           </div>
         </div>
-      </div>
+      </CardHeader>
 
-      <div className="detail-content">
-        {renderContent()}
-      </div>
-    </div>
+      <CardContent className="flex-1 overflow-hidden p-0">
+        <ScrollArea className="h-full">
+          <div className="p-6">
+            {renderContent()}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 }

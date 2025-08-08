@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, ChevronDown } from 'lucide-react';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { Search, X, ChevronDown, Check } from 'lucide-react';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '../ui/dropdown-menu';
 import { useClipboardStore } from '../../stores/clipboardStore';
 
 const filterTypes = [
@@ -40,46 +47,59 @@ export const SearchBar: React.FC = () => {
   const currentFilter = filterTypes.find(f => f.value === selectedType) || filterTypes[0];
 
   return (
-    <div className="search-bar">
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
-          <button className="type-filter-dropdown">
+    <div className="flex items-center bg-secondary rounded-lg overflow-hidden">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            className="flex items-center gap-2 px-4 py-3 h-auto rounded-none hover:bg-accent"
+          >
             <span>{currentFilter.icon} {currentFilter.label}</span>
             <ChevronDown size={16} />
-          </button>
-        </DropdownMenu.Trigger>
+          </Button>
+        </DropdownMenuTrigger>
         
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content className="dropdown-content" align="start">
-            {filterTypes.map((type) => (
-              <DropdownMenu.Item
-                key={type.value}
-                className="dropdown-item"
-                onClick={() => setSelectedType(type.value)}
-              >
-                <span>{type.icon} {type.label}</span>
-                {type.value === selectedType && <span className="dropdown-check">✓</span>}
-              </DropdownMenu.Item>
-            ))}
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
+        <DropdownMenuContent align="start" className="min-w-[200px]">
+          {filterTypes.map((type) => (
+            <DropdownMenuItem
+              key={type.value}
+              className="flex items-center justify-between"
+              onClick={() => setSelectedType(type.value)}
+            >
+              <span className="flex items-center gap-2">
+                <span>{type.icon}</span>
+                <span>{type.label}</span>
+              </span>
+              {type.value === selectedType && (
+                <Check className="h-4 w-4 text-primary" />
+              )}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <div className="search-divider"></div>
+      <div className="w-px h-5 bg-border"></div>
       
-      <Search className="search-icon" size={18} />
-      <input
-        type="text"
-        placeholder="搜索内容或应用..."
-        value={localSearchTerm}
-        onChange={(e) => setLocalSearchTerm(e.target.value)}
-        className="search-input"
-      />
-      {localSearchTerm && (
-        <button onClick={handleClear} className="clear-button">
-          <X size={18} />
-        </button>
-      )}
+      <div className="flex-1 relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="搜索内容或应用..."
+          value={localSearchTerm}
+          onChange={(e) => setLocalSearchTerm(e.target.value)}
+          className="border-0 bg-transparent pl-10 pr-10 focus-visible:ring-0 focus-visible:ring-offset-0"
+        />
+        {localSearchTerm && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClear}
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 hover:bg-accent"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Keyboard, RotateCcw, Check, X } from 'lucide-react';
-import './ShortcutRecorder.css';
+import { Button } from '../ui/button';
+import { cn } from '../../lib/utils';
 
 interface ShortcutRecorderProps {
   value: string;
@@ -169,74 +170,82 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
     recordedKeys.key !== '';
 
   return (
-    <div className="shortcut-recorder">
+    <div className="space-y-3">
       {!isRecording ? (
-        <div className="shortcut-display">
-          <div className="shortcut-value">
-            <Keyboard size={16} />
+        <div className="flex items-center justify-between p-3 bg-secondary rounded-lg border">
+          <div className="flex items-center gap-2 font-mono text-sm">
+            <Keyboard className="w-4 h-4" />
             <span>{formatShortcut(value) || '未设置'}</span>
           </div>
-          <button 
-            className="change-button"
+          <Button 
+            variant="outline"
+            size="sm"
             onClick={startRecording}
           >
             更改
-          </button>
+          </Button>
         </div>
       ) : (
-        <div className="shortcut-recording">
+        <div className="space-y-3">
           <div 
             ref={inputRef}
-            className="recording-input"
+            className={cn(
+              "flex items-center justify-center p-4 border-2 rounded-lg min-h-[60px] font-mono text-sm transition-colors",
+              "border-primary bg-primary/10 text-primary",
+              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            )}
             tabIndex={0}
           >
             {currentDisplay || '请按下快捷键组合...'}
           </div>
           
-          <div className="recording-actions">
-            <button
-              className="action-button cancel"
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
               onClick={cancelRecording}
               title="取消"
             >
-              <X size={14} />
-            </button>
+              <X className="w-4 h-4" />
+            </Button>
             
-            <button
-              className="action-button reset"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setRecordedKeys(null)}
               title="重新录制"
               disabled={!recordedKeys}
             >
-              <RotateCcw size={14} />
-            </button>
+              <RotateCcw className="w-4 h-4" />
+            </Button>
             
-            <button
-              className="action-button confirm"
+            <Button
+              variant="default"
+              size="sm"
               onClick={confirmShortcut}
               title="确认"
               disabled={!hasValidKeys || isValidating}
             >
               {isValidating ? (
-                <div className="spinner" />
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent" />
               ) : (
-                <Check size={14} />
+                <Check className="w-4 h-4" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
       )}
       
       {validationError && (
-        <div className="validation-error">
+        <p className="text-sm text-destructive">
           {validationError}
-        </div>
+        </p>
       )}
       
       {isRecording && (
-        <div className="recording-hint">
+        <p className="text-sm text-muted-foreground italic">
           快捷键必须包含至少一个修饰键（⌘、⌃、⌥）
-        </div>
+        </p>
       )}
     </div>
   );
