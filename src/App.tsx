@@ -8,6 +8,7 @@ import { ClipboardList } from './components/ClipboardList/ClipboardList';
 import { DetailView } from './components/DetailView/DetailView';
 import { MenuEventHandler } from './components/MenuEventHandler/MenuEventHandler';
 import { UpdateChecker } from './components/UpdateChecker/UpdateChecker';
+import { ClipboardKeyHandler } from './components/ClipboardKeyHandler';
 import { useClipboardStore } from './stores/clipboardStore';
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ function AppContent() {
     <MainLayout>
       <MenuEventHandler />
       <UpdateChecker />
+      <ClipboardKeyHandler />
       <div className="flex flex-col h-screen">
         <div className="flex items-center justify-between p-3 bg-background border-b">
           <div className="flex-1">

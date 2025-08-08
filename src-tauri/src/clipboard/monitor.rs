@@ -1,5 +1,4 @@
 use anyhow::Result;
-use arboard::Clipboard;
 use serde_json;
 use sha2::{Digest, Sha256};
 use std::sync::Arc;
@@ -14,7 +13,6 @@ use crate::models::{ClipboardEntry, ContentType};
 use crate::utils::app_detector::get_active_app_info;
 
 pub struct ClipboardMonitor {
-    clipboard: Arc<Mutex<Clipboard>>,
     last_hash: Arc<Mutex<Option<String>>>,
     tx: broadcast::Sender<ClipboardEntry>,
     processor: Arc<ContentProcessor>,
@@ -27,11 +25,9 @@ impl ClipboardMonitor {
         processor: Arc<ContentProcessor>,
         config_manager: Arc<Mutex<ConfigManager>>,
     ) -> Result<Self> {
-        let clipboard = Arc::new(Mutex::new(Clipboard::new()?));
         let last_hash = Arc::new(Mutex::new(None));
 
         Ok(Self {
-            clipboard,
             last_hash,
             tx,
             processor,
@@ -53,7 +49,6 @@ impl ClipboardMonitor {
     }
 
     pub async fn start_monitoring(&self) {
-        let clipboard = Arc::clone(&self.clipboard);
         let last_hash = Arc::clone(&self.last_hash);
         let tx = self.tx.clone();
         let processor = Arc::clone(&self.processor);
@@ -61,8 +56,25 @@ impl ClipboardMonitor {
 
         tokio::spawn(async move {
             loop {
+                // 先检查当前应用是否是自己
+                let app_info = get_active_app_info();
+                let is_self_app = if let Some(ref info) = app_info {
+                    info.bundle_id == Some("com.clipboard-app.clipboardmanager".to_string())
+                        || info.name.contains("clipboard-app")
+                        || info.name.contains("Clipboard App")
+                        || info.name.contains("剪切板管理器")
+                } else {
+                    false
+                };
+
+                // 如果当前应用是自己，延长检查间隔，减少干扰
+                if is_self_app {
+                    sleep(Duration::from_millis(2000)).await;
+                    continue;
+                }
+
                 if let Err(e) =
-                    Self::check_clipboard(&clipboard, &last_hash, &tx, &processor, &config_manager)
+                    Self::check_clipboard(&last_hash, &tx, &processor, &config_manager)
                         .await
                 {
                     eprintln!("剪切板检查错误: {}", e);
@@ -73,17 +85,21 @@ impl ClipboardMonitor {
     }
 
     async fn check_clipboard(
-        clipboard: &Arc<Mutex<Clipboard>>,
         last_hash: &Arc<Mutex<Option<String>>>,
         tx: &broadcast::Sender<ClipboardEntry>,
         processor: &Arc<ContentProcessor>,
         config_manager: &Arc<Mutex<ConfigManager>>,
     ) -> Result<()> {
-        // 检查文本内容
-        let text_result = {
-            let mut clipboard = clipboard.lock().await;
-            clipboard.get_text()
-        };
+        // 获取当前活跃应用信息
+        let app_info = get_active_app_info();
+
+        // 检查文本内容 - 使用独立的剪切板实例，避免长时间锁定
+        let text_result = tokio::task::spawn_blocking(|| {
+            match arboard::Clipboard::new() {
+                Ok(mut temp_clipboard) => temp_clipboard.get_text(),
+                Err(e) => Err(e)
+            }
+        }).await.unwrap_or_else(|_| Err(arboard::Error::ClipboardNotSupported));
 
         if let Ok(text) = text_result {
             // 先trim处理文本
@@ -93,7 +109,6 @@ impl ClipboardMonitor {
                 let is_base64_image =
                     trimmed_text.starts_with("data:image/") && trimmed_text.contains(";base64,");
                 if is_base64_image {
-                    println!("[ClipboardMonitor] 跳过base64图片URL，避免循环记录");
                     return Ok(());
                 }
 
@@ -110,37 +125,16 @@ impl ClipboardMonitor {
                 };
 
                 if should_send {
-                    let app_info = get_active_app_info();
-
-                    // 如果来源是自己的应用，跳过
+                    // 检查是否是被排除的应用
                     if let Some(ref app_info) = app_info {
-                        if app_info.name.contains("clipboard-app")
-                            || app_info.name.contains("Clipboard App")
-                        {
-                            println!(
-                                "[ClipboardMonitor] 跳过自己应用的复制操作: {}",
-                                app_info.name
-                            );
-                            return Ok(());
-                        }
-
-                        // 检查是否是被排除的应用
                         if let Some(bundle_id) = &app_info.bundle_id {
                             let config_guard = config_manager.lock().await;
                             if config_guard.is_app_excluded(bundle_id) {
-                                println!(
-                                    "[ClipboardMonitor] 跳过被排除的应用: {} ({})",
-                                    app_info.name, bundle_id
-                                );
                                 return Ok(());
                             }
 
                             // 检查文本大小限制
                             if !config_guard.is_text_size_valid(trimmed_text) {
-                                println!(
-                                    "[ClipboardMonitor] 跳过过大的文本内容: {} 字符",
-                                    trimmed_text.len()
-                                );
                                 return Ok(());
                             }
                         }
@@ -148,11 +142,6 @@ impl ClipboardMonitor {
 
                     // 检测内容子类型
                     let (subtype, metadata) = ContentDetector::detect(trimmed_text);
-                    println!(
-                        "[ClipboardMonitor] 检测到内容类型: {:?}, 内容: {}",
-                        subtype,
-                        trimmed_text.chars().take(50).collect::<String>()
-                    );
 
                     // 将metadata转换为JSON字符串
                     let metadata_json = metadata.map(|m| serde_json::to_string(&m).ok()).flatten();
@@ -181,11 +170,13 @@ impl ClipboardMonitor {
             }
         }
 
-        // 检查图片内容
-        let image_result = {
-            let mut clipboard = clipboard.lock().await;
-            clipboard.get_image()
-        };
+        // 检查图片内容 - 使用独立的剪切板实例
+        let image_result = tokio::task::spawn_blocking(|| {
+            match arboard::Clipboard::new() {
+                Ok(mut temp_clipboard) => temp_clipboard.get_image(),
+                Err(e) => Err(e)
+            }
+        }).await.unwrap_or_else(|_| Err(arboard::Error::ClipboardNotSupported));
 
         if let Ok(image_data) = image_result {
             // arboard 返回的图片数据包含宽高信息
@@ -206,34 +197,11 @@ impl ClipboardMonitor {
             };
 
             if should_send {
-                println!(
-                    "[ClipboardMonitor] 检测到新图片: {}x{}, 数据大小: {} 字节",
-                    width,
-                    height,
-                    bytes.len()
-                );
-                let app_info = get_active_app_info();
-
-                // 如果来源是自己的应用，跳过
+                // 检查是否是被排除的应用
                 if let Some(ref app_info) = app_info {
-                    if app_info.name.contains("clipboard-app")
-                        || app_info.name.contains("Clipboard App")
-                    {
-                        println!(
-                            "[ClipboardMonitor] 跳过自己应用的图片复制操作: {}",
-                            app_info.name
-                        );
-                        return Ok(());
-                    }
-
-                    // 检查是否是被排除的应用
                     if let Some(bundle_id) = &app_info.bundle_id {
                         let config_guard = config_manager.lock().await;
                         if config_guard.is_app_excluded(bundle_id) {
-                            println!(
-                                "[ClipboardMonitor] 跳过被排除应用的图片: {} ({})",
-                                app_info.name, bundle_id
-                            );
                             return Ok(());
                         }
                     }
@@ -268,8 +236,7 @@ impl ClipboardMonitor {
 
                         let _ = tx.send(entry);
                     }
-                    Err(e) => {
-                        eprintln!("[ClipboardMonitor] 使用尺寸处理失败，尝试自动检测: {}", e);
+                    Err(_) => {
                         // 降级到自动检测
                         match processor.process_image(bytes).await {
                             Ok(file_path) => {
@@ -300,7 +267,7 @@ impl ClipboardMonitor {
 
                                 let _ = tx.send(entry);
                             }
-                            Err(e) => eprintln!("[ClipboardMonitor] 处理图片失败: {}", e),
+                            Err(_) => {}
                         }
                     }
                 }
