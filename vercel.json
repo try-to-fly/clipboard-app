@@ -6,7 +6,6 @@
   "installCommand": "cd website && pnpm install",
   "devCommand": "cd website && pnpm dev",
   "framework": "nextjs",
-  "functions": {},
   "headers": [
     {
       "source": "/(.*)",
