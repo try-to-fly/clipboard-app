@@ -3,41 +3,27 @@ name: Test Build
 on:
   workflow_dispatch:
     inputs:
-      platform:
-        description: 'Platform to build'
-        required: true
-        default: 'windows-latest'
-        type: choice
-        options:
-          - windows-latest
-          - macos-latest
-          - all
+      build_windows:
+        description: 'Build Windows'
+        required: false
+        default: true
+        type: boolean
+      build_macos:
+        description: 'Build macOS'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
-  test-build:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: ${{ 
-          inputs.platform == 'all' 
-          && fromJSON('["macos-latest", "windows-latest"]') 
-          || fromJSON(format('["{0}"]', inputs.platform)) 
-        }}
-
-    runs-on: ${{ matrix.platform }}
+  test-build-windows:
+    if: inputs.build_windows
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies (macOS only)
-        if: matrix.platform == 'macos-latest'
-        run: |
-          rustup target add aarch64-apple-darwin
-          rustup target add x86_64-apple-darwin
-
-      - name: Install dependencies (Windows only)
-        if: matrix.platform == 'windows-latest'
+      - name: Install dependencies (Windows)
         run: |
           rustup target add x86_64-pc-windows-msvc
 
@@ -62,24 +48,54 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      - name: Test Build (macOS)
-        if: matrix.platform == 'macos-latest'
-        run: pnpm tauri build --target universal-apple-darwin
-
       - name: Test Build (Windows)
-        if: matrix.platform == 'windows-latest'
         run: pnpm tauri build --target x86_64-pc-windows-msvc
 
-      - name: Upload build artifacts (macOS)
-        if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: src-tauri/target/universal-apple-darwin/release/bundle/
-
       - name: Upload build artifacts (Windows)
-        if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/
+
+  test-build-macos:
+    if: inputs.build_macos
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (macOS)
+        run: |
+          rustup target add aarch64-apple-darwin
+          rustup target add x86_64-apple-darwin
+
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Test Build (macOS)
+        run: pnpm tauri build --target universal-apple-darwin
+
+      - name: Upload build artifacts (macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: src-tauri/target/universal-apple-darwin/release/bundle/
