@@ -5,16 +5,12 @@ import { ScrollArea } from '../ui/scroll-area';
 import { useClipboardStore } from '../../stores/clipboardStore';
 import { ContentSubType, ContentMetadata } from '../../types/clipboard';
 import {
-  TextRenderer,
+  UnifiedTextRenderer,
   UrlRenderer,
   ColorRenderer,
-  CodeRenderer,
   IpRenderer,
   EmailRenderer,
   TimeRenderer,
-  JsonRenderer,
-  MarkdownRenderer,
-  CommandRenderer,
 } from './ContentRenderers';
 import { ImagePreview } from './ImagePreview';
 
@@ -180,19 +176,15 @@ export function DetailView() {
         return <EmailRenderer content={content} />;
       case 'color':
         return <ColorRenderer content={content} metadata={metadata} />;
-      case 'code':
-        return <CodeRenderer content={content} metadata={metadata} />;
-      case 'command':
-        return <CommandRenderer content={content} />;
       case 'timestamp':
         return <TimeRenderer content={content} metadata={metadata} />;
+      case 'code':
       case 'json':
-        return <JsonRenderer content={content} />;
       case 'markdown':
-        return <MarkdownRenderer content={content} />;
+      case 'command':
       case 'plain_text':
       default:
-        return <TextRenderer content={content} />;
+        return <UnifiedTextRenderer content={content} contentSubType={contentSubType} metadata={metadata} />;
     }
   };
 
