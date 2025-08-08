@@ -1,7 +1,7 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstalledApp {
@@ -154,7 +154,7 @@ impl AppListManager {
         println!("[AppListManager] Scanning application directories...");
         for app_dir in &app_dirs {
             println!("[AppListManager] Scanning directory: {:?}", app_dir);
-            if let Ok(entries) = std::fs::read_dir(&app_dir) {
+            if let Ok(entries) = std::fs::read_dir(app_dir) {
                 let mut count = 0;
                 for entry in entries.flatten() {
                     match Self::parse_app_bundle_macos(&entry.path()) {
@@ -206,7 +206,7 @@ impl AppListManager {
         println!("[AppListManager] Scanning Windows application directories...");
         for app_dir in &app_dirs {
             println!("[AppListManager] Scanning directory: {:?}", app_dir);
-            if let Ok(entries) = std::fs::read_dir(&app_dir) {
+            if let Ok(entries) = std::fs::read_dir(app_dir) {
                 let mut count = 0;
                 for entry in entries.flatten() {
                     if let Ok(app_folder_entries) = std::fs::read_dir(entry.path()) {
@@ -359,8 +359,8 @@ impl AppListManager {
     }
 
     #[cfg(target_os = "macos")]
-    fn parse_app_bundle_macos(bundle_path: &PathBuf) -> Result<Option<InstalledApp>> {
-        if !bundle_path.extension().map_or(false, |ext| ext == "app") {
+    fn parse_app_bundle_macos(bundle_path: &Path) -> Result<Option<InstalledApp>> {
+        if bundle_path.extension().is_none_or(|ext| ext != "app") {
             return Ok(None);
         }
 

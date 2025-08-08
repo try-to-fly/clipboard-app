@@ -26,16 +26,11 @@ pub struct AppConfig {
     pub last_update_check: Option<String>, // ISO 8601 date string
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub enum ExpiryOption {
     Days(u32),
+    #[default]
     Never,
-}
-
-impl Default for ExpiryOption {
-    fn default() -> Self {
-        ExpiryOption::Never
-    }
 }
 
 impl ExpiryOption {

@@ -99,7 +99,7 @@ impl ClipboardMonitor {
                 Ok(mut temp_clipboard) => temp_clipboard.get_text(),
                 Err(e) => Err(e)
             }
-        }).await.unwrap_or_else(|_| Err(arboard::Error::ClipboardNotSupported));
+        }).await.unwrap_or(Err(arboard::Error::ClipboardNotSupported));
 
         if let Ok(text) = text_result {
             // 先trim处理文本
@@ -144,7 +144,7 @@ impl ClipboardMonitor {
                     let (subtype, metadata) = ContentDetector::detect(trimmed_text);
 
                     // 将metadata转换为JSON字符串
-                    let metadata_json = metadata.map(|m| serde_json::to_string(&m).ok()).flatten();
+                    let metadata_json = metadata.and_then(|m| serde_json::to_string(&m).ok());
 
                     let mut entry = ClipboardEntry::new(
                         ContentType::Text,
@@ -176,7 +176,7 @@ impl ClipboardMonitor {
                 Ok(mut temp_clipboard) => temp_clipboard.get_image(),
                 Err(e) => Err(e)
             }
-        }).await.unwrap_or_else(|_| Err(arboard::Error::ClipboardNotSupported));
+        }).await.unwrap_or(Err(arboard::Error::ClipboardNotSupported));
 
         if let Ok(image_data) = image_result {
             // arboard 返回的图片数据包含宽高信息
@@ -238,36 +238,33 @@ impl ClipboardMonitor {
                     }
                     Err(_) => {
                         // 降级到自动检测
-                        match processor.process_image(bytes).await {
-                            Ok(file_path) => {
-                                // 获取实际保存的文件大小
-                                let actual_size = Self::get_saved_file_size(&file_path)
-                                    .unwrap_or(bytes.len() as u64);
+                        if let Ok(file_path) = processor.process_image(bytes).await {
+                            // 获取实际保存的文件大小
+                            let actual_size = Self::get_saved_file_size(&file_path)
+                                .unwrap_or(bytes.len() as u64);
 
-                                // 创建图片元数据（使用压缩后的文件大小）
-                                let image_metadata = serde_json::json!({
-                                    "image_metadata": {
-                                        "width": width as u32,
-                                        "height": height as u32,
-                                        "file_size": actual_size,
-                                        "format": "png"
-                                    }
-                                });
+                            // 创建图片元数据（使用压缩后的文件大小）
+                            let image_metadata = serde_json::json!({
+                                "image_metadata": {
+                                    "width": width as u32,
+                                    "height": height as u32,
+                                    "file_size": actual_size,
+                                    "format": "png"
+                                }
+                            });
 
-                                let mut entry = ClipboardEntry::new(
-                                    ContentType::Image,
-                                    Some(file_path.clone()),
-                                    hash,
-                                    app_info.as_ref().map(|info| info.name.clone()),
-                                    Some(file_path),
-                                );
-                                entry.app_bundle_id =
-                                    app_info.as_ref().and_then(|info| info.bundle_id.clone());
-                                entry.metadata = Some(image_metadata.to_string());
+                            let mut entry = ClipboardEntry::new(
+                                ContentType::Image,
+                                Some(file_path.clone()),
+                                hash,
+                                app_info.as_ref().map(|info| info.name.clone()),
+                                Some(file_path),
+                            );
+                            entry.app_bundle_id =
+                                app_info.as_ref().and_then(|info| info.bundle_id.clone());
+                            entry.metadata = Some(image_metadata.to_string());
 
-                                let _ = tx.send(entry);
-                            }
-                            Err(_) => {}
+                            let _ = tx.send(entry);
                         }
                     }
                 }

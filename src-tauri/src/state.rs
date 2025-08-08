@@ -755,7 +755,7 @@ impl AppState {
             // Remove image file if exists
             if let Some(relative_path) = file_path {
                 let images_dir = self.get_images_path()?;
-                let full_path = images_dir.join(&relative_path.replace("imgs/", ""));
+                let full_path = images_dir.join(relative_path.replace("imgs/", ""));
 
                 if full_path.exists() {
                     if let Ok(metadata) = std::fs::metadata(&full_path) {
@@ -788,18 +788,22 @@ impl AppState {
     }
 
     fn calculate_directory_size(&self, path: &PathBuf) -> Result<u64> {
-        let mut size = 0u64;
-        if path.is_dir() {
-            for entry in std::fs::read_dir(path)? {
-                let entry = entry?;
-                let metadata = entry.metadata()?;
-                if metadata.is_file() {
-                    size += metadata.len();
-                } else if metadata.is_dir() {
-                    size += self.calculate_directory_size(&entry.path())?;
-                }
+        calculate_directory_size_impl(path)
+    }
+}
+
+fn calculate_directory_size_impl(path: &PathBuf) -> Result<u64> {
+    let mut size = 0u64;
+    if path.is_dir() {
+        for entry in std::fs::read_dir(path)? {
+            let entry = entry?;
+            let metadata = entry.metadata()?;
+            if metadata.is_file() {
+                size += metadata.len();
+            } else if metadata.is_dir() {
+                size += calculate_directory_size_impl(&entry.path())?;
             }
         }
-        Ok(size)
     }
+    Ok(size)
 }

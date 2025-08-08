@@ -601,7 +601,7 @@ impl ContentProcessor {
                 let ratio = width as f64 / height as f64;
 
                 // 检查是否是合理的宽高比 (0.1 到 10.0) - 放宽限制以支持更多截图
-                if ratio >= 0.1 && ratio <= 10.0 {
+                if (0.1..=10.0).contains(&ratio) {
                     // 优先选择接近常见宽高比的尺寸
                     let common_ratios = [
                         16.0 / 9.0,
@@ -644,7 +644,7 @@ impl ContentProcessor {
                 if height >= 10 && width >= 10 {
                     // 确保尺寸不会太小
                     let ratio = width as f64 / height as f64;
-                    if ratio >= 0.05 && ratio <= 20.0 {
+                    if (0.05..=20.0).contains(&ratio) {
                         // 非常宽松的比例限制
                         println!(
                             "[detect_raw_rgba_data] 使用扩展因数分解得到尺寸: {}x{} (比例: {:.2})",

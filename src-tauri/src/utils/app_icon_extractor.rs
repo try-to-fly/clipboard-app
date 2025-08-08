@@ -261,14 +261,12 @@ impl AppIconExtractor {
         let thirty_days = std::time::Duration::from_secs(30 * 24 * 60 * 60);
 
         if let Ok(entries) = fs::read_dir(&self.icons_dir) {
-            for entry in entries {
-                if let Ok(entry) = entry {
-                    if let Ok(metadata) = entry.metadata() {
-                        if let Ok(modified) = metadata.modified() {
-                            if let Ok(age) = now.duration_since(modified) {
-                                if age > thirty_days {
-                                    let _ = fs::remove_file(entry.path());
-                                }
+            for entry in entries.flatten() {
+                if let Ok(metadata) = entry.metadata() {
+                    if let Ok(modified) = metadata.modified() {
+                        if let Ok(age) = now.duration_since(modified) {
+                            if age > thirty_days {
+                                let _ = fs::remove_file(entry.path());
                             }
                         }
                     }

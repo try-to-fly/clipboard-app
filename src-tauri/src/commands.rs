@@ -181,10 +181,8 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
             if parent.exists() {
                 println!("[get_image_url] 目录 {:?} 中的文件:", parent);
                 if let Ok(entries) = fs::read_dir(parent) {
-                    for entry in entries {
-                        if let Ok(entry) = entry {
-                            println!("  - {:?}", entry.file_name());
-                        }
+                    for entry in entries.flatten() {
+                        println!("  - {:?}", entry.file_name());
                     }
                 }
             }
@@ -590,7 +588,7 @@ pub async fn validate_shortcut(shortcut: String) -> Result<bool, String> {
     }
 
     // Check for system shortcut conflicts (basic check)
-    let system_shortcuts = vec![
+    let system_shortcuts = [
         "CmdOrCtrl+Q",   // Quit
         "CmdOrCtrl+W",   // Close window
         "CmdOrCtrl+H",   // Hide window

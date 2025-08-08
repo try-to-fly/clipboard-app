@@ -192,11 +192,9 @@ impl ContentDetector {
         // HEX颜色 - 支持 #333, #ffffff 等格式
         if text.starts_with('#') && text.len() >= 4 {
             let hex_part = &text[1..];
-            if hex_part.len() == 3 || hex_part.len() == 6 {
-                if hex_part.chars().all(|c| c.is_ascii_hexdigit()) {
-                    formats.hex = Some(text.to_string());
-                    return Some(formats);
-                }
+            if (hex_part.len() == 3 || hex_part.len() == 6) && hex_part.chars().all(|c| c.is_ascii_hexdigit()) {
+                formats.hex = Some(text.to_string());
+                return Some(formats);
             }
         }
 
