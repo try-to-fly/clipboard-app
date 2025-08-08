@@ -18,11 +18,14 @@ impl AppListManager {
     pub fn get_installed_applications() -> Result<Vec<InstalledApp>> {
         println!("[AppListManager] Starting to get installed applications...");
         let mut apps = Vec::new();
-        
+
         println!("[AppListManager] Getting running applications...");
         let running_apps = Self::get_running_applications()?;
-        println!("[AppListManager] Found {} running applications", running_apps.len());
-        
+        println!(
+            "[AppListManager] Found {} running applications",
+            running_apps.len()
+        );
+
         let running_bundle_ids: HashSet<String> = running_apps
             .iter()
             .map(|app| app.bundle_id.clone())
@@ -31,7 +34,117 @@ impl AppListManager {
         // Add running applications first
         apps.extend(running_apps);
 
-        // Scan Applications directories for additional apps
+        // Scan system directories for additional apps
+        let additional_apps = Self::scan_installed_apps(&running_bundle_ids);
+        apps.extend(additional_apps);
+
+        // Sort by name
+        apps.sort_by(|a, b| a.name.cmp(&b.name));
+        println!("[AppListManager] Total applications found: {}", apps.len());
+        Ok(apps)
+    }
+
+    fn get_running_applications() -> Result<Vec<InstalledApp>> {
+        #[cfg(target_os = "macos")]
+        {
+            Self::get_running_applications_macos()
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            Self::get_running_applications_windows()
+        }
+
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        {
+            Ok(Vec::new())
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    fn get_running_applications_macos() -> Result<Vec<InstalledApp>> {
+        let mut apps = Vec::new();
+
+        use cocoa::base::{id, nil};
+        use objc::{class, msg_send, sel, sel_impl};
+
+        unsafe {
+            let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
+            let running_apps: id = msg_send![workspace, runningApplications];
+            let count: usize = msg_send![running_apps, count];
+
+            for i in 0..count {
+                let app: id = msg_send![running_apps, objectAtIndex: i];
+
+                // Check if it's a regular application (not daemon/agent)
+                let activation_policy: i32 = msg_send![app, activationPolicy];
+                if activation_policy != 0 {
+                    // NSApplicationActivationPolicyRegular = 0
+                    continue;
+                }
+
+                // Get app name
+                let localized_name: id = msg_send![app, localizedName];
+                let name_ptr: *const i8 = msg_send![localized_name, UTF8String];
+                let name = if !name_ptr.is_null() {
+                    std::ffi::CStr::from_ptr(name_ptr)
+                        .to_string_lossy()
+                        .to_string()
+                } else {
+                    continue;
+                };
+
+                // Get bundle identifier
+                let bundle_id_ns: id = msg_send![app, bundleIdentifier];
+                let bundle_id = if bundle_id_ns != nil {
+                    let bundle_id_ptr: *const i8 = msg_send![bundle_id_ns, UTF8String];
+                    if !bundle_id_ptr.is_null() {
+                        std::ffi::CStr::from_ptr(bundle_id_ptr)
+                            .to_string_lossy()
+                            .to_string()
+                    } else {
+                        continue;
+                    }
+                } else {
+                    continue;
+                };
+
+                // Get icon (if available)
+                let icon_path = Self::get_app_icon_path(&bundle_id);
+
+                apps.push(InstalledApp {
+                    name,
+                    bundle_id,
+                    icon_path,
+                    is_running: true,
+                });
+            }
+        }
+
+        Ok(apps)
+    }
+
+    fn scan_installed_apps(running_bundle_ids: &HashSet<String>) -> Vec<InstalledApp> {
+        #[cfg(target_os = "macos")]
+        {
+            Self::scan_installed_apps_macos(running_bundle_ids)
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            Self::scan_installed_apps_windows(running_bundle_ids)
+        }
+
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        {
+            Vec::new()
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    fn scan_installed_apps_macos(running_bundle_ids: &HashSet<String>) -> Vec<InstalledApp> {
+        let mut apps = Vec::new();
+
         let app_dirs = vec![
             PathBuf::from("/Applications"),
             dirs::home_dir()
@@ -45,7 +158,7 @@ impl AppListManager {
             if let Ok(entries) = std::fs::read_dir(&app_dir) {
                 let mut count = 0;
                 for entry in entries.flatten() {
-                    match Self::parse_app_bundle(&entry.path()) {
+                    match Self::parse_app_bundle_macos(&entry.path()) {
                         Ok(Some(app)) => {
                             // Don't duplicate running apps
                             if !running_bundle_ids.contains(&app.bundle_id) {
@@ -58,93 +171,195 @@ impl AppListManager {
                         }
                         Err(e) => {
                             // Log error but continue with other apps
-                            println!("Warning: Failed to parse app bundle at {:?}: {}", entry.path(), e);
+                            println!(
+                                "Warning: Failed to parse app bundle at {:?}: {}",
+                                entry.path(),
+                                e
+                            );
                         }
                     }
                 }
-                println!("[AppListManager] Found {} additional apps in {:?}", count, app_dir);
+                println!(
+                    "[AppListManager] Found {} additional apps in {:?}",
+                    count, app_dir
+                );
             } else {
                 println!("[AppListManager] Could not read directory: {:?}", app_dir);
             }
         }
 
-        // Sort by name
-        apps.sort_by(|a, b| a.name.cmp(&b.name));
-        println!("[AppListManager] Total applications found: {}", apps.len());
-        Ok(apps)
+        apps
     }
 
-    fn get_running_applications() -> Result<Vec<InstalledApp>> {
+    #[cfg(target_os = "windows")]
+    fn scan_installed_apps_windows(running_bundle_ids: &HashSet<String>) -> Vec<InstalledApp> {
         let mut apps = Vec::new();
 
-        #[cfg(target_os = "macos")]
-        {
-            use cocoa::base::{id, nil};
-            use objc::{class, msg_send, sel, sel_impl};
+        // Common Windows application directories
+        let app_dirs = vec![
+            PathBuf::from("C:\\Program Files"),
+            PathBuf::from("C:\\Program Files (x86)"),
+            dirs::home_dir()
+                .map(|home| home.join("AppData\\Local\\Programs"))
+                .unwrap_or_default(),
+        ];
 
-            unsafe {
-                let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
-                let running_apps: id = msg_send![workspace, runningApplications];
-                let count: usize = msg_send![running_apps, count];
-
-                for i in 0..count {
-                    let app: id = msg_send![running_apps, objectAtIndex: i];
-
-                    // Check if it's a regular application (not daemon/agent)
-                    let activation_policy: i32 = msg_send![app, activationPolicy];
-                    if activation_policy != 0 {
-                        // NSApplicationActivationPolicyRegular = 0
-                        continue;
-                    }
-
-                    // Get app name
-                    let localized_name: id = msg_send![app, localizedName];
-                    let name_ptr: *const i8 = msg_send![localized_name, UTF8String];
-                    let name = if !name_ptr.is_null() {
-                        std::ffi::CStr::from_ptr(name_ptr)
-                            .to_string_lossy()
-                            .to_string()
-                    } else {
-                        continue;
-                    };
-
-                    // Get bundle identifier
-                    let bundle_id_ns: id = msg_send![app, bundleIdentifier];
-                    let bundle_id = if bundle_id_ns != nil {
-                        let bundle_id_ptr: *const i8 = msg_send![bundle_id_ns, UTF8String];
-                        if !bundle_id_ptr.is_null() {
-                            std::ffi::CStr::from_ptr(bundle_id_ptr)
-                                .to_string_lossy()
-                                .to_string()
-                        } else {
-                            continue;
+        println!("[AppListManager] Scanning Windows application directories...");
+        for app_dir in &app_dirs {
+            println!("[AppListManager] Scanning directory: {:?}", app_dir);
+            if let Ok(entries) = std::fs::read_dir(&app_dir) {
+                let mut count = 0;
+                for entry in entries.flatten() {
+                    if let Ok(app_folder_entries) = std::fs::read_dir(entry.path()) {
+                        for app_entry in app_folder_entries.flatten() {
+                            if let Some(extension) = app_entry.path().extension() {
+                                if extension == "exe" {
+                                    match Self::parse_executable_windows(&app_entry.path()) {
+                                        Ok(Some(app)) => {
+                                            // Don't duplicate running apps
+                                            if !running_bundle_ids.contains(&app.bundle_id) {
+                                                apps.push(app);
+                                                count += 1;
+                                            }
+                                        }
+                                        Ok(None) => {}
+                                        Err(e) => {
+                                            println!(
+                                                "Warning: Failed to parse executable at {:?}: {}",
+                                                app_entry.path(),
+                                                e
+                                            );
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    } else {
-                        continue;
-                    };
-
-                    // Get icon (if available)
-                    let icon_path = Self::get_app_icon_path(&bundle_id);
-
-                    apps.push(InstalledApp {
-                        name,
-                        bundle_id,
-                        icon_path,
-                        is_running: true,
-                    });
+                    }
                 }
+                println!(
+                    "[AppListManager] Found {} additional apps in {:?}",
+                    count, app_dir
+                );
+            } else {
+                println!("[AppListManager] Could not read directory: {:?}", app_dir);
             }
         }
 
-        #[cfg(not(target_os = "macos"))]
-        {
-            // Fallback for other platforms
+        apps
+    }
+
+    #[cfg(target_os = "windows")]
+    fn get_running_applications_windows() -> Result<Vec<InstalledApp>> {
+        use std::collections::HashMap;
+        use std::ffi::OsString;
+        use std::os::windows::ffi::OsStringExt;
+        use winapi::shared::minwindef::{DWORD, FALSE, MAX_PATH};
+        use winapi::um::handleapi::CloseHandle;
+        use winapi::um::processthreadsapi::{GetProcessImageFileNameW, OpenProcess};
+        use winapi::um::psapi::{EnumProcesses, GetModuleBaseNameW};
+        use winapi::um::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
+
+        let mut apps = Vec::new();
+        let mut process_map = HashMap::new();
+
+        unsafe {
+            let mut processes = [0u32; 1024];
+            let mut bytes_returned = 0u32;
+
+            if EnumProcesses(
+                processes.as_mut_ptr(),
+                (processes.len() * std::mem::size_of::<u32>()) as u32,
+                &mut bytes_returned,
+            ) == 0
+            {
+                return Ok(apps);
+            }
+
+            let process_count = bytes_returned as usize / std::mem::size_of::<u32>();
+
+            for &process_id in &processes[..process_count] {
+                if process_id == 0 {
+                    continue;
+                }
+
+                let process_handle = OpenProcess(
+                    PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+                    FALSE,
+                    process_id,
+                );
+
+                if process_handle.is_null() {
+                    continue;
+                }
+
+                // Get process name
+                let mut process_name = [0u16; MAX_PATH];
+                let name_len = GetModuleBaseNameW(
+                    process_handle,
+                    std::ptr::null_mut(),
+                    process_name.as_mut_ptr(),
+                    MAX_PATH as DWORD,
+                );
+
+                if name_len > 0 {
+                    let name_slice = &process_name[..name_len as usize];
+                    let name = OsString::from_wide(name_slice)
+                        .to_string_lossy()
+                        .to_string();
+
+                    // Get executable path
+                    let mut exe_path = [0u16; MAX_PATH];
+                    let path_len = GetProcessImageFileNameW(
+                        process_handle,
+                        exe_path.as_mut_ptr(),
+                        MAX_PATH as DWORD,
+                    );
+
+                    let bundle_id = if path_len > 0 {
+                        let path_slice = &exe_path[..path_len as usize];
+                        let path_string = OsString::from_wide(path_slice)
+                            .to_string_lossy()
+                            .to_string();
+
+                        if let Some(filename) = std::path::Path::new(&path_string).file_stem() {
+                            filename.to_string_lossy().to_string()
+                        } else {
+                            name.clone()
+                        }
+                    } else {
+                        name.clone()
+                    };
+
+                    // Avoid duplicates based on bundle_id
+                    if !process_map.contains_key(&bundle_id) {
+                        // Remove .exe extension from display name
+                        let display_name = if name.ends_with(".exe") {
+                            name.trim_end_matches(".exe").to_string()
+                        } else {
+                            name
+                        };
+
+                        let icon_path = Self::get_app_icon_path(&bundle_id);
+
+                        process_map.insert(bundle_id.clone(), ());
+                        apps.push(InstalledApp {
+                            name: display_name,
+                            bundle_id,
+                            icon_path,
+                            is_running: true,
+                        });
+                    }
+                }
+
+                CloseHandle(process_handle);
+            }
         }
 
         Ok(apps)
     }
 
-    fn parse_app_bundle(bundle_path: &PathBuf) -> Result<Option<InstalledApp>> {
+    #[cfg(target_os = "macos")]
+    fn parse_app_bundle_macos(bundle_path: &PathBuf) -> Result<Option<InstalledApp>> {
         if !bundle_path.extension().map_or(false, |ext| ext == "app") {
             return Ok(None);
         }
@@ -176,7 +391,7 @@ impl AppListManager {
                 return Ok(None);
             }
         };
-        
+
         let display_name = Self::extract_plist_value(&plist_content, "CFBundleDisplayName")
             .or_else(|_| Self::extract_plist_value(&plist_content, "CFBundleName"))
             .unwrap_or_else(|_| {
@@ -216,9 +431,43 @@ impl AppListManager {
         Err(anyhow::anyhow!("Key {} not found in plist", key))
     }
 
+    #[cfg(target_os = "windows")]
+    fn parse_executable_windows(exe_path: &PathBuf) -> Result<Option<InstalledApp>> {
+        if !exe_path.extension().map_or(false, |ext| ext == "exe") {
+            return Ok(None);
+        }
+
+        // Skip system executables and common non-application files
+        let filename = exe_path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+
+        // Skip common system files
+        let system_files = [
+            "unins", "setup", "install", "update", "launcher", "helper", "service", "daemon",
+            "crash", "error",
+        ];
+
+        if system_files
+            .iter()
+            .any(|&sys| filename.to_lowercase().contains(sys))
+        {
+            return Ok(None);
+        }
+
+        let display_name = filename.to_string();
+        let bundle_id = filename.to_lowercase();
+        let icon_path = Self::get_app_icon_path(&bundle_id);
+
+        Ok(Some(InstalledApp {
+            name: display_name,
+            bundle_id,
+            icon_path,
+            is_running: false,
+        }))
+    }
+
     fn get_app_icon_path(bundle_id: &str) -> Option<String> {
         use crate::utils::app_icon_extractor::AppIconExtractor;
-        
+
         if let Ok(extractor) = AppIconExtractor::new() {
             if let Ok(Some(icon_path)) = extractor.extract_and_cache_icon(bundle_id) {
                 return icon_path.to_string_lossy().to_string().into();

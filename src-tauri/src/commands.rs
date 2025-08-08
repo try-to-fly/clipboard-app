@@ -547,14 +547,20 @@ pub async fn cleanup_expired_entries(state: State<'_, AppState>) -> Result<Clean
 #[tauri::command]
 pub async fn get_installed_applications() -> Result<Vec<InstalledApp>, String> {
     println!("[get_installed_applications] Starting to load applications...");
-    
+
     match AppListManager::get_installed_applications() {
         Ok(apps) => {
-            println!("[get_installed_applications] Successfully loaded {} applications", apps.len());
+            println!(
+                "[get_installed_applications] Successfully loaded {} applications",
+                apps.len()
+            );
             Ok(apps)
         }
         Err(e) => {
-            println!("[get_installed_applications] Error loading applications: {}", e);
+            println!(
+                "[get_installed_applications] Error loading applications: {}",
+                e
+            );
             Err(e.to_string())
         }
     }
@@ -609,7 +615,7 @@ pub async fn check_for_update(
     let mut config = state.get_config().await.map_err(|e| e.to_string())?;
     config.last_update_check = Some(UpdateManager::get_current_timestamp());
     let _ = state.update_config(config).await;
-    
+
     UpdateManager::check_for_updates(&app_handle)
         .await
         .map_err(|e| e.to_string())
@@ -625,12 +631,12 @@ pub async fn install_update(app_handle: tauri::AppHandle) -> Result<(), String> 
 #[tauri::command]
 pub async fn should_check_for_updates(state: State<'_, AppState>) -> Result<bool, String> {
     let config = state.get_config().await.map_err(|e| e.to_string())?;
-    
+
     // Check if auto-update is enabled
     if !config.auto_update {
         return Ok(false);
     }
-    
+
     // Check if enough time has passed since last check
     Ok(UpdateManager::should_check_for_updates(
         config.last_update_check.as_deref(),

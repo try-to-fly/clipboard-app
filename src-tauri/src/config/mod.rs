@@ -108,17 +108,19 @@ impl ConfigManager {
             Self::save_config(&config_path, &default_config).await?;
             default_config
         };
-        
+
         // Migrate old excluded_apps format to new format if needed
         let mut migrated_config = config.clone();
-        let needs_migration = !migrated_config.excluded_apps.is_empty() && migrated_config.excluded_apps_v2.is_empty();
-        
+        let needs_migration = !migrated_config.excluded_apps.is_empty()
+            && migrated_config.excluded_apps_v2.is_empty();
+
         if needs_migration {
             println!("Migrating excluded apps to new format...");
-            migrated_config.excluded_apps_v2 = Self::migrate_excluded_apps(&migrated_config.excluded_apps).await;
+            migrated_config.excluded_apps_v2 =
+                Self::migrate_excluded_apps(&migrated_config.excluded_apps).await;
             migrated_config.excluded_apps.clear(); // Clear old format
         }
-        
+
         // Always save the config after loading to ensure it's in the latest format
         if config_path.exists() || needs_migration {
             Self::save_config(&config_path, &migrated_config).await?;
@@ -150,7 +152,7 @@ impl ConfigManager {
 
     async fn load_config(path: &PathBuf) -> Result<AppConfig> {
         let content = fs::read_to_string(path).await?;
-        
+
         // Try to parse as new format first
         match serde_json::from_str::<AppConfig>(&content) {
             Ok(config) => Ok(config),
@@ -174,7 +176,8 @@ impl ConfigManager {
             .excluded_apps
             .iter()
             .any(|excluded| excluded == bundle_id)
-            || self.config
+            || self
+                .config
                 .excluded_apps_v2
                 .iter()
                 .any(|excluded| excluded.bundle_id == bundle_id)
@@ -188,13 +191,16 @@ impl ConfigManager {
 
     async fn migrate_excluded_apps(old_excluded_apps: &[String]) -> Vec<ExcludedApp> {
         use crate::utils::app_list::AppListManager;
-        
+
         let mut migrated_apps = Vec::new();
-        
+
         // Try to get app names from the system
         if let Ok(installed_apps) = AppListManager::get_installed_applications() {
             for bundle_id in old_excluded_apps {
-                if let Some(app) = installed_apps.iter().find(|app| &app.bundle_id == bundle_id) {
+                if let Some(app) = installed_apps
+                    .iter()
+                    .find(|app| &app.bundle_id == bundle_id)
+                {
                     migrated_apps.push(ExcludedApp {
                         name: app.name.clone(),
                         bundle_id: app.bundle_id.clone(),
@@ -216,14 +222,14 @@ impl ConfigManager {
                 });
             }
         }
-        
+
         migrated_apps
     }
 
     async fn migrate_old_config(content: &str) -> Result<AppConfig> {
         // Parse as generic JSON first
         let mut json: Value = serde_json::from_str(content)?;
-        
+
         // Migrate text.expiry_days to text.expiry
         if let Some(text) = json.get_mut("text") {
             if let Some(expiry_days) = text.get("expiry_days").and_then(|v| v.as_u64()) {
@@ -231,17 +237,17 @@ impl ConfigManager {
                 if expiry_days == 0 {
                     text.as_object_mut().unwrap().insert(
                         "expiry".to_string(),
-                        serde_json::Value::String("Never".to_string())
+                        serde_json::Value::String("Never".to_string()),
                     );
                 } else {
                     text.as_object_mut().unwrap().insert(
                         "expiry".to_string(),
-                        serde_json::json!({"Days": expiry_days})
+                        serde_json::json!({"Days": expiry_days}),
                     );
                 }
             }
         }
-        
+
         // Migrate image.expiry_days to image.expiry
         if let Some(image) = json.get_mut("image") {
             if let Some(expiry_days) = image.get("expiry_days").and_then(|v| v.as_u64()) {
@@ -249,17 +255,17 @@ impl ConfigManager {
                 if expiry_days == 0 {
                     image.as_object_mut().unwrap().insert(
                         "expiry".to_string(),
-                        serde_json::Value::String("Never".to_string())
+                        serde_json::Value::String("Never".to_string()),
                     );
                 } else {
                     image.as_object_mut().unwrap().insert(
                         "expiry".to_string(),
-                        serde_json::json!({"Days": expiry_days})
+                        serde_json::json!({"Days": expiry_days}),
                     );
                 }
             }
         }
-        
+
         // Convert back to AppConfig
         let migrated_config: AppConfig = serde_json::from_value(json)?;
         println!("Config migration completed successfully");

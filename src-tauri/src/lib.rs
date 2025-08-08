@@ -79,18 +79,18 @@ pub fn run() {
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, _event| {
                     println!("Global shortcut triggered: {:?}", shortcut);
-                    
+
                     // Show/focus the main window when global shortcut is pressed
                     if let Some(window) = app.get_webview_window("main") {
                         let _ = window.show();
                         let _ = window.set_focus();
                         let _ = window.unminimize();
                     }
-                    
+
                     // Also emit event to frontend
                     let _ = app.emit("global-shortcut", shortcut);
                 })
-                .build()
+                .build(),
         )
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -184,10 +184,19 @@ pub fn run() {
                 // Load config and register global shortcut on startup
                 if let Ok(config) = state.get_config().await {
                     if !config.global_shortcut.is_empty() {
-                        if let Err(e) = state.register_global_shortcut(app_handle.clone(), config.global_shortcut.clone()).await {
+                        if let Err(e) = state
+                            .register_global_shortcut(
+                                app_handle.clone(),
+                                config.global_shortcut.clone(),
+                            )
+                            .await
+                        {
                             eprintln!("Failed to register global shortcut on startup: {}", e);
                         } else {
-                            println!("Global shortcut registered on startup: {}", config.global_shortcut);
+                            println!(
+                                "Global shortcut registered on startup: {}",
+                                config.global_shortcut
+                            );
                         }
                     }
                 }

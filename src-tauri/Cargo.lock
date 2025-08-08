@@ -695,6 +695,7 @@ dependencies = [
  "tokio",
  "url",
  "uuid",
+ "winapi",
 ]
 
 [[package]]

@@ -38,7 +38,7 @@ impl UpdateManager {
     /// Check for updates
     pub async fn check_for_updates(app: &AppHandle) -> Result<Option<UpdateInfo>> {
         let updater = app.updater_builder().build()?;
-        
+
         match updater.check().await {
             Ok(Some(update)) => {
                 let info = UpdateInfo {
@@ -61,11 +61,11 @@ impl UpdateManager {
     /// Download and install update
     pub async fn download_and_install(app: &AppHandle) -> Result<()> {
         let updater = app.updater_builder().build()?;
-        
+
         if let Some(update) = updater.check().await? {
             // Emit progress events to frontend
             let app_handle = app.clone();
-            
+
             update
                 .download_and_install(
                     |chunk_length, content_length| {
@@ -74,7 +74,7 @@ impl UpdateManager {
                         } else {
                             0
                         };
-                        
+
                         let _ = app_handle.emit("update-download-progress", progress);
                     },
                     || {
@@ -84,7 +84,7 @@ impl UpdateManager {
                 )
                 .await?;
         }
-        
+
         Ok(())
     }
 
