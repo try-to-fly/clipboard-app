@@ -84,35 +84,37 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
     }
   };
 
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">{displayName}</Badge>
-            {language !== 'plaintext' && (
-              <Badge variant="outline" className="text-xs">
-                {language}
-              </Badge>
-            )}
-          </div>
-          <Button onClick={handleCopy} size="sm" variant="outline">
-            <Copy className="w-4 h-4 mr-2" />
-            {isCopied ? '已复制' : '复制'}
-          </Button>
-        </div>
-      </CardHeader>
 
-      <CardContent className="p-0">
-        <div className="border-t">
-          <Suspense fallback={
-            <div className="flex items-center justify-center h-32">
-              <div className="text-sm text-muted-foreground">加载编辑器...</div>
+  return (
+    <div className="h-full flex flex-col">
+      <Card id="text-renderer" className="flex-1 flex flex-col">
+        <CardHeader id="text-renderer-header" className="pb-3 flex-shrink-0">
+          <div id="text-renderer-toolbar" className="flex items-center justify-between">
+            <div id="text-renderer-badges" className="flex items-center gap-2">
+              <Badge variant="secondary">{displayName}</Badge>
+              {language !== 'plaintext' && (
+                <Badge variant="outline" className="text-xs">
+                  {language}
+                </Badge>
+              )}
             </div>
-          }>
-            <MonacoEditor
-              key={`${language}-${resolvedTheme}-${content.substring(0, 50)}`}
-              height="400px"
+            <Button id="text-renderer-copy-btn" onClick={handleCopy} size="sm" variant="outline">
+              <Copy className="w-4 h-4 mr-2" />
+              {isCopied ? '已复制' : '复制'}
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent id="text-renderer-content" className="p-0 flex-1 flex flex-col">
+          <div id="text-renderer-editor-container" className="border-t flex-1">
+            <Suspense fallback={
+              <div id="text-renderer-loading" className="flex items-center justify-center h-32">
+                <div className="text-sm text-muted-foreground">加载编辑器...</div>
+              </div>
+            }>
+              <MonacoEditor
+                key={`${language}-${resolvedTheme}-${content.substring(0, 50)}`}
+                height="100%"
               language={language}
               value={editedContent}
               onChange={(value) => setEditedContent(value || '')}
@@ -150,5 +152,6 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 }

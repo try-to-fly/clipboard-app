@@ -26,20 +26,20 @@ function AppContent() {
       <MenuEventHandler />
       <UpdateChecker />
       <ClipboardKeyHandler />
-      <div className="flex flex-col h-screen">
-        <div className="flex items-center justify-between p-3 bg-background border-b">
-          <div className="flex-1">
+      <div id="app-container" className="flex flex-col h-screen">
+        <div id="app-header" className="flex items-center justify-between p-3 bg-background border-b">
+          <div id="search-container" className="flex-1">
             <SearchBar />
           </div>
-          <div className="ml-4">
+          <div id="theme-toggle-container" className="ml-4">
             <ThemeToggle />
           </div>
         </div>
-        <div className="flex flex-1 gap-4 p-4 overflow-hidden min-h-0">
-          <div className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden">
+        <div id="main-content" className="flex flex-1 gap-4 p-4 overflow-hidden min-h-0">
+          <div id="clipboard-list-container" className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden">
             <ClipboardList />
           </div>
-          <div className="flex-1 min-w-0 overflow-hidden">
+          <div id="detail-view-container" className="flex-1 min-w-0 overflow-hidden flex flex-col">
             <DetailView />
           </div>
         </div>

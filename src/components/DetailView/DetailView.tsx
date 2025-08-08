@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { ScrollArea } from '../ui/scroll-area';
 import { useClipboardStore } from '../../stores/clipboardStore';
 import { ContentSubType, ContentMetadata } from '../../types/clipboard';
 import {
@@ -62,9 +61,9 @@ export function DetailView() {
 
   if (!selectedEntry) {
     return (
-      <Card className="flex-1 flex flex-col">
-        <CardContent className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center text-muted-foreground">
+      <Card id="detail-view-empty" className="flex-1 flex flex-col">
+        <CardContent id="detail-view-empty-content" className="flex-1 flex items-center justify-center p-8">
+          <div id="detail-view-empty-message" className="text-center text-muted-foreground">
             <p>选择一个项目查看详情</p>
           </div>
         </CardContent>
@@ -189,29 +188,29 @@ export function DetailView() {
   };
 
   return (
-    <Card className="flex-1 flex flex-col overflow-hidden">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">详情预览</CardTitle>
-        <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
-          <div className="flex items-center gap-2">
+    <Card id="detail-view" className="flex-1 flex flex-col overflow-hidden">
+      <CardHeader id="detail-view-header" className="pb-3">
+        <CardTitle id="detail-view-title" className="text-lg">详情预览</CardTitle>
+        <div id="detail-view-metadata" className="grid grid-cols-2 gap-3 mt-3 text-sm">
+          <div id="detail-view-type" className="flex items-center gap-2">
             <span className="text-muted-foreground">类型:</span>
             <Badge variant="secondary" className="text-xs">
               {getContentType()}
             </Badge>
           </div>
-          <div className="flex items-center gap-2">
+          <div id="detail-view-source" className="flex items-center gap-2">
             <span className="text-muted-foreground">来源:</span>
             <span className="text-foreground font-medium">
               {selectedEntry.source_app || '未知'}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div id="detail-view-time" className="flex items-center gap-2">
             <span className="text-muted-foreground">时间:</span>
             <span className="text-foreground font-mono text-xs">
               {formatDate(selectedEntry.created_at)}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div id="detail-view-count" className="flex items-center gap-2">
             <span className="text-muted-foreground">复制次数:</span>
             <Badge variant="outline" className="text-xs">
               {selectedEntry.copy_count}
@@ -220,12 +219,12 @@ export function DetailView() {
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-hidden p-0">
-        <ScrollArea className="h-full">
-          <div className="p-6">
+      <CardContent id="detail-view-content" className="flex-1 overflow-hidden p-0">
+        <div id="detail-view-scroll" className="h-full overflow-y-auto">
+          <div id="detail-view-content-wrapper" className="p-6 h-full flex flex-col">
             {renderContent()}
           </div>
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );

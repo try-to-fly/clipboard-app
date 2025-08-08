@@ -90,20 +90,20 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+    <div id="url-renderer" className="space-y-4">
+      <Card id="url-renderer-info">
+        <CardHeader id="url-renderer-header" className="pb-3">
+          <div id="url-renderer-toolbar" className="flex items-center justify-between">
+            <div id="url-renderer-badges" className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
               <Badge variant="secondary">URL链接</Badge>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={() => handleCopy(content)} size="sm" variant="outline">
+            <div id="url-renderer-actions" className="flex gap-2">
+              <Button id="url-renderer-copy-btn" onClick={() => handleCopy(content)} size="sm" variant="outline">
                 <Copy className="w-4 h-4 mr-2" />
                 复制URL
               </Button>
-              <Button onClick={handleOpenUrl} size="sm" variant="outline">
+              <Button id="url-renderer-open-btn" onClick={handleOpenUrl} size="sm" variant="outline">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 打开链接
               </Button>
@@ -203,17 +203,17 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
       )}
 
       {previewType === 'json' && jsonContent && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
+        <Card id="url-renderer-json">
+          <CardHeader id="url-renderer-json-header" className="pb-3">
+            <div id="url-renderer-json-title" className="flex items-center gap-2">
               <FileJson className="w-4 h-4" />
               <span className="text-sm font-medium">内容预览</span>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="border-t">
+          <CardContent id="url-renderer-json-content" className="p-0">
+            <div id="url-renderer-json-editor" className="border-t">
               <Suspense fallback={
-                <div className="flex items-center justify-center h-32">
+                <div id="url-renderer-json-loading" className="flex items-center justify-center h-32">
                   <div className="text-sm text-muted-foreground">加载编辑器...</div>
                 </div>
               }>

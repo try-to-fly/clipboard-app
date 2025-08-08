@@ -207,9 +207,10 @@ export const ClipboardList: React.FC = () => {
   }
 
   return (
-    <Card className="flex-1 flex flex-col overflow-hidden border">
-      <ScrollArea className="flex-1">
+    <Card id="clipboard-list" className="flex-1 flex flex-col overflow-hidden border">
+      <ScrollArea id="clipboard-list-scroll" className="flex-1">
         <div 
+          id="clipboard-list-items"
           className="p-2 space-y-2" 
           ref={scrollViewportRef}
         >
