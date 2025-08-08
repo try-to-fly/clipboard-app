@@ -13,10 +13,11 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { Settings, Keyboard, Shield, Power, Plus, X } from 'lucide-react';
+import { Settings, Keyboard, Shield, Power, Plus, X, CheckCircle } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { useConfigStore } from '../../stores/configStore';
 import { ShortcutRecorder } from './ShortcutRecorder';
+import * as Toast from '@radix-ui/react-toast';
 
 export function PreferencesModal() {
   const {
@@ -41,6 +42,10 @@ export function PreferencesModal() {
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(config?.auto_update ?? true);
   const [shortcutError, setShortcutError] = useState<string | null>(null);
   const [availableApps, setAvailableApps] = useState<{name: string, bundle_id: string}[]>([]);
+  const [updateCheckLoading, setUpdateCheckLoading] = useState(false);
+  const [showUpdateToast, setShowUpdateToast] = useState(false);
+  const [updateToastMessage, setUpdateToastMessage] = useState('');
+  const [updateToastType, setUpdateToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     if (showPreferences && !config) {
@@ -128,7 +133,8 @@ export function PreferencesModal() {
   }
 
   return (
-    <Dialog open={showPreferences} onOpenChange={setShowPreferences}>
+    <Toast.Provider swipeDirection="right">
+      <Dialog open={showPreferences} onOpenChange={setShowPreferences}>
       <DialogContent className="max-w-3xl h-[70vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
@@ -382,36 +388,53 @@ export function PreferencesModal() {
                       variant="secondary"
                       onClick={async () => {
                         const { invoke } = await import('@tauri-apps/api/core');
-                        const { ask } = await import('@tauri-apps/plugin-dialog');
+                        const { ask, message } = await import('@tauri-apps/plugin-dialog');
                         
+                        setUpdateCheckLoading(true);
                         try {
+                          console.log('Starting manual update check...');
+                          const { getVersion } = await import('@tauri-apps/api/app');
+                          const currentVersion = await getVersion();
+                          console.log('Current version:', currentVersion);
                           const updateInfo = await invoke<any>('check_for_update');
-                          if (updateInfo && updateInfo.available) {
+                          console.log('Update check result:', updateInfo);
+                          
+                          if (updateInfo.available === true) {
+                            console.log('Update available, showing dialog');
                             const yes = await ask(
-                              `发现新版本 ${updateInfo.version}！\n\n${updateInfo.notes || ''}\n\n是否立即更新？`,
-                              { title: '软件更新', okLabel: '更新', cancelLabel: '稍后' }
+                              `发现新版本 ${updateInfo.version}！\n\n${updateInfo.notes || '更新内容：\n- 性能优化\n- 错误修复'}\n\n是否立即更新？`,
+                              { title: '软件更新', okLabel: '立即更新', cancelLabel: '稍后' }
                             );
                             if (yes) {
-                              await invoke('install_update');
+                              try {
+                                await invoke('install_update');
+                                // App will restart automatically after update
+                              } catch (installError) {
+                                console.error('Failed to install update:', installError);
+                                await message('更新安装失败，请稍后重试', { 
+                                  title: '更新错误'
+                                });
+                              }
                             }
                           } else {
-                            await ask('当前已是最新版本', { 
-                              title: '检查更新',
-                              okLabel: '确定',
-                              cancelLabel: undefined
-                            });
+                            console.log('No updates available, showing toast');
+                            setUpdateToastMessage(`当前已是最新版本 v${currentVersion}`);
+                            setUpdateToastType('success');
+                            setShowUpdateToast(true);
                           }
                         } catch (error) {
                           console.error('Failed to check for updates:', error);
-                          await ask('检查更新失败，请稍后重试', { 
-                            title: '错误',
-                            okLabel: '确定',
-                            cancelLabel: undefined
-                          });
+                          const errorMessage = typeof error === 'string' ? error : '网络连接失败，请检查网络连接后重试';
+                          setUpdateToastMessage(`检查更新失败：${errorMessage}`);
+                          setUpdateToastType('error');
+                          setShowUpdateToast(true);
+                        } finally {
+                          setUpdateCheckLoading(false);
                         }
                       }}
+                      disabled={updateCheckLoading}
                     >
-                      立即检查更新
+                      {updateCheckLoading ? '检查中...' : '立即检查更新'}
                     </Button>
                   </div>
                 </div>
@@ -484,5 +507,30 @@ export function PreferencesModal() {
         </div>
       </DialogContent>
     </Dialog>
+
+    <Toast.Root
+      className="bg-card border border-border rounded-md shadow-lg p-4 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+      open={showUpdateToast}
+      onOpenChange={setShowUpdateToast}
+      duration={4000}
+    >
+      <Toast.Title className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
+        {updateToastType === 'success' ? (
+          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+        ) : (
+          <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+        )}
+        {updateToastType === 'success' ? '检查更新完成' : '检查更新失败'}
+      </Toast.Title>
+      <Toast.Description className="text-sm text-muted-foreground mt-1">
+        {updateToastMessage}
+      </Toast.Description>
+      <Toast.Close className="absolute right-2 top-2 rounded-md p-1 text-muted-foreground hover:text-card-foreground transition-colors">
+        <X className="h-3 w-3" />
+      </Toast.Close>
+    </Toast.Root>
+
+    <Toast.Viewport className="fixed top-4 right-4 flex flex-col p-6 gap-2 w-96 max-w-[100vw] m-0 list-none z-[2147483647] outline-none" />
+    </Toast.Provider>
   );
 }

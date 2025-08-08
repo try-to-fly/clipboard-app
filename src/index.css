@@ -64,3 +64,67 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+@layer components {
+  /* Update Toast Styles */
+  .update-toast {
+    @apply bg-card border border-border rounded-lg shadow-lg p-4 min-w-96;
+    @apply data-[state=open]:animate-in data-[state=closed]:animate-out;
+    @apply data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0;
+    @apply data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95;
+    @apply data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2;
+    @apply data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2;
+  }
+
+  .update-toast-title {
+    @apply flex items-center gap-2 text-sm font-semibold text-card-foreground mb-2;
+  }
+
+  .update-toast-description {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .update-toast-close {
+    @apply absolute right-2 top-2 rounded-md p-1 text-muted-foreground hover:text-card-foreground transition-colors;
+  }
+
+  .update-toast-viewport {
+    @apply fixed top-4 right-4 flex flex-col p-6 gap-2 w-96 max-w-[100vw] m-0 list-none z-[2147483647] outline-none;
+  }
+
+  .download-progress {
+    @apply space-y-2;
+  }
+
+  .progress-text {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .progress-bar {
+    @apply w-full bg-secondary rounded-full h-2 overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full bg-primary transition-all duration-300 ease-out;
+  }
+
+  .update-notes {
+    @apply text-sm text-card-foreground mb-3 leading-relaxed;
+  }
+
+  .update-actions {
+    @apply flex gap-2 mt-3;
+  }
+
+  .update-btn {
+    @apply px-3 py-1.5 rounded-md text-sm font-medium transition-colors;
+  }
+
+  .update-btn.primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .update-btn.secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+}

@@ -37,19 +37,22 @@ export function UpdateChecker() {
       const shouldCheck = await invoke<boolean>('should_check_for_updates');
       
       if (!shouldCheck) {
-        console.log('Skipping update check (disabled or checked recently)');
+        console.log('[UpdateChecker] Skipping update check (disabled or checked recently)');
         return;
       }
 
-      console.log('Checking for updates on startup...');
+      console.log('[UpdateChecker] Checking for updates on startup...');
       const info = await invoke<UpdateInfo>('check_for_update');
       
-      if (info && info.available) {
+      if (info.available) {
+        console.log('[UpdateChecker] Update available, showing notification');
         setUpdateInfo(info);
         setShowToast(true);
+      } else {
+        console.log('[UpdateChecker] No updates available on startup check');
       }
     } catch (error) {
-      console.error('Failed to check for updates:', error);
+      console.error('[UpdateChecker] Failed to check for updates on startup:', error);
     }
   };
 

@@ -610,15 +610,33 @@ pub async fn validate_shortcut(shortcut: String) -> Result<bool, String> {
 pub async fn check_for_update(
     app_handle: tauri::AppHandle,
     state: State<'_, AppState>,
-) -> Result<Option<UpdateInfo>, String> {
+) -> Result<UpdateInfo, String> {
+    println!("[check_for_update] Manual update check requested");
+    
     // Update last check time in config
     let mut config = state.get_config().await.map_err(|e| e.to_string())?;
     config.last_update_check = Some(UpdateManager::get_current_timestamp());
     let _ = state.update_config(config).await;
 
-    UpdateManager::check_for_updates(&app_handle)
-        .await
-        .map_err(|e| e.to_string())
+    match UpdateManager::check_for_updates(&app_handle).await {
+        Ok(Some(update_info)) => {
+            println!("[check_for_update] Check completed successfully - update available");
+            Ok(update_info)
+        }
+        Ok(None) => {
+            println!("[check_for_update] Check completed successfully - no updates");
+            Ok(UpdateInfo {
+                version: app_handle.package_info().version.to_string(),
+                notes: None,
+                pub_date: None,
+                available: false,
+            })
+        }
+        Err(e) => {
+            eprintln!("[check_for_update] Update check failed: {}", e);
+            Err(format!("更新检查失败: {}", e))
+        }
+    }
 }
 
 #[tauri::command]
