@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { ClipboardEntry, Statistics } from '../types/clipboard';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 
 interface ClipboardStore {
   entries: ClipboardEntry[];
@@ -130,7 +131,7 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
 
   copyToClipboard: async (content: string) => {
     try {
-      await invoke('copy_to_clipboard', { content });
+      await writeText(content);
     } catch (error) {
       set({ error: String(error) });
     }

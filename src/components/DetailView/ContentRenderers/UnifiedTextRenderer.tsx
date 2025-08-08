@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from '../../ui/card';
 import { ContentSubType } from '../../../types/clipboard';
 import { useResolvedTheme } from '../../../hooks/useResolvedTheme';
 import { defineMonacoThemes } from '../../../utils/monacoTheme';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 
 const MonacoEditor = lazy(() => import('@monaco-editor/react'));
 
@@ -76,7 +77,7 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(editedContent);
+      await writeText(editedContent);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {

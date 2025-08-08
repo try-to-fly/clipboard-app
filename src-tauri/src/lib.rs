@@ -22,6 +22,30 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
     let state = app_handle.state::<AppState>();
 
     match event_id {
+        "Copy" => {
+            // Get selected text from frontend and copy to clipboard
+            if let Err(e) = app_handle.emit("menu_copy", ()) {
+                eprintln!("Failed to emit copy event: {}", e);
+            }
+        }
+        "Paste" => {
+            // Paste from clipboard to current context
+            if let Err(e) = app_handle.emit("menu_paste", ()) {
+                eprintln!("Failed to emit paste event: {}", e);
+            }
+        }
+        "Cut" => {
+            // Cut selected text
+            if let Err(e) = app_handle.emit("menu_cut", ()) {
+                eprintln!("Failed to emit cut event: {}", e);
+            }
+        }
+        "SelectAll" => {
+            // Select all text in current context
+            if let Err(e) = app_handle.emit("menu_select_all", ()) {
+                eprintln!("Failed to emit select all event: {}", e);
+            }
+        }
         "clear_history" => {
             if let Err(e) = state.clear_history().await {
                 eprintln!("Failed to clear history: {}", e);
@@ -75,6 +99,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, _event| {
@@ -127,13 +152,21 @@ pub fn run() {
                     app,
                     "编辑",
                     true,
-                    &[&MenuItem::with_id(
-                        app,
-                        "clear_history",
-                        "清空历史",
-                        true,
-                        Some("CmdOrCtrl+Shift+Delete"),
-                    )?],
+                    &[
+                        &PredefinedMenuItem::copy(app, Some("拷贝"))?,
+                        &PredefinedMenuItem::paste(app, Some("粘贴"))?,
+                        &PredefinedMenuItem::cut(app, Some("剪切"))?,
+                        &PredefinedMenuItem::separator(app)?,
+                        &PredefinedMenuItem::select_all(app, Some("全选"))?,
+                        &PredefinedMenuItem::separator(app)?,
+                        &MenuItem::with_id(
+                            app,
+                            "clear_history",
+                            "清空历史",
+                            true,
+                            Some("CmdOrCtrl+Shift+Delete"),
+                        )?,
+                    ],
                 )?;
 
                 let view_submenu = Submenu::with_items(
