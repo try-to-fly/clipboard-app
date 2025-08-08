@@ -1,9 +1,9 @@
 use anyhow::Result;
 use cocoa::base::{id, nil};
-use cocoa::foundation::{NSData, NSString};
+use cocoa::foundation::NSString;
 use objc::{class, msg_send, sel, sel_impl};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct AppIconExtractor {
     icons_dir: PathBuf,
@@ -140,6 +140,7 @@ impl AppIconExtractor {
     }
 
     /// 清理过期的图标缓存（超过30天的文件）
+    #[allow(dead_code)]
     pub fn cleanup_old_icons(&self) -> Result<()> {
         let now = std::time::SystemTime::now();
         let thirty_days = std::time::Duration::from_secs(30 * 24 * 60 * 60);

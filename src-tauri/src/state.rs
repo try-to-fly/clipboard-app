@@ -9,7 +9,7 @@ use chrono::Utc;
 use sqlx::Row;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 use tokio::sync::Mutex;
@@ -328,7 +328,7 @@ impl AppState {
     pub async fn paste_text(
         &self,
         content: String,
-        app_handle: Option<tauri::AppHandle>,
+        _app_handle: Option<tauri::AppHandle>,
     ) -> Result<()> {
         tokio::task::spawn_blocking(move || -> Result<()> {
             let mut clipboard = Clipboard::new()?;
@@ -398,7 +398,7 @@ impl AppState {
     pub async fn paste_image(
         &self,
         file_path: String,
-        app_handle: Option<tauri::AppHandle>,
+        _app_handle: Option<tauri::AppHandle>,
     ) -> Result<()> {
         use std::fs;
         use std::path::PathBuf;

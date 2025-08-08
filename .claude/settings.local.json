@@ -8,7 +8,8 @@
       "WebFetch(domain:v2.tauri.app)",
       "WebFetch(domain:thatgurjot.com)",
       "Bash(pnpm tauri signer generate:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(cargo check:*)"
     ],
     "deny": []
   }

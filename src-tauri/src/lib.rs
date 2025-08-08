@@ -77,7 +77,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
-                .with_handler(|app, shortcut, event| {
+                .with_handler(|app, shortcut, _event| {
                     println!("Global shortcut triggered: {:?}", shortcut);
                     
                     // Show/focus the main window when global shortcut is pressed

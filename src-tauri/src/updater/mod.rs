@@ -89,6 +89,7 @@ impl UpdateManager {
     }
 
     /// Manually trigger update check
+    #[allow(dead_code)]
     pub async fn manual_check_and_update(app: &AppHandle) -> Result<UpdateInfo> {
         if let Some(info) = Self::check_for_updates(app).await? {
             Ok(info)

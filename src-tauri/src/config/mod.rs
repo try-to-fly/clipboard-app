@@ -136,6 +136,7 @@ impl ConfigManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn reload(&mut self) -> Result<()> {
         self.config = Self::load_config(&self.config_path).await?;
         Ok(())

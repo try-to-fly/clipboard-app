@@ -1,8 +1,5 @@
 use anyhow::Result;
 use arboard::Clipboard;
-use cocoa::base::{id, nil};
-use cocoa::foundation::NSString;
-use objc::{class, msg_send, sel, sel_impl};
 use serde_json;
 use sha2::{Digest, Sha256};
 use std::sync::Arc;
@@ -14,7 +11,7 @@ use crate::clipboard::content_detector::ContentDetector;
 use crate::clipboard::processor::ContentProcessor;
 use crate::config::ConfigManager;
 use crate::models::{ClipboardEntry, ContentType};
-use crate::utils::app_detector::{get_active_app, get_active_app_info};
+use crate::utils::app_detector::get_active_app_info;
 
 pub struct ClipboardMonitor {
     clipboard: Arc<Mutex<Clipboard>>,

@@ -184,8 +184,8 @@ impl ContentProcessor {
     async fn process_image_with_info(
         &self,
         image_data: &[u8],
-        expected_width: u32,
-        expected_height: u32,
+        _expected_width: u32,
+        _expected_height: u32,
     ) -> Result<SavedImageInfo> {
         println!(
             "[process_image_with_info] 开始处理图片数据，大小: {} 字节",

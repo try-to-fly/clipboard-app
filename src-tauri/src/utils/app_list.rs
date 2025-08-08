@@ -1,8 +1,5 @@
 use anyhow::Result;
-use cocoa::base::{id, nil};
-use cocoa::foundation::NSString;
 use objc::{class, msg_send, sel, sel_impl};
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -83,7 +80,6 @@ impl AppListManager {
         #[cfg(target_os = "macos")]
         {
             use cocoa::base::{id, nil};
-            use cocoa::foundation::{NSArray, NSString};
             use objc::{class, msg_send, sel, sel_impl};
 
             unsafe {

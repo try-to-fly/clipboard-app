@@ -7,6 +7,7 @@ pub struct AppInfo {
     pub bundle_id: Option<String>,
 }
 
+#[allow(dead_code)]
 pub fn get_active_app() -> Option<String> {
     get_active_app_info().map(|info| info.name)
 }
