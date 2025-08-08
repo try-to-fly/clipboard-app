@@ -23,11 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ${{
-          github.event_name == 'workflow_dispatch' && inputs.platform != 'all'
-          && fromJSON(format('["{0}"]', inputs.platform))
-          || fromJSON('["macos-latest", "windows-latest"]')
-        }}
+        platform: ${{ github.event_name == 'workflow_dispatch' && inputs.platform != 'all' && fromJSON(format('["{0}"]', inputs.platform)) || fromJSON('["macos-latest", "windows-latest"]') }}
 
     runs-on: ${{ matrix.platform }}
 
