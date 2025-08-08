@@ -1,7 +1,7 @@
 # 剪切板管理器
 
 一个基于 Tauri + React + @radix-ui 的 macOS 剪切板管理工具。
-<img width="1582" height="1034" alt="image" src="https://github.com/user-attachments/assets/1354f988-abcf-4c6a-bbf8-bc1a34c30d0b" />
+<img width="1800" height="1406" alt="17448f00d5f3f2d3afd2c17773d06adb" src="https://github.com/user-attachments/assets/fc399fe1-20a0-42a9-baa5-f0b281687b16" />
 
 ## 功能特性
 
