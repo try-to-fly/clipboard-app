@@ -22,7 +22,6 @@ import {
   Plus,
   X,
   CheckCircle,
-  BarChart,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useConfigStore } from "../../stores/configStore";
