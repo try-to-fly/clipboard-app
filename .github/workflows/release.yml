@@ -4,6 +4,17 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - macos-latest
+          - windows-latest
 
 jobs:
   release:
@@ -12,7 +23,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, windows-latest]
+        platform: ${{ 
+          github.event_name == 'workflow_dispatch' && inputs.platform != 'all' 
+          && fromJSON(format('["{0}"]', inputs.platform)) 
+          || fromJSON('["macos-latest", "windows-latest"]') 
+        }}
 
     runs-on: ${{ matrix.platform }}
 
@@ -60,10 +75,10 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Clipboard Manager v__VERSION__'
-          releaseBody: 'See the assets to download and install this version.'
-          releaseDraft: false
+          tagName: ${{ github.event_name == 'push' && github.ref_name || '' }}
+          releaseName: ${{ github.event_name == 'push' && 'Clipboard Manager v__VERSION__' || '' }}
+          releaseBody: ${{ github.event_name == 'push' && 'See the assets to download and install this version.' || '' }}
+          releaseDraft: ${{ github.event_name == 'push' && 'false' || 'true' }}
           prerelease: false
           args: --target universal-apple-darwin
 
@@ -75,9 +90,9 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Clipboard Manager v__VERSION__'
-          releaseBody: 'See the assets to download and install this version.'
-          releaseDraft: false
+          tagName: ${{ github.event_name == 'push' && github.ref_name || '' }}
+          releaseName: ${{ github.event_name == 'push' && 'Clipboard Manager v__VERSION__' || '' }}
+          releaseBody: ${{ github.event_name == 'push' && 'See the assets to download and install this version.' || '' }}
+          releaseDraft: ${{ github.event_name == 'push' && 'false' || 'true' }}
           prerelease: false
           args: --target x86_64-pc-windows-msvc
