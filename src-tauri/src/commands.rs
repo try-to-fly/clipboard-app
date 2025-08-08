@@ -658,3 +658,4 @@ pub async fn should_check_for_updates(state: State<'_, AppState>) -> Result<bool
         config.last_update_check.as_deref(),
     ))
 }
+

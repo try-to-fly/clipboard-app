@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './components/theme-provider';
 import { ThemeToggle } from './components/theme-toggle';
+import { SettingsButton } from './components/settings-button';
+import { PreferencesModal } from './components/Preferences/PreferencesModal';
 import { MainLayout } from './components/Layout/MainLayout';
 import { SearchBar } from './components/SearchBar/SearchBar';
 import { ClipboardList } from './components/ClipboardList/ClipboardList';
@@ -26,13 +28,15 @@ function AppContent() {
       <MenuEventHandler />
       <UpdateChecker />
       <ClipboardMenuHandler />
+      <PreferencesModal />
       <div id="app-container" className="flex flex-col h-screen">
         <div id="app-header" className="flex items-center justify-between p-3 bg-background border-b">
           <div id="search-container" className="flex-1">
             <SearchBar />
           </div>
-          <div id="theme-toggle-container" className="ml-4">
+          <div id="controls-container" className="ml-4 flex items-center gap-2">
             <ThemeToggle />
+            <SettingsButton />
           </div>
         </div>
         <div id="main-content" className="flex flex-1 gap-4 p-4 overflow-hidden min-h-0">
