@@ -1,5 +1,4 @@
 use anyhow::Result;
-use objc::{class, msg_send, sel, sel_impl};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -63,10 +62,10 @@ impl AppListManager {
 
     #[cfg(target_os = "macos")]
     fn get_running_applications_macos() -> Result<Vec<InstalledApp>> {
-        let mut apps = Vec::new();
-
         use cocoa::base::{id, nil};
         use objc::{class, msg_send, sel, sel_impl};
+
+        let mut apps = Vec::new();
 
         unsafe {
             let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
@@ -255,7 +254,8 @@ impl AppListManager {
         use std::os::windows::ffi::OsStringExt;
         use winapi::shared::minwindef::{DWORD, FALSE, MAX_PATH};
         use winapi::um::handleapi::CloseHandle;
-        use winapi::um::processthreadsapi::{GetProcessImageFileNameW, OpenProcess};
+        use winapi::um::processthreadsapi::OpenProcess;
+        use winapi::um::psapi::GetProcessImageFileNameW;
         use winapi::um::psapi::{EnumProcesses, GetModuleBaseNameW};
         use winapi::um::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
 

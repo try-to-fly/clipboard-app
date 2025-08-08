@@ -286,7 +286,7 @@ impl AppState {
         Ok(())
     }
 
-    pub async fn copy_image_to_clipboard(&self, file_path: String) -> Result<()> {
+    pub async fn copy_image_to_clipboard(&self, _file_path: String) -> Result<()> {
         #[cfg(target_os = "macos")]
         {
             use std::process::Command;
@@ -297,7 +297,7 @@ impl AppState {
                     r#"
                     set the clipboard to (read (POSIX file "{}") as «class PNGf»)
                     "#,
-                    file_path
+                    _file_path
                 );
 
                 let output = Command::new("osascript").arg("-e").arg(&script).output()?;
@@ -312,9 +312,38 @@ impl AppState {
             .await??;
         }
 
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(target_os = "windows")]
         {
-            return Err(anyhow::anyhow!("Image copy only supported on macOS"));
+            // Windows图片复制支持 - 使用arboard
+            tokio::task::spawn_blocking(move || -> Result<()> {
+                use image::ImageReader;
+                use std::fs;
+
+                let img_data = fs::read(&_file_path)?;
+                let img = ImageReader::new(std::io::Cursor::new(&img_data))
+                    .with_guessed_format()?
+                    .decode()?;
+
+                let rgba_img = img.to_rgba8();
+                let (width, height) = rgba_img.dimensions();
+
+                let img_data = arboard::ImageData {
+                    width: width as usize,
+                    height: height as usize,
+                    bytes: rgba_img.into_raw().into(),
+                };
+
+                let mut clipboard = Clipboard::new()?;
+                clipboard.set_image(img_data)?;
+
+                Ok(())
+            })
+            .await??;
+        }
+
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        {
+            return Err(anyhow::anyhow!("Image copy not supported on this platform"));
         }
 
         Ok(())

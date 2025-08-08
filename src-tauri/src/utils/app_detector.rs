@@ -94,10 +94,9 @@ fn get_active_app_info_windows() -> Option<AppInfo> {
     use std::os::windows::ffi::OsStringExt;
     use winapi::shared::minwindef::{DWORD, FALSE, MAX_PATH};
     use winapi::shared::windef::HWND;
-    use winapi::um::errhandlingapi::GetLastError;
     use winapi::um::handleapi::CloseHandle;
     use winapi::um::processthreadsapi::OpenProcess;
-    use winapi::um::psapi::{GetModuleFileNameExW, GetProcessImageFileNameW};
+    use winapi::um::psapi::GetProcessImageFileNameW;
     use winapi::um::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
     use winapi::um::winuser::GetWindowThreadProcessId;
     use winapi::um::winuser::{GetForegroundWindow, GetWindowTextW};

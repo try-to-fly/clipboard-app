@@ -156,9 +156,9 @@ impl AppIconExtractor {
     #[cfg(target_os = "windows")]
     fn extract_icon_data_windows(&self, bundle_id: &str) -> Result<Option<Vec<u8>>> {
         use std::ffi::OsString;
-        use std::os::windows::ffi::OsStringExt;
-        use winapi::shared::minwindef::{DWORD, HICON, UINT};
-        use winapi::shared::windef::{COLORREF, HBITMAP};
+        use std::os::windows::ffi::{OsStrExt, OsStringExt};
+        use winapi::shared::minwindef::{DWORD, UINT};
+        use winapi::shared::windef::HICON;
         use winapi::um::shellapi::SHGetFileInfoW;
         use winapi::um::shellapi::{SHFILEINFOW, SHGFI_ICON, SHGFI_LARGEICON};
         use winapi::um::wingdi::{DeleteObject, GetObjectW, BITMAP};
@@ -193,9 +193,9 @@ impl AppIconExtractor {
                     // Get bitmap information
                     let mut bitmap: BITMAP = std::mem::zeroed();
                     if GetObjectW(
-                        icon_info.hbmColor as *mut std::ffi::c_void,
+                        icon_info.hbmColor as *mut winapi::ctypes::c_void,
                         std::mem::size_of::<BITMAP>() as i32,
-                        &mut bitmap as *mut BITMAP as *mut std::ffi::c_void,
+                        &mut bitmap as *mut BITMAP as *mut winapi::ctypes::c_void,
                     ) != 0
                     {
                         // For simplicity, we'll create a placeholder PNG
@@ -203,8 +203,8 @@ impl AppIconExtractor {
                         let placeholder_png = Self::create_placeholder_icon();
 
                         // Cleanup
-                        DeleteObject(icon_info.hbmColor as *mut std::ffi::c_void);
-                        DeleteObject(icon_info.hbmMask as *mut std::ffi::c_void);
+                        DeleteObject(icon_info.hbmColor as *mut winapi::ctypes::c_void);
+                        DeleteObject(icon_info.hbmMask as *mut winapi::ctypes::c_void);
                         DestroyIcon(icon_handle);
 
                         return Ok(Some(placeholder_png));
@@ -212,10 +212,10 @@ impl AppIconExtractor {
 
                     // Cleanup on failure
                     if icon_info.hbmColor as isize != 0 {
-                        DeleteObject(icon_info.hbmColor as *mut std::ffi::c_void);
+                        DeleteObject(icon_info.hbmColor as *mut winapi::ctypes::c_void);
                     }
                     if icon_info.hbmMask as isize != 0 {
-                        DeleteObject(icon_info.hbmMask as *mut std::ffi::c_void);
+                        DeleteObject(icon_info.hbmMask as *mut winapi::ctypes::c_void);
                     }
                 }
 
