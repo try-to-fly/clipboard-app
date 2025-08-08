@@ -14,7 +14,8 @@
       "WebFetch(domain:github.com)",
       "Bash(cargo clippy:*)",
       "Bash(cargo fix:*)",
-      "WebFetch(domain:aptabase.com)"
+      "WebFetch(domain:aptabase.com)",
+      "Bash(pnpm install:*)"
     ],
     "deny": []
   }

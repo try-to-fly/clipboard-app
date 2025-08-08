@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "name": "clipboard-app-website",
+  "buildCommand": "cd website && pnpm build",
+  "outputDirectory": "website/out",
+  "installCommand": "cd website && pnpm install",
+  "devCommand": "cd website && pnpm dev",
+  "framework": "nextjs",
+  "functions": {},
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ]
+}
