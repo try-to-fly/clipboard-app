@@ -212,7 +212,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
       <ContextMenuTrigger asChild>
         <Card 
           className={cn(
-            'p-4 cursor-pointer transition-all duration-200 hover:bg-secondary/50 hover:border-primary/50 relative',
+            'clipboard-item p-4 cursor-pointer transition-all duration-200 hover:bg-secondary/50 hover:border-primary/50 relative',
             {
               'border-l-4 border-l-primary': entry.is_favorite,
               'bg-primary text-primary-foreground hover:bg-primary/90': isSelected,

@@ -137,7 +137,7 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
                 quickSuggestions: true,
                 suggestOnTriggerCharacters: true,
                 acceptSuggestionOnEnter: 'on',
-                wordBasedSuggestions: true,
+                wordBasedSuggestions: 'currentDocument',
                 parameterHints: { enabled: true },
                 folding: true,
                 foldingHighlight: true,
@@ -145,7 +145,7 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
                 selectOnLineNumbers: true,
                 contextmenu: true,
                 cursorBlinking: 'blink',
-                cursorSmoothCaretAnimation: true,
+                cursorSmoothCaretAnimation: 'on',
               }}
             />
           </Suspense>

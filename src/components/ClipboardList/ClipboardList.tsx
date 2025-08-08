@@ -11,6 +11,7 @@ export const ClipboardList: React.FC = () => {
   const [showNumbers, setShowNumbers] = React.useState(false);
   const [visibleRange, setVisibleRange] = React.useState({ start: 0, end: 9 });
   const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchHistory();
@@ -25,106 +26,109 @@ export const ClipboardList: React.FC = () => {
 
   // Auto-scroll to newly selected entry when it changes (e.g., from clipboard update)
   useEffect(() => {
-    if (selectedEntry && entries.length > 0 && scrollViewportRef.current) {
+    if (selectedEntry && entries.length > 0) {
       const selectedIndex = entries.findIndex(entry => entry.id === selectedEntry.id);
       if (selectedIndex >= 0 && selectedIndex === 0) {
         // Only auto-scroll if the selected entry is at the top (newly added)
-        const container = scrollViewportRef.current;
-        
-        // Try multiple methods to ensure scrolling works
-        const scrollToTop = () => {
-          // Method 1: Direct scrollTop
-          container.scrollTop = 0;
-          
-          // Method 2: scrollTo with smooth behavior
-          container.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          });
-        };
+        const scrollArea = scrollAreaRef.current;
+        if (scrollArea) {
+          const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+          if (viewport) {
+            const scrollToTop = () => {
+              viewport.scrollTop = 0;
+              viewport.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+            };
 
-        // Execute immediately and with a small delay to ensure DOM updates
-        scrollToTop();
-        setTimeout(scrollToTop, 50);
-        setTimeout(scrollToTop, 200);
+            // Execute immediately and with a small delay to ensure DOM updates
+            scrollToTop();
+            setTimeout(scrollToTop, 50);
+            setTimeout(scrollToTop, 200);
+          }
+        }
       }
     }
   }, [selectedEntry, entries]);
 
   const updateVisibleRange = useCallback(() => {
-    if (scrollViewportRef.current && entries.length > 0) {
-      const itemHeight = 82; // 预估每个item的高度（包含margin）
-      const viewportHeight = scrollViewportRef.current.clientHeight;
-      const scrollTop = scrollViewportRef.current.scrollTop;
-      
-      const start = Math.floor(scrollTop / itemHeight);
-      const visibleItemsCount = Math.ceil(viewportHeight / itemHeight) + 1; // +1 for partial items
-      const end = Math.min(start + visibleItemsCount, entries.length);
-      
-      setVisibleRange({ start, end });
-    }
+    const scrollArea = scrollAreaRef.current;
+    if (!scrollArea || entries.length === 0) return;
+    
+    const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+    if (!viewport) return;
+    
+    const itemHeight = 82; // 预估每个item的高度（包含margin）
+    const viewportHeight = viewport.clientHeight;
+    const scrollTop = viewport.scrollTop;
+    
+    const start = Math.floor(scrollTop / itemHeight);
+    const visibleItemsCount = Math.ceil(viewportHeight / itemHeight) + 1; // +1 for partial items
+    const end = Math.min(start + visibleItemsCount, entries.length);
+    
+    setVisibleRange({ start, end });
   }, [entries.length]);
 
   const scrollToSelectedEntry = useCallback((index: number, direction?: 'up' | 'down') => {
-    if (scrollViewportRef.current) {
-      const container = scrollViewportRef.current;
-      const items = container.querySelectorAll('.clipboard-item');
+    const items = document.querySelectorAll('.clipboard-item');
+    const item = items[index] as HTMLElement;
+    
+    if (item) {
+      // 找到滚动容器
+      const scrollArea = scrollAreaRef.current;
+      const viewport = scrollArea?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
       
-      if (items[index]) {
-        const item = items[index] as HTMLElement;
-        const itemRect = item.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        
-        const itemHeight = itemRect.height;
-        const containerHeight = containerRect.height;
-        const currentScrollTop = container.scrollTop;
-        
-        let targetScrollTop: number;
-        
-        if (direction === 'down') {
-          // 向下切换时，保持选中项在倒数第二个位置
-          // 计算目标位置：让item底部距离容器底部约1.5个item高度
-          const itemOffsetTop = item.offsetTop;
-          const idealBottomPadding = itemHeight * 1.5;
-          targetScrollTop = itemOffsetTop - containerHeight + itemHeight + idealBottomPadding;
-          
-          // 但是如果是最后几个元素，不要留太多空白
-          const maxScroll = container.scrollHeight - containerHeight;
-          targetScrollTop = Math.min(targetScrollTop, maxScroll);
-          targetScrollTop = Math.max(0, targetScrollTop);
-        } else if (direction === 'up') {
-          // 向上切换时，保持选中项在第二个位置
-          const itemOffsetTop = item.offsetTop;
-          const idealTopPadding = itemHeight * 1;
-          targetScrollTop = itemOffsetTop - idealTopPadding;
-          targetScrollTop = Math.max(0, targetScrollTop);
-        } else {
-          // 没有方向时，只确保元素在视口内
-          const itemTop = itemRect.top - containerRect.top;
-          const itemBottom = itemRect.bottom - containerRect.top;
-          
-          if (itemTop < 0) {
-            targetScrollTop = currentScrollTop + itemTop - 10;
-          } else if (itemBottom > containerHeight) {
-            targetScrollTop = currentScrollTop + (itemBottom - containerHeight) + 10;
-          } else {
-            // 已经在视口内，不需要滚动
-            setTimeout(updateVisibleRange, 50);
-            return;
-          }
-        }
-        
-        // 使用平滑滚动
-        container.scrollTo({
-          top: targetScrollTop,
-          behavior: 'smooth'
+      if (!viewport) {
+        item.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
         });
-        
-        // 更新可见范围
-        setTimeout(updateVisibleRange, 100);
+        setTimeout(updateVisibleRange, 150);
+        return;
       }
+      
+      // 检查元素是否在滚动容器的视口内
+      const itemRect = item.getBoundingClientRect();
+      const viewportRect = viewport.getBoundingClientRect();
+      
+      const isInViewport = itemRect.top >= viewportRect.top && itemRect.bottom <= viewportRect.bottom;
+      
+      // 如果元素已经在视口内，不需要滚动
+      if (isInViewport) {
+        setTimeout(updateVisibleRange, 50);
+        return;
+      }
+      
+      // 决定滚动位置
+      let block: ScrollLogicalPosition = 'nearest';
+      
+      if (direction === 'up') {
+        if (index === 0) {
+          // 第一个元素滚动到顶部
+          block = 'start';
+        } else {
+          // 其他向上情况，滚动到视口顶部附近
+          block = 'start';
+        }
+      } else if (direction === 'down') {
+        if (index === entries.length - 1) {
+          // 最后一个元素滚动到底部
+          block = 'end';
+        } else {
+          // 其他向下情况，滚动到视口底部附近
+          block = 'end';
+        }
+      }
+      
+      item.scrollIntoView({
+        behavior: 'smooth',
+        block: block
+      });
+      
+      setTimeout(updateVisibleRange, 150);
     }
-  }, [updateVisibleRange]);
+  }, [updateVisibleRange, entries.length]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (entries.length === 0) return;
@@ -181,15 +185,18 @@ export const ClipboardList: React.FC = () => {
   }, [handleKeyDown, handleKeyUp]);
 
   useEffect(() => {
-    const viewport = scrollViewportRef.current;
-    if (viewport) {
-      viewport.addEventListener('scroll', updateVisibleRange);
-      // 初始化时计算可见范围
-      setTimeout(updateVisibleRange, 100);
-      
-      return () => {
-        viewport.removeEventListener('scroll', updateVisibleRange);
-      };
+    const scrollArea = scrollAreaRef.current;
+    if (scrollArea) {
+      const viewport = scrollArea.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+      if (viewport) {
+        viewport.addEventListener('scroll', updateVisibleRange);
+        // 初始化时计算可见范围
+        setTimeout(updateVisibleRange, 100);
+        
+        return () => {
+          viewport.removeEventListener('scroll', updateVisibleRange);
+        };
+      }
     }
   }, [updateVisibleRange]);
 
@@ -208,7 +215,7 @@ export const ClipboardList: React.FC = () => {
 
   return (
     <Card id="clipboard-list" className="flex-1 flex flex-col overflow-hidden border">
-      <ScrollArea id="clipboard-list-scroll" className="flex-1">
+      <ScrollArea ref={scrollAreaRef} id="clipboard-list-scroll" className="flex-1">
         <div 
           id="clipboard-list-items"
           className="p-2 space-y-2" 

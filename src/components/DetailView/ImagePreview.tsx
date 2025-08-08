@@ -117,11 +117,11 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
 
 
   return (
-    <div className="space-y-4">
+    <div id="image-preview" className="space-y-4">
       {/* 控制面板 */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-3">
+      <Card id="image-preview-controls">
+        <CardContent id="image-preview-controls-content" className="p-4">
+          <div id="image-preview-toolbar" className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">格式:</span>
               <Select value={selectedFormat} onValueChange={setSelectedFormat}>
@@ -224,11 +224,12 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
       )}
 
       {/* 图片预览 */}
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <ScrollArea className="max-h-96">
-            <div className="p-4">
+      <Card id="image-preview-display" className="overflow-hidden">
+        <CardContent id="image-preview-content" className="p-0">
+          <ScrollArea id="image-preview-scroll" className="max-h-[60vh]">
+            <div id="image-preview-wrapper" className="p-4">
               <img 
+                id="image-preview-img"
                 src={showOriginal ? imageUrl : previewUrl} 
                 alt={showOriginal ? "原图" : "转换后的图片"} 
                 className="max-w-full h-auto rounded-md border cursor-pointer hover:border-primary/50 transition-colors"
