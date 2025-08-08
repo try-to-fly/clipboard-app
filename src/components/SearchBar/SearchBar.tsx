@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger 
 } from '../ui/dropdown-menu';
 import { useClipboardStore } from '../../stores/clipboardStore';
+import { analytics, ANALYTICS_EVENTS } from '../../services/analytics';
 
 const filterTypes = [
   { value: 'all', label: '全部', icon: '📋' },
@@ -34,10 +35,17 @@ export const SearchBar: React.FC = () => {
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       setSearchTerm(localSearchTerm);
+      // Track search performed (only if there's a search term)
+      if (localSearchTerm.trim()) {
+        analytics.track(ANALYTICS_EVENTS.SEARCH_PERFORMED, {
+          has_filter: selectedType !== 'all' ? 1 : 0,
+          filter_type: selectedType,
+        });
+      }
     }, 300);
 
     return () => clearTimeout(debounceTimer);
-  }, [localSearchTerm, setSearchTerm]);
+  }, [localSearchTerm, setSearchTerm, selectedType]);
 
   const handleClear = () => {
     setLocalSearchTerm('');

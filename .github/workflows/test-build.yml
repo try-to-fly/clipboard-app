@@ -53,11 +53,18 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Create .env file for Tauri
+        working-directory: src-tauri
+        run: |
+          echo "APTABASE_APP_KEY=${{ secrets.APTABASE_APP_KEY || 'A-DEV-0000000000' }}" > .env
+        shell: bash
+
       - name: Test Build (Windows) - With Signing
         if: inputs.use_signing
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY || 'A-DEV-0000000000' }}
         run: pnpm tauri build --target x86_64-pc-windows-msvc
 
       - name: Test Build (Windows) - Without Signing
@@ -104,11 +111,18 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Create .env file for Tauri
+        working-directory: src-tauri
+        run: |
+          echo "APTABASE_APP_KEY=${{ secrets.APTABASE_APP_KEY || 'A-DEV-0000000000' }}" > .env
+        shell: bash
+
       - name: Test Build (macOS) - With Signing
         if: inputs.use_signing
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY || 'A-DEV-0000000000' }}
         run: pnpm tauri build --target universal-apple-darwin
 
       - name: Test Build (macOS) - Without Signing

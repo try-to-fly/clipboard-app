@@ -8,6 +8,7 @@ use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
 use tauri::State;
+use tauri_plugin_aptabase::EventTracker;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CacheStatistics {
@@ -26,13 +27,27 @@ pub struct CleanupResult {
 }
 
 #[tauri::command]
-pub async fn start_monitoring(state: State<'_, AppState>) -> Result<(), String> {
-    state.start_monitoring().await.map_err(|e| e.to_string())
+pub async fn start_monitoring(app: tauri::AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+    let result = state.start_monitoring().await.map_err(|e| e.to_string());
+    if result.is_ok() {
+        let app_handle = app.clone();
+        tokio::spawn(async move {
+            let _ = app_handle.track_event("monitoring_started", None);
+        });
+    }
+    result
 }
 
 #[tauri::command]
-pub async fn stop_monitoring(state: State<'_, AppState>) -> Result<(), String> {
-    state.stop_monitoring().await.map_err(|e| e.to_string())
+pub async fn stop_monitoring(app: tauri::AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+    let result = state.stop_monitoring().await.map_err(|e| e.to_string());
+    if result.is_ok() {
+        let app_handle = app.clone();
+        tokio::spawn(async move {
+            let _ = app_handle.track_event("monitoring_stopped", None);
+        });
+    }
+    result
 }
 
 #[tauri::command]
@@ -49,18 +64,39 @@ pub async fn get_clipboard_history(
 }
 
 #[tauri::command]
-pub async fn toggle_favorite(state: State<'_, AppState>, id: String) -> Result<(), String> {
-    state.toggle_favorite(id).await.map_err(|e| e.to_string())
+pub async fn toggle_favorite(app: tauri::AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
+    let result = state.toggle_favorite(id).await.map_err(|e| e.to_string());
+    if result.is_ok() {
+        let app_handle = app.clone();
+        tokio::spawn(async move {
+            let _ = app_handle.track_event("favorite_toggled", None);
+        });
+    }
+    result
 }
 
 #[tauri::command]
-pub async fn delete_entry(state: State<'_, AppState>, id: String) -> Result<(), String> {
-    state.delete_entry(id).await.map_err(|e| e.to_string())
+pub async fn delete_entry(app: tauri::AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
+    let result = state.delete_entry(id).await.map_err(|e| e.to_string());
+    if result.is_ok() {
+        let app_handle = app.clone();
+        tokio::spawn(async move {
+            let _ = app_handle.track_event("entry_deleted", None);
+        });
+    }
+    result
 }
 
 #[tauri::command]
-pub async fn clear_history(state: State<'_, AppState>) -> Result<(), String> {
-    state.clear_history().await.map_err(|e| e.to_string())
+pub async fn clear_history(app: tauri::AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+    let result = state.clear_history().await.map_err(|e| e.to_string());
+    if result.is_ok() {
+        let app_handle = app.clone();
+        tokio::spawn(async move {
+            let _ = app_handle.track_event("history_cleared", None);
+        });
+    }
+    result
 }
 
 #[tauri::command]
@@ -69,11 +105,18 @@ pub async fn get_statistics(state: State<'_, AppState>) -> Result<Statistics, St
 }
 
 #[tauri::command]
-pub async fn copy_to_clipboard(state: State<'_, AppState>, content: String) -> Result<(), String> {
-    state
+pub async fn copy_to_clipboard(app: tauri::AppHandle, state: State<'_, AppState>, content: String) -> Result<(), String> {
+    let result = state
         .copy_to_clipboard(content)
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string());
+    if result.is_ok() {
+        let app_handle = app.clone();
+        tokio::spawn(async move {
+            let _ = app_handle.track_event("item_copied", None);
+        });
+    }
+    result
 }
 
 #[tauri::command]
@@ -658,4 +701,5 @@ pub async fn should_check_for_updates(state: State<'_, AppState>) -> Result<bool
         config.last_update_check.as_deref(),
     ))
 }
+
 

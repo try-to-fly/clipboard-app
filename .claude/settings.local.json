@@ -12,7 +12,9 @@
       "Bash(cargo check:*)",
       "Bash(grep:*)",
       "WebFetch(domain:github.com)",
-      "Bash(cargo clippy:*)"
+      "Bash(cargo clippy:*)",
+      "Bash(cargo fix:*)",
+      "WebFetch(domain:aptabase.com)"
     ],
     "deny": []
   }

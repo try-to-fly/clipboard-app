@@ -209,6 +209,17 @@ pub fn run() {
             }
 
             tauri::async_runtime::block_on(async {
+                // Load .env file manually in development
+                if cfg!(debug_assertions) {
+                    let _ = dotenvy::dotenv();
+                }
+                
+                // Initialize Aptabase plugin
+                let aptabase_key = std::env::var("APTABASE_APP_KEY")
+                    .unwrap_or_else(|_| "A-DEV-0000000000".to_string());
+                
+                let _ = app.handle().plugin(tauri_plugin_aptabase::Builder::new(&aptabase_key).build());
+
                 let state = AppState::new().await?;
 
                 let app_handle = app.handle().clone();
@@ -280,6 +291,25 @@ pub fn run() {
             install_update,
             should_check_for_updates
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|app_handle, event| {
+            use tauri_plugin_aptabase::EventTracker;
+            
+            match event {
+                tauri::RunEvent::Ready { .. } => {
+                    // Use async runtime to send events in proper context
+                    let handle = app_handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        // Wait a moment to ensure plugin is fully ready
+                        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                        let _ = handle.track_event("app_started", None);
+                    });
+                }
+                tauri::RunEvent::Exit { .. } => {
+                    let _ = app_handle.track_event("app_exited", None);
+                }
+                _ => {}
+            }
+        });
 }

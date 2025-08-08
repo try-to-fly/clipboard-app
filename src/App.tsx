@@ -12,6 +12,7 @@ import { MenuEventHandler } from './components/MenuEventHandler/MenuEventHandler
 import { UpdateChecker } from './components/UpdateChecker/UpdateChecker';
 import { ClipboardMenuHandler } from './components/ClipboardMenuHandler';
 import { useClipboardStore } from './stores/clipboardStore';
+import { analytics, ANALYTICS_EVENTS } from './services/analytics';
 
 const queryClient = new QueryClient();
 
@@ -19,8 +20,16 @@ function AppContent() {
   const { startMonitoring, setupEventListener } = useClipboardStore();
 
   useEffect(() => {
+    // Track app opened event
+    const startTime = Date.now();
+    analytics.track(ANALYTICS_EVENTS.APP_OPENED);
+    
     setupEventListener();
     startMonitoring();
+    
+    // Track startup time
+    const startupTime = Date.now() - startTime;
+    analytics.trackPerformance(ANALYTICS_EVENTS.STARTUP_TIME, startupTime);
   }, [startMonitoring, setupEventListener]);
 
   return (
