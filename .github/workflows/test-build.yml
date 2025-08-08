@@ -13,6 +13,11 @@ on:
         required: false
         default: false
         type: boolean
+      use_signing:
+        description: 'Use code signing (slower but complete)'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   test-build-windows:
@@ -48,8 +53,16 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      - name: Test Build (Windows)
+      - name: Test Build (Windows) - With Signing
+        if: inputs.use_signing
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm tauri build --target x86_64-pc-windows-msvc
+
+      - name: Test Build (Windows) - Without Signing
+        if: ${{ !inputs.use_signing }}
+        run: pnpm tauri build --target x86_64-pc-windows-msvc --config src-tauri/tauri.test.conf.json
 
       - name: Upload build artifacts (Windows)
         uses: actions/upload-artifact@v4
@@ -91,8 +104,16 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      - name: Test Build (macOS)
+      - name: Test Build (macOS) - With Signing
+        if: inputs.use_signing
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm tauri build --target universal-apple-darwin
+
+      - name: Test Build (macOS) - Without Signing
+        if: ${{ !inputs.use_signing }}
+        run: pnpm tauri build --target universal-apple-darwin --config src-tauri/tauri.test.conf.json
 
       - name: Upload build artifacts (macOS)
         uses: actions/upload-artifact@v4
