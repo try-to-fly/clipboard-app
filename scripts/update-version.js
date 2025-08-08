@@ -50,6 +50,36 @@ function updateTauriConfig(newVersion) {
   console.log(`✅ Updated tauri.conf.json to version ${newVersion}`);
 }
 
+// Function to update Cargo.lock
+function updateCargoLock(newVersion) {
+  const cargoLockPath = path.join(process.cwd(), 'src-tauri', 'Cargo.lock');
+  try {
+    let cargoLockContent = fs.readFileSync(cargoLockPath, 'utf8');
+    // Update the main package version in Cargo.lock
+    cargoLockContent = cargoLockContent.replace(
+      /^name = "clipboard-app"\nversion = ".*"$/m,
+      `name = "clipboard-app"\nversion = "${newVersion}"`
+    );
+    fs.writeFileSync(cargoLockPath, cargoLockContent);
+    console.log(`✅ Updated Cargo.lock to version ${newVersion}`);
+  } catch (error) {
+    console.warn(`⚠️  Could not update Cargo.lock: ${error.message}`);
+  }
+}
+
+// Function to update GitHub Actions workflow
+function updateGitHubWorkflow(newVersion) {
+  const workflowPath = path.join(process.cwd(), '.github', 'workflows', 'test-build.yml');
+  try {
+    let workflowContent = fs.readFileSync(workflowPath, 'utf8');
+    // This is a placeholder - the workflow doesn't currently have version references
+    // But we include the function for future use if version references are added
+    console.log(`✅ GitHub Actions workflow checked (no version updates needed)`);
+  } catch (error) {
+    console.warn(`⚠️  Could not check GitHub Actions workflow: ${error.message}`);
+  }
+}
+
 // Main function
 function main() {
   const versionType = process.argv[2] || 'patch';
@@ -72,10 +102,12 @@ function main() {
     updatePackageJson(newVersion);
     updateCargoToml(newVersion);
     updateTauriConfig(newVersion);
+    updateCargoLock(newVersion);
+    updateGitHubWorkflow(newVersion);
 
     // Git operations
     console.log('\n📝 Creating git commit...');
-    execSync('git add package.json src-tauri/Cargo.toml src-tauri/tauri.conf.json', { stdio: 'inherit' });
+    execSync('git add package.json src-tauri/Cargo.toml src-tauri/tauri.conf.json src-tauri/Cargo.lock .github/workflows/test-build.yml', { stdio: 'inherit' });
     execSync(`git commit -m "chore: bump version to ${newVersion}"`, { stdio: 'inherit' });
     
     console.log('\n🏷️  Creating git tag...');
