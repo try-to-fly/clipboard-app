@@ -7,7 +7,8 @@
     "shortcuts": "Shortcuts",
     "system": "System",
     "language": "Language",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "logs": "Protokolle"
   },
   "text": {
     "title": "Text Limits",
@@ -141,5 +142,43 @@
       ]
     },
     "provider": "Analytics provided by <link>Aptabase</link>, fully compliant with GDPR and CCPA privacy regulations."
+  },
+  "logs": {
+    "title": "Anwendungsprotokolle",
+    "description": "Protokolldateien in Echtzeit anzeigen und verwalten mit Filter- und Suchfunktionen.",
+    "viewLogs": "Anwendungsprotokolle anzeigen",
+    "openViewer": "Protokoll-Viewer öffnen",
+    "clearLogs": "Protokolle löschen",
+    "logLevel": "Protokollstufe",
+    "searchPlaceholder": "Protokolle durchsuchen...",
+    "loading": "Protokolle werden geladen...",
+    "noLogs": "Keine Protokolle vorhanden",
+    "noMatches": "Keine übereinstimmenden Protokolle",
+    "entriesCount": "{{filtered}} / {{total}} Einträge",
+    "storageInfo": "Protokolldateien werden im System-Protokollverzeichnis gespeichert und enthalten Informationen über:",
+    "levels": {
+      "all": "Alle Stufen",
+      "error": "Fehler",
+      "warn": "Warnung",
+      "info": "Info",
+      "debug": "Debug",
+      "trace": "Trace"
+    },
+    "messages": {
+      "logsCleared": "Protokolle gelöscht",
+      "logsCopied": "Protokolle in Zwischenablage kopiert",
+      "logLevelSet": "Protokollstufe auf {{level}} gesetzt"
+    },
+    "errors": {
+      "loadFailed": "Laden der Protokolle fehlgeschlagen",
+      "clearFailed": "Löschen der Protokolle fehlgeschlagen",
+      "setLevelFailed": "Setzen der Protokollstufe fehlgeschlagen"
+    },
+    "features": [
+      "Echtzeit-Protokollanzeige",
+      "Nach Protokollstufe filtern",
+      "Protokollinhalte durchsuchen",
+      "Protokolle in Zwischenablage kopieren"
+    ]
   }
 }

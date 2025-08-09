@@ -117,7 +117,7 @@ impl ConfigManager {
             && migrated_config.excluded_apps_v2.is_empty();
 
         if needs_migration {
-            println!("Migrating excluded apps to new format...");
+            log::info!("Migrating excluded apps to new format...");
             migrated_config.excluded_apps_v2 =
                 Self::migrate_excluded_apps(&migrated_config.excluded_apps).await;
             migrated_config.excluded_apps.clear(); // Clear old format
@@ -160,7 +160,7 @@ impl ConfigManager {
             Ok(config) => Ok(config),
             Err(_) => {
                 // Try to migrate from old format
-                println!("Migrating config from old format...");
+                log::info!("Migrating config from old format...");
                 Self::migrate_old_config(&content).await
             }
         }
@@ -270,7 +270,7 @@ impl ConfigManager {
 
         // Convert back to AppConfig
         let migrated_config: AppConfig = serde_json::from_value(json)?;
-        println!("Config migration completed successfully");
+        log::info!("Config migration completed successfully");
         Ok(migrated_config)
     }
 }

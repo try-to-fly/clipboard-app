@@ -7,7 +7,8 @@
     "shortcuts": "Shortcuts",
     "system": "System",
     "language": "Language",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "logs": "Registros"
   },
   "text": {
     "title": "Text Limits",
@@ -141,5 +142,43 @@
       ]
     },
     "provider": "Analytics provided by <link>Aptabase</link>, fully compliant with GDPR and CCPA privacy regulations."
+  },
+  "logs": {
+    "title": "Visualizador de Registros",
+    "description": "Visualizar registros da aplicação em tempo real com capacidades de filtragem e busca.",
+    "viewLogs": "Visualizar Registros da Aplicação",
+    "openViewer": "Abrir Visualizador de Registros",
+    "clearLogs": "Limpar Registros",
+    "logLevel": "Nível",
+    "searchPlaceholder": "Pesquisar registros...",
+    "loading": "Carregando registros...",
+    "noLogs": "Não há registros",
+    "noMatches": "Não há registros correspondentes",
+    "entriesCount": "{{filtered}} / {{total}} entradas",
+    "storageInfo": "Os arquivos de registro são armazenados no diretório de registros do sistema e contêm informações sobre:",
+    "levels": {
+      "all": "Todos os níveis",
+      "error": "Erro",
+      "warn": "Aviso",
+      "info": "Informação",
+      "debug": "Debug",
+      "trace": "Rastreamento"
+    },
+    "messages": {
+      "logsCleared": "Registros limpos",
+      "logsCopied": "Registros copiados para a área de transferência",
+      "logLevelSet": "Nível de registro definido para {{level}}"
+    },
+    "errors": {
+      "loadFailed": "Falha ao carregar registros",
+      "clearFailed": "Falha ao limpar registros",
+      "setLevelFailed": "Falha ao definir nível de registro"
+    },
+    "features": [
+      "Visualização de registros em tempo real",
+      "Filtrar por nível de registro",
+      "Pesquisar no conteúdo do registro",
+      "Copiar registros para a área de transferência"
+    ]
   }
 }

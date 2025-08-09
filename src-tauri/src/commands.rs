@@ -169,7 +169,7 @@ pub async fn open_file_with_system(file_path: String) -> Result<(), String> {
     use std::path::PathBuf;
     use std::process::Command;
 
-    println!("[open_file_with_system] 打开文件: {}", file_path);
+    log::info!("[open_file_with_system] 打开文件: {}", file_path);
 
     // 如果是相对路径（如 imgs/xxx.png），转换为绝对路径
     let absolute_path = if file_path.starts_with("imgs/") {
@@ -192,11 +192,11 @@ pub async fn open_file_with_system(file_path: String) -> Result<(), String> {
 
         match result {
             Ok(_) => {
-                println!("[open_file_with_system] 成功打开文件");
+                log::info!("[open_file_with_system] 成功打开文件");
                 Ok(())
             }
             Err(e) => {
-                println!("[open_file_with_system] 打开文件失败: {}", e);
+                log::error!("[open_file_with_system] 打开文件失败: {}", e);
                 Err(format!("Failed to open file: {}", e))
             }
         }
@@ -225,7 +225,7 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
         // 确保 imgs 目录存在
         let imgs_dir = app_dir.join("imgs");
         if !imgs_dir.exists() {
-            println!("[get_image_url] 创建 imgs 目录: {:?}", imgs_dir);
+            log::info!("[get_image_url] 创建 imgs 目录: {:?}", imgs_dir);
             if let Err(e) = fs::create_dir_all(&imgs_dir) {
                 return Err(format!("Failed to create imgs directory: {}", e));
             }
@@ -239,14 +239,14 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
     // println!("[get_image_url] 绝对路径: {:?}", absolute_path);
 
     if !absolute_path.exists() {
-        println!("[get_image_url] 文件不存在: {:?}", absolute_path);
+        log::warn!("[get_image_url] 文件不存在: {:?}", absolute_path);
         // 列出 imgs 目录中的文件帮助调试
         if let Some(parent) = absolute_path.parent() {
             if parent.exists() {
-                println!("[get_image_url] 目录 {:?} 中的文件:", parent);
+                log::debug!("[get_image_url] 目录 {:?} 中的文件:", parent);
                 if let Ok(entries) = fs::read_dir(parent) {
                     for entry in entries.flatten() {
-                        println!("  - {:?}", entry.file_name());
+                        log::debug!("  - {:?}", entry.file_name());
                     }
                 }
             }
@@ -298,7 +298,7 @@ pub async fn get_image_url(file_path: String) -> Result<String, String> {
             Ok(format!("data:{};base64,{}", mime_type, base64_data))
         }
         Err(e) => {
-            println!("[get_image_url] 读取文件失败: {}", e);
+            log::error!("[get_image_url] 读取文件失败: {}", e);
             Err(format!("Failed to read file: {}", e))
         }
     }
@@ -323,7 +323,7 @@ pub async fn get_app_icon(bundle_id: String) -> Result<Option<String>, String> {
                 return Ok(Some(format!("data:image/png;base64,{}", base64_data)));
             }
             Err(e) => {
-                println!("[get_app_icon] 读取缓存图标失败: {}", e);
+                log::warn!("[get_app_icon] 读取缓存图标失败: {}", e);
                 // 继续尝试提取新图标
             }
         }
@@ -332,7 +332,7 @@ pub async fn get_app_icon(bundle_id: String) -> Result<Option<String>, String> {
     // 提取并缓存图标
     match extractor.extract_and_cache_icon(&bundle_id) {
         Ok(Some(icon_path)) => {
-            println!("[get_app_icon] 成功提取图标: {:?}", icon_path);
+            log::info!("[get_app_icon] 成功提取图标: {:?}", icon_path);
 
             match fs::read(&icon_path) {
                 Ok(data) => {
@@ -340,17 +340,17 @@ pub async fn get_app_icon(bundle_id: String) -> Result<Option<String>, String> {
                     Ok(Some(format!("data:image/png;base64,{}", base64_data)))
                 }
                 Err(e) => {
-                    println!("[get_app_icon] 读取图标文件失败: {}", e);
+                    log::error!("[get_app_icon] 读取图标文件失败: {}", e);
                     Ok(None)
                 }
             }
         }
         Ok(None) => {
-            println!("[get_app_icon] 无法为 {} 获取图标", bundle_id);
+            log::warn!("[get_app_icon] 无法为 {} 获取图标", bundle_id);
             Ok(None)
         }
         Err(e) => {
-            println!("[get_app_icon] 提取图标出错: {}", e);
+            log::error!("[get_app_icon] 提取图标出错: {}", e);
             Ok(None)
         }
     }
@@ -367,7 +367,7 @@ pub async fn convert_and_scale_image(
     use std::fs;
     use std::path::PathBuf;
 
-    println!(
+    log::info!(
         "[convert_and_scale_image] 转换图片: {}, 格式: {}, 缩放: {}%",
         file_path,
         format,
@@ -399,9 +399,12 @@ pub async fn convert_and_scale_image(
     let new_height = ((height as f32) * scale) as u32;
 
     let scaled_img = if scale != 1.0 {
-        println!(
+        log::debug!(
             "[convert_and_scale_image] 缩放从 {}x{} 到 {}x{}",
-            width, height, new_width, new_height
+            width,
+            height,
+            new_width,
+            new_height
         );
         img.resize_exact(new_width, new_height, image::imageops::FilterType::Lanczos3)
     } else {
@@ -444,7 +447,7 @@ pub async fn convert_and_scale_image(
         }
     };
 
-    println!(
+    log::info!(
         "[convert_and_scale_image] 转换完成，输出大小: {} 字节",
         buffer.len()
     );
@@ -463,7 +466,7 @@ pub async fn copy_converted_image(
     base64_data: String,
     _skip_recording: bool,
 ) -> Result<(), String> {
-    println!("[copy_converted_image] 复制转换后的图片到剪贴板");
+    log::info!("[copy_converted_image] 复制转换后的图片到剪贴板");
 
     // 解析base64数据
     let data_parts: Vec<&str> = base64_data.split(',').collect();
@@ -501,7 +504,7 @@ pub async fn copy_converted_image(
 pub async fn fetch_url_content(url: String) -> Result<String, String> {
     use std::time::Duration;
 
-    println!("[fetch_url_content] 请求获取URL内容: {}", url);
+    log::info!("[fetch_url_content] 请求获取URL内容: {}", url);
 
     // 创建HTTP客户端，配置超时
     let client = reqwest::Client::builder()
@@ -516,24 +519,24 @@ pub async fn fetch_url_content(url: String) -> Result<String, String> {
             if response.status().is_success() {
                 match response.text().await {
                     Ok(content) => {
-                        println!(
+                        log::info!(
                             "[fetch_url_content] 成功获取内容，长度: {} 字符",
                             content.len()
                         );
                         Ok(content)
                     }
                     Err(e) => {
-                        println!("[fetch_url_content] 读取响应内容失败: {}", e);
+                        log::error!("[fetch_url_content] 读取响应内容失败: {}", e);
                         Err(format!("Failed to read response content: {}", e))
                     }
                 }
             } else {
-                println!("[fetch_url_content] HTTP错误状态: {}", response.status());
+                log::error!("[fetch_url_content] HTTP错误状态: {}", response.status());
                 Err(format!("HTTP error: {}", response.status()))
             }
         }
         Err(e) => {
-            println!("[fetch_url_content] 网络请求失败: {}", e);
+            log::error!("[fetch_url_content] 网络请求失败: {}", e);
             Err(format!("Network request failed: {}", e))
         }
     }
@@ -543,17 +546,17 @@ pub async fn fetch_url_content(url: String) -> Result<String, String> {
 pub async fn check_ffprobe_available() -> Result<bool, String> {
     use std::process::Command;
 
-    println!("[check_ffprobe_available] 检查 ffprobe 是否可用");
+    log::debug!("[check_ffprobe_available] 检查 ffprobe 是否可用");
 
     // 尝试执行 ffprobe -version 命令
     match Command::new("ffprobe").arg("-version").output() {
         Ok(output) => {
             let available = output.status.success();
-            println!("[check_ffprobe_available] ffprobe 可用: {}", available);
+            log::debug!("[check_ffprobe_available] ffprobe 可用: {}", available);
             Ok(available)
         }
         Err(e) => {
-            println!("[check_ffprobe_available] ffprobe 不可用: {}", e);
+            log::debug!("[check_ffprobe_available] ffprobe 不可用: {}", e);
             Ok(false)
         }
     }
@@ -563,7 +566,7 @@ pub async fn check_ffprobe_available() -> Result<bool, String> {
 pub async fn extract_media_metadata(url: String) -> Result<serde_json::Value, String> {
     use std::process::Command;
 
-    println!("[extract_media_metadata] 提取媒体元数据: {}", url);
+    log::info!("[extract_media_metadata] 提取媒体元数据: {}", url);
 
     // 首先检查 ffprobe 是否可用
     if !check_ffprobe_available().await? {
@@ -586,7 +589,7 @@ pub async fn extract_media_metadata(url: String) -> Result<serde_json::Value, St
 
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
-        println!("[extract_media_metadata] ffprobe 执行失败: {}", error_msg);
+        log::error!("[extract_media_metadata] ffprobe 执行失败: {}", error_msg);
         return Err(format!("FFprobe execution failed: {}", error_msg));
     }
 
@@ -673,7 +676,7 @@ pub async fn extract_media_metadata(url: String) -> Result<serde_json::Value, St
         }
     }
 
-    println!("[extract_media_metadata] 成功提取元数据: {:?}", result);
+    log::info!("[extract_media_metadata] 成功提取元数据: {:?}", result);
     Ok(serde_json::Value::Object(result))
 }
 
@@ -746,18 +749,18 @@ pub async fn cleanup_expired_entries(state: State<'_, AppState>) -> Result<Clean
 // App list commands
 #[tauri::command]
 pub async fn get_installed_applications() -> Result<Vec<InstalledApp>, String> {
-    println!("[get_installed_applications] Starting to load applications...");
+    log::info!("[get_installed_applications] Starting to load applications...");
 
     match AppListManager::get_installed_applications() {
         Ok(apps) => {
-            println!(
+            log::info!(
                 "[get_installed_applications] Successfully loaded {} applications",
                 apps.len()
             );
             Ok(apps)
         }
         Err(e) => {
-            println!(
+            log::error!(
                 "[get_installed_applications] Error loading applications: {}",
                 e
             );
@@ -811,7 +814,7 @@ pub async fn check_for_update(
     app_handle: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<UpdateInfo, String> {
-    println!("[check_for_update] Manual update check requested");
+    log::info!("[check_for_update] Manual update check requested");
 
     // Update last check time in config
     let mut config = state.get_config().await.map_err(|e| e.to_string())?;
@@ -820,11 +823,11 @@ pub async fn check_for_update(
 
     match UpdateManager::check_for_updates(&app_handle).await {
         Ok(Some(update_info)) => {
-            println!("[check_for_update] Check completed successfully - update available");
+            log::info!("[check_for_update] Check completed successfully - update available");
             Ok(update_info)
         }
         Ok(None) => {
-            println!("[check_for_update] Check completed successfully - no updates");
+            log::info!("[check_for_update] Check completed successfully - no updates");
             Ok(UpdateInfo {
                 version: app_handle.package_info().version.to_string(),
                 notes: None,
@@ -833,7 +836,7 @@ pub async fn check_for_update(
             })
         }
         Err(e) => {
-            eprintln!("[check_for_update] Update check failed: {}", e);
+            log::error!("[check_for_update] Update check failed: {}", e);
             Err(format!("更新检查失败: {}", e))
         }
     }
@@ -864,4 +867,70 @@ pub async fn should_check_for_updates(state: State<'_, AppState>) -> Result<bool
 #[tauri::command]
 pub async fn set_window_title(window: Window, title: String) -> Result<(), String> {
     window.set_title(&title).map_err(|e| e.to_string())
+}
+
+// Log management commands
+#[tauri::command]
+pub async fn get_log_content() -> Result<String, String> {
+    use dirs;
+    use std::fs;
+
+    // Tauri v2 LogDir location on macOS: ~/Library/Logs/{app_identifier}/
+    let log_file = dirs::home_dir()
+        .ok_or("无法获取用户目录")?
+        .join("Library")
+        .join("Logs")
+        .join("com.clipboard-app.clipboardmanager")
+        .join("clipboard-app.log");
+
+    if !log_file.exists() {
+        return Ok(String::new());
+    }
+
+    fs::read_to_string(&log_file).map_err(|e| format!("读取日志文件失败: {}", e))
+}
+
+#[tauri::command]
+pub async fn clear_logs() -> Result<(), String> {
+    use dirs;
+    use std::fs;
+
+    // Tauri v2 LogDir location on macOS: ~/Library/Logs/{app_identifier}/
+    let log_file = dirs::home_dir()
+        .ok_or("无法获取用户目录")?
+        .join("Library")
+        .join("Logs")
+        .join("com.clipboard-app.clipboardmanager")
+        .join("clipboard-app.log");
+
+    if log_file.exists() {
+        fs::write(&log_file, "").map_err(|e| format!("清空日志文件失败: {}", e))?;
+        log::info!("日志文件已清空");
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn set_log_level(level: String) -> Result<(), String> {
+    let _log_level = match level.to_lowercase().as_str() {
+        "error" => log::LevelFilter::Error,
+        "warn" => log::LevelFilter::Warn,
+        "info" => log::LevelFilter::Info,
+        "debug" => log::LevelFilter::Debug,
+        "trace" => log::LevelFilter::Trace,
+        _ => return Err("无效的日志级别".to_string()),
+    };
+
+    // Note: Tauri log plugin doesn't support runtime level changes directly
+    // This is a placeholder - the actual implementation would need to be done differently
+    log::info!("请求设置日志级别为: {}", level);
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_current_log_level() -> Result<String, String> {
+    // This is a simplified implementation
+    // In practice, you'd need to store the current level somewhere
+    Ok("info".to_string())
 }

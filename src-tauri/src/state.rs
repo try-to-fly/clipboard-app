@@ -98,7 +98,14 @@ impl AppState {
         let app_handle = Arc::clone(&self.app_handle);
 
         tokio::spawn(async move {
+            log::info!("[DatabaseTask] 启动数据库保存任务");
             while let Ok(entry) = rx.recv().await {
+                log::debug!(
+                    "[DatabaseTask] 收到新条目: {} ({:?})",
+                    &entry.content_hash[..8],
+                    entry.content_type
+                );
+
                 // 检查是否已存在相同内容
                 let existing = sqlx::query(
                     "SELECT id, copy_count FROM clipboard_entries WHERE content_hash = ?",
@@ -116,14 +123,23 @@ impl AppState {
                         let count: i32 = row.get("copy_count");
                         let new_count = count + 1;
 
-                        let _ = sqlx::query(
+                        log::debug!(
+                            "[DatabaseTask] 找到重复内容，更新复制次数: {} -> {}",
+                            count,
+                            new_count
+                        );
+
+                        match sqlx::query(
                             "UPDATE clipboard_entries SET copy_count = ?, created_at = ? WHERE id = ?"
                         )
                         .bind(new_count)
                         .bind(entry.created_at)
                         .bind(&id)
                         .execute(db.pool())
-                        .await;
+                        .await {
+                            Ok(_) => log::debug!("[DatabaseTask] 成功更新重复条目复制次数"),
+                            Err(e) => log::error!("[DatabaseTask] 更新复制次数失败: {}", e),
+                        }
 
                         // 更新条目信息以便发送正确的数据到前端
                         updated_entry.id = id;
@@ -133,7 +149,9 @@ impl AppState {
                         // 插入新记录 - 新记录的copy_count应该是1
                         updated_entry.copy_count = 1;
 
-                        let _ = sqlx::query(
+                        log::debug!("[DatabaseTask] 插入新条目到数据库");
+
+                        match sqlx::query(
                             r#"
                             INSERT INTO clipboard_entries 
                             (id, content_hash, content_type, content_data, source_app, 
@@ -154,14 +172,22 @@ impl AppState {
                         .bind(&entry.metadata)
                         .bind(&entry.app_bundle_id)
                         .execute(db.pool())
-                        .await;
+                        .await {
+                            Ok(_) => log::info!("[DatabaseTask] 成功保存新条目到数据库"),
+                            Err(e) => log::error!("[DatabaseTask] 保存新条目失败: {}", e),
+                        }
                     }
-                    Err(e) => eprintln!("数据库查询错误: {}", e),
+                    Err(e) => log::error!("[DatabaseTask] 数据库查询错误: {}", e),
                 }
 
                 // 发送更新后的条目到前端
                 if let Some(handle) = app_handle.lock().await.as_ref() {
-                    let _ = handle.emit("clipboard-update", &updated_entry);
+                    match handle.emit("clipboard-update", &updated_entry) {
+                        Ok(_) => log::trace!("[DatabaseTask] 成功发送更新事件到前端"),
+                        Err(e) => log::error!("[DatabaseTask] 发送更新事件失败: {}", e),
+                    }
+                } else {
+                    log::warn!("[DatabaseTask] 无法获取应用句柄，跳过前端更新");
                 }
             }
         });
@@ -372,7 +398,7 @@ impl AppState {
             tokio::task::spawn_blocking(move || -> Result<()> {
                 use std::process::Command;
 
-                println!("[paste_text] 开始执行粘贴流程");
+                log::info!("[paste_text] 开始执行粘贴流程");
 
                 // 隐藏clipboard-app窗口，让下层应用自动获得焦点
                 let hide_and_paste_script = r#"
@@ -407,13 +433,13 @@ impl AppState {
                         if output.status.success() {
                             let result_msg =
                                 String::from_utf8_lossy(&output.stdout).trim().to_string();
-                            println!("[paste_text] {}", result_msg);
+                            log::info!("[paste_text] {}", result_msg);
                         } else {
                             let stderr = String::from_utf8_lossy(&output.stderr);
-                            println!("[paste_text] AppleScript错误: {}", stderr);
+                            log::error!("[paste_text] AppleScript错误: {}", stderr);
                         }
                     }
-                    Err(e) => println!("[paste_text] 执行失败: {}", e),
+                    Err(e) => log::error!("[paste_text] 执行失败: {}", e),
                 }
 
                 Ok(())
@@ -480,7 +506,7 @@ impl AppState {
             tokio::task::spawn_blocking(move || -> Result<()> {
                 use std::process::Command;
 
-                println!("[paste_image] 开始执行图片粘贴流程");
+                log::info!("[paste_image] 开始执行图片粘贴流程");
 
                 // 隐藏clipboard-app窗口，让下层应用自动获得焦点
                 let hide_and_paste_script = r#"
@@ -515,13 +541,13 @@ impl AppState {
                         if output.status.success() {
                             let result_msg =
                                 String::from_utf8_lossy(&output.stdout).trim().to_string();
-                            println!("[paste_image] {}", result_msg);
+                            log::info!("[paste_image] {}", result_msg);
                         } else {
                             let stderr = String::from_utf8_lossy(&output.stderr);
-                            println!("[paste_image] AppleScript错误: {}", stderr);
+                            log::error!("[paste_image] AppleScript错误: {}", stderr);
                         }
                     }
-                    Err(e) => println!("[paste_image] 执行失败: {}", e),
+                    Err(e) => log::error!("[paste_image] 执行失败: {}", e),
                 }
 
                 Ok(())
@@ -674,16 +700,29 @@ impl AppState {
         let mut last_cleanup = self.last_cleanup_date.lock().await;
 
         let should_cleanup = match *last_cleanup {
-            Some(last) => (now.date_naive() - last.date_naive()).num_days() >= 1,
-            None => true,
+            Some(last) => {
+                let days_since = (now.date_naive() - last.date_naive()).num_days();
+                log::debug!("[Cleanup] 距离上次清理已过 {} 天", days_since);
+                days_since >= 1
+            }
+            None => {
+                log::debug!("[Cleanup] 首次运行，需要执行清理");
+                true
+            }
         };
 
         if should_cleanup {
-            println!("[cleanup] Starting daily cleanup...");
+            log::info!("[Cleanup] 开始执行每日清理任务");
             let result = self.cleanup_expired_entries().await?;
-            println!("[cleanup] Cleanup completed: {} entries removed, {} images removed, {} bytes freed", 
-                     result.entries_removed, result.images_removed, result.size_freed_bytes);
+            log::info!(
+                "[Cleanup] 清理完成: 删除 {} 条记录, {} 张图片, 释放 {} 字节空间",
+                result.entries_removed,
+                result.images_removed,
+                result.size_freed_bytes
+            );
             *last_cleanup = Some(now);
+        } else {
+            log::debug!("[Cleanup] 今日已清理过，跳过清理任务");
         }
 
         Ok(())

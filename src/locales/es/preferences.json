@@ -7,7 +7,8 @@
     "shortcuts": "Atajos",
     "system": "Sistema",
     "language": "Idioma",
-    "analytics": "Análisis"
+    "analytics": "Análisis",
+    "logs": "Registros"
   },
   "text": {
     "title": "Límites de Texto",
@@ -115,5 +116,43 @@
     "portuguese": "Português",
     "russian": "Русский",
     "italian": "Italiano"
+  },
+  "logs": {
+    "title": "Visor de Registros",
+    "description": "Ver registros de la aplicación en tiempo real con capacidades de filtrado y búsqueda.",
+    "viewLogs": "Ver Registros de la Aplicación",
+    "openViewer": "Abrir Visor de Registros",
+    "clearLogs": "Limpiar Registros",
+    "logLevel": "Nivel",
+    "searchPlaceholder": "Buscar registros...",
+    "loading": "Cargando registros...",
+    "noLogs": "No hay registros",
+    "noMatches": "No hay registros coincidentes",
+    "entriesCount": "{{filtered}} / {{total}} entradas",
+    "storageInfo": "Los archivos de registro se almacenan en el directorio de registros del sistema y contienen información sobre:",
+    "levels": {
+      "all": "Todos los niveles",
+      "error": "Error",
+      "warn": "Advertencia",
+      "info": "Información",
+      "debug": "Depuración",
+      "trace": "Rastreo"
+    },
+    "messages": {
+      "logsCleared": "Registros limpiados",
+      "logsCopied": "Registros copiados al portapapeles",
+      "logLevelSet": "Nivel de registro establecido en {{level}}"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar registros",
+      "clearFailed": "Error al limpiar registros",
+      "setLevelFailed": "Error al establecer nivel de registro"
+    },
+    "features": [
+      "Visualización de registros en tiempo real",
+      "Filtrar por nivel de registro",
+      "Buscar en el contenido del registro",
+      "Copiar registros al portapapeles"
+    ]
   }
 }

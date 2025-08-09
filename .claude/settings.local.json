@@ -19,7 +19,8 @@
       "WebFetch(domain:tauri.app)",
       "Bash(pnpm run lint:fix:*)",
       "Bash(pnpm run lint:*)",
-      "Bash(pnpm run build:*)"
+      "Bash(pnpm run build:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

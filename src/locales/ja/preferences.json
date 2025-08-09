@@ -7,7 +7,8 @@
     "shortcuts": "ショートカット",
     "system": "システム",
     "language": "言語",
-    "analytics": "分析"
+    "analytics": "分析",
+    "logs": "ログ"
   },
   "text": {
     "title": "テキスト制限",
@@ -115,5 +116,43 @@
     "portuguese": "Português",
     "russian": "Русский",
     "italian": "Italiano"
+  },
+  "logs": {
+    "title": "ログビューア",
+    "description": "リアルタイムでアプリケーションログを表示し、フィルターや検索機能を使用できます。",
+    "viewLogs": "アプリケーションログを表示",
+    "openViewer": "ログビューアを開く",
+    "clearLogs": "ログをクリア",
+    "logLevel": "レベル",
+    "searchPlaceholder": "ログを検索...",
+    "loading": "ログを読み込み中...",
+    "noLogs": "ログがありません",
+    "noMatches": "一致するログがありません",
+    "entriesCount": "{{filtered}} / {{total}} 件",
+    "storageInfo": "ログファイルはシステムログディレクトリに保存され、次の情報が含まれています：",
+    "levels": {
+      "all": "全レベル",
+      "error": "エラー",
+      "warn": "警告",
+      "info": "情報",
+      "debug": "デバッグ",
+      "trace": "トレース"
+    },
+    "messages": {
+      "logsCleared": "ログをクリアしました",
+      "logsCopied": "ログをクリップボードにコピーしました",
+      "logLevelSet": "ログレベルを {{level}} に設定しました"
+    },
+    "errors": {
+      "loadFailed": "ログの読み込みに失敗しました",
+      "clearFailed": "ログのクリアに失敗しました",
+      "setLevelFailed": "ログレベルの設定に失敗しました"
+    },
+    "features": [
+      "リアルタイムログ表示",
+      "ログレベルによるフィルター",
+      "ログ内容の検索",
+      "ログをクリップボードにコピー"
+    ]
   }
 }

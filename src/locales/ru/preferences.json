@@ -7,7 +7,8 @@
     "shortcuts": "Shortcuts",
     "system": "System",
     "language": "Language",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "logs": "Журналы"
   },
   "text": {
     "title": "Text Limits",
@@ -141,5 +142,43 @@
       ]
     },
     "provider": "Analytics provided by <link>Aptabase</link>, fully compliant with GDPR and CCPA privacy regulations."
+  },
+  "logs": {
+    "title": "Просмотрщик Журналов",
+    "description": "Просматривайте журналы приложения в реальном времени с функциями фильтрации и поиска.",
+    "viewLogs": "Посмотреть Журналы Приложения",
+    "openViewer": "Открыть Просмотрщик Журналов",
+    "clearLogs": "Очистить Журналы",
+    "logLevel": "Уровень",
+    "searchPlaceholder": "Поиск в журналах...",
+    "loading": "Загрузка журналов...",
+    "noLogs": "Нет журналов",
+    "noMatches": "Нет соответствующих журналов",
+    "entriesCount": "{{filtered}} / {{total}} записей",
+    "storageInfo": "Файлы журналов хранятся в системном каталоге журналов и содержат информацию о:",
+    "levels": {
+      "all": "Все уровни",
+      "error": "Ошибка",
+      "warn": "Предупреждение",
+      "info": "Информация",
+      "debug": "Отладка",
+      "trace": "Трассировка"
+    },
+    "messages": {
+      "logsCleared": "Журналы очищены",
+      "logsCopied": "Журналы скопированы в буфер обмена",
+      "logLevelSet": "Уровень журнала установлен на {{level}}"
+    },
+    "errors": {
+      "loadFailed": "Не удалось загрузить журналы",
+      "clearFailed": "Не удалось очистить журналы",
+      "setLevelFailed": "Не удалось установить уровень журнала"
+    },
+    "features": [
+      "Просмотр журналов в реальном времени",
+      "Фильтрация по уровню журнала",
+      "Поиск по содержимому журнала",
+      "Копирование журналов в буфер обмена"
+    ]
   }
 }

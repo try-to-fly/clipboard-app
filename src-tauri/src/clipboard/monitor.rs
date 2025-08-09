@@ -49,6 +49,8 @@ impl ClipboardMonitor {
     }
 
     pub async fn start_monitoring(&self) {
+        log::info!("[ClipboardMonitor] 启动剪贴板监控");
+
         let last_hash = Arc::clone(&self.last_hash);
         let tx = self.tx.clone();
         let processor = Arc::clone(&self.processor);
@@ -59,11 +61,24 @@ impl ClipboardMonitor {
                 // 先检查当前应用是否是自己
                 let app_info = get_active_app_info();
                 let is_self_app = if let Some(ref info) = app_info {
-                    info.bundle_id == Some("com.clipboard-app.clipboardmanager".to_string())
+                    let is_self = info.bundle_id
+                        == Some("com.clipboard-app.clipboardmanager".to_string())
                         || info.name.contains("clipboard-app")
                         || info.name.contains("Clipboard App")
-                        || info.name.contains("剪切板管理器")
+                        || info.name.contains("剪切板管理器");
+
+                    if is_self {
+                        log::trace!("[ClipboardMonitor] 检测到自身应用: {}", info.name);
+                    } else {
+                        log::trace!(
+                            "[ClipboardMonitor] 当前活跃应用: {} ({})",
+                            info.name,
+                            info.bundle_id.as_deref().unwrap_or("unknown")
+                        );
+                    }
+                    is_self
                 } else {
+                    log::trace!("[ClipboardMonitor] 无法获取当前活跃应用信息");
                     false
                 };
 
@@ -76,7 +91,7 @@ impl ClipboardMonitor {
                 if let Err(e) =
                     Self::check_clipboard(&last_hash, &tx, &processor, &config_manager).await
                 {
-                    eprintln!("剪切板检查错误: {}", e);
+                    log::error!("剪切板检查错误: {}", e);
                 }
                 sleep(Duration::from_millis(500)).await;
             }
@@ -104,21 +119,30 @@ impl ClipboardMonitor {
             // 先trim处理文本
             let trimmed_text = text.trim();
             if !trimmed_text.is_empty() {
+                log::debug!(
+                    "[ClipboardMonitor] 检测到文本内容 ({}字符)",
+                    trimmed_text.len()
+                );
+
                 // 检查是否是base64图片URL（避免循环记录）
                 let is_base64_image =
                     trimmed_text.starts_with("data:image/") && trimmed_text.contains(";base64,");
                 if is_base64_image {
+                    log::debug!("[ClipboardMonitor] 跳过base64图片URL，避免循环记录");
                     return Ok(());
                 }
 
                 let hash = Self::calculate_hash(trimmed_text.as_bytes());
+                log::debug!("[ClipboardMonitor] 计算内容Hash: {}", &hash[..8]);
 
                 let should_send = {
                     let mut last = last_hash.lock().await;
                     if last.as_ref() != Some(&hash) {
                         *last = Some(hash.clone());
+                        log::debug!("[ClipboardMonitor] 新内容Hash，准备处理");
                         true
                     } else {
+                        log::debug!("[ClipboardMonitor] 重复内容Hash，跳过处理");
                         false
                     }
                 };
@@ -129,11 +153,19 @@ impl ClipboardMonitor {
                         if let Some(bundle_id) = &app_info.bundle_id {
                             let config_guard = config_manager.lock().await;
                             if config_guard.is_app_excluded(bundle_id) {
+                                log::debug!(
+                                    "[ClipboardMonitor] 应用 {} 在排除列表中，跳过",
+                                    app_info.name
+                                );
                                 return Ok(());
                             }
 
                             // 检查文本大小限制
                             if !config_guard.is_text_size_valid(trimmed_text) {
+                                log::warn!(
+                                    "[ClipboardMonitor] 文本大小超限 ({}字符)，跳过",
+                                    trimmed_text.len()
+                                );
                                 return Ok(());
                             }
                         }
@@ -141,6 +173,7 @@ impl ClipboardMonitor {
 
                     // 检测内容子类型
                     let (subtype, metadata) = ContentDetector::detect(trimmed_text);
+                    log::debug!("[ClipboardMonitor] 内容检测结果: {:?}", subtype);
 
                     // 将metadata转换为JSON字符串
                     let metadata_json = metadata.and_then(|m| serde_json::to_string(&m).ok());
@@ -163,6 +196,20 @@ impl ClipboardMonitor {
                     entry.metadata = metadata_json;
                     entry.app_bundle_id = app_info.as_ref().and_then(|info| info.bundle_id.clone());
 
+                    log::info!(
+                        "[ClipboardMonitor] 发现新文本内容: {} | 来源: {} | 类型: {:?}",
+                        if trimmed_text.chars().count() > 50 {
+                            format!("{}...", trimmed_text.chars().take(50).collect::<String>())
+                        } else {
+                            trimmed_text.to_string()
+                        },
+                        app_info
+                            .as_ref()
+                            .map(|info| info.name.as_str())
+                            .unwrap_or("未知应用"),
+                        subtype
+                    );
+
                     let _ = tx.send(entry);
                     return Ok(());
                 }
@@ -183,14 +230,24 @@ impl ClipboardMonitor {
             let height = image_data.height;
             let bytes = image_data.bytes.as_ref();
 
+            log::debug!(
+                "[ClipboardMonitor] 检测到图片内容: {}x{} ({}字节)",
+                width,
+                height,
+                bytes.len()
+            );
+
             let hash = Self::calculate_hash(bytes);
+            log::debug!("[ClipboardMonitor] 计算图片Hash: {}", &hash[..8]);
 
             let should_send = {
                 let mut last = last_hash.lock().await;
                 if last.as_ref() != Some(&hash) {
                     *last = Some(hash.clone());
+                    log::debug!("[ClipboardMonitor] 新图片Hash，准备处理");
                     true
                 } else {
+                    log::debug!("[ClipboardMonitor] 重复图片Hash，跳过处理");
                     false
                 }
             };
@@ -201,6 +258,10 @@ impl ClipboardMonitor {
                     if let Some(bundle_id) = &app_info.bundle_id {
                         let config_guard = config_manager.lock().await;
                         if config_guard.is_app_excluded(bundle_id) {
+                            log::debug!(
+                                "[ClipboardMonitor] 图片来源应用 {} 在排除列表中，跳过",
+                                app_info.name
+                            );
                             return Ok(());
                         }
                     }
@@ -212,6 +273,18 @@ impl ClipboardMonitor {
                     .await
                 {
                     Ok(image_info) => {
+                        log::info!(
+                            "[ClipboardMonitor] 图片处理成功: {}x{} -> {} ({}字节) | 来源: {}",
+                            image_info.width,
+                            image_info.height,
+                            image_info.file_path,
+                            image_info.actual_size,
+                            app_info
+                                .as_ref()
+                                .map(|info| info.name.as_str())
+                                .unwrap_or("未知应用")
+                        );
+
                         // 创建图片元数据，使用实际压缩后的文件大小
                         let image_metadata = serde_json::json!({
                             "image_metadata": {
@@ -235,35 +308,55 @@ impl ClipboardMonitor {
 
                         let _ = tx.send(entry);
                     }
-                    Err(_) => {
+                    Err(e) => {
+                        log::warn!(
+                            "[ClipboardMonitor] 指定尺寸图片处理失败，降级到自动检测: {}",
+                            e
+                        );
                         // 降级到自动检测
-                        if let Ok(file_path) = processor.process_image(bytes).await {
-                            // 获取实际保存的文件大小
-                            let actual_size =
-                                Self::get_saved_file_size(&file_path).unwrap_or(bytes.len() as u64);
+                        match processor.process_image(bytes).await {
+                            Ok(file_path) => {
+                                // 获取实际保存的文件大小
+                                let actual_size = Self::get_saved_file_size(&file_path)
+                                    .unwrap_or(bytes.len() as u64);
 
-                            // 创建图片元数据（使用压缩后的文件大小）
-                            let image_metadata = serde_json::json!({
-                                "image_metadata": {
-                                    "width": width as u32,
-                                    "height": height as u32,
-                                    "file_size": actual_size,
-                                    "format": "png"
-                                }
-                            });
+                                log::info!("[ClipboardMonitor] 图片降级处理成功: {}x{} -> {} ({}字节) | 来源: {}", 
+                                    width, height,
+                                    file_path,
+                                    actual_size,
+                                    app_info.as_ref().map(|info| info.name.as_str()).unwrap_or("未知应用")
+                                );
 
-                            let mut entry = ClipboardEntry::new(
-                                ContentType::Image,
-                                Some(file_path.clone()),
-                                hash,
-                                app_info.as_ref().map(|info| info.name.clone()),
-                                Some(file_path),
-                            );
-                            entry.app_bundle_id =
-                                app_info.as_ref().and_then(|info| info.bundle_id.clone());
-                            entry.metadata = Some(image_metadata.to_string());
+                                // 创建图片元数据（使用压缩后的文件大小）
+                                let image_metadata = serde_json::json!({
+                                    "image_metadata": {
+                                        "width": width as u32,
+                                        "height": height as u32,
+                                        "file_size": actual_size,
+                                        "format": "png"
+                                    }
+                                });
 
-                            let _ = tx.send(entry);
+                                let mut entry = ClipboardEntry::new(
+                                    ContentType::Image,
+                                    Some(file_path.clone()),
+                                    hash,
+                                    app_info.as_ref().map(|info| info.name.clone()),
+                                    Some(file_path),
+                                );
+                                entry.app_bundle_id =
+                                    app_info.as_ref().and_then(|info| info.bundle_id.clone());
+                                entry.metadata = Some(image_metadata.to_string());
+
+                                let _ = tx.send(entry);
+                            }
+                            Err(fallback_error) => {
+                                log::error!(
+                                    "[ClipboardMonitor] 图片处理完全失败: 原始错误={}, 降级错误={}",
+                                    e,
+                                    fallback_error
+                                );
+                            }
                         }
                     }
                 }

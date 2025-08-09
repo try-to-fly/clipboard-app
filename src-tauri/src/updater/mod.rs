@@ -37,23 +37,23 @@ impl UpdateManager {
 
     /// Check for updates
     pub async fn check_for_updates(app: &AppHandle) -> Result<Option<UpdateInfo>> {
-        println!("[UpdateManager] Starting update check...");
-        println!(
+        log::info!("[UpdateManager] Starting update check...");
+        log::info!(
             "[UpdateManager] Current app version: {}",
             app.package_info().version
         );
 
         let updater = app.updater_builder().build()?;
-        println!("[UpdateManager] Updater built successfully");
+        log::debug!("[UpdateManager] Updater built successfully");
 
         match updater.check().await {
             Ok(Some(update)) => {
-                println!("[UpdateManager] Update available: {}", update.version);
-                println!(
+                log::info!("[UpdateManager] Update available: {}", update.version);
+                log::info!(
                     "[UpdateManager] Update notes: {}",
                     update.body.as_ref().unwrap_or(&"No notes".to_string())
                 );
-                println!("[UpdateManager] Update date: {:?}", update.date);
+                log::info!("[UpdateManager] Update date: {:?}", update.date);
                 let info = UpdateInfo {
                     version: update.version.clone(),
                     notes: update.body.clone(),
@@ -63,24 +63,24 @@ impl UpdateManager {
                 Ok(Some(info))
             }
             Ok(None) => {
-                println!("[UpdateManager] No updates available - current version is up to date");
-                println!("[UpdateManager] This could mean:");
-                println!("  - Remote version is same or older than current version");
-                println!("  - No release manifest found at the endpoint");
-                println!(
+                log::info!("[UpdateManager] No updates available - current version is up to date");
+                log::debug!("[UpdateManager] This could mean:");
+                log::debug!("  - Remote version is same or older than current version");
+                log::debug!("  - No release manifest found at the endpoint");
+                log::debug!(
                     "  - Current version {} is already the latest",
                     app.package_info().version
                 );
                 Ok(None)
             }
             Err(e) => {
-                eprintln!("[UpdateManager] Failed to check for updates: {}", e);
-                eprintln!("[UpdateManager] Error details: {:?}", e);
-                eprintln!("[UpdateManager] This could be due to:");
-                eprintln!("  - Network connection issues");
-                eprintln!("  - Invalid or unreachable update endpoints");
-                eprintln!("  - Malformed update manifest");
-                eprintln!("  - Authentication/permission issues");
+                log::error!("[UpdateManager] Failed to check for updates: {}", e);
+                log::error!("[UpdateManager] Error details: {:?}", e);
+                log::error!("[UpdateManager] This could be due to:");
+                log::error!("  - Network connection issues");
+                log::error!("  - Invalid or unreachable update endpoints");
+                log::error!("  - Malformed update manifest");
+                log::error!("  - Authentication/permission issues");
                 // Propagate the error to frontend for better error handling
                 Err(e.into())
             }
@@ -108,7 +108,7 @@ impl UpdateManager {
                     },
                     || {
                         // Called before the update is applied
-                        println!("Update is about to be installed");
+                        log::info!("Update is about to be installed");
                     },
                 )
                 .await?;

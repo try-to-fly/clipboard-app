@@ -17,7 +17,7 @@ use tauri::{
 };
 
 async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
-    println!("Menu event: {}", event_id);
+    log::info!("Menu event: {}", event_id);
 
     let state = app_handle.state::<AppState>();
 
@@ -25,30 +25,30 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
         "Copy" => {
             // Get selected text from frontend and copy to clipboard
             if let Err(e) = app_handle.emit("menu_copy", ()) {
-                eprintln!("Failed to emit copy event: {}", e);
+                log::error!("Failed to emit copy event: {}", e);
             }
         }
         "Paste" => {
             // Paste from clipboard to current context
             if let Err(e) = app_handle.emit("menu_paste", ()) {
-                eprintln!("Failed to emit paste event: {}", e);
+                log::error!("Failed to emit paste event: {}", e);
             }
         }
         "Cut" => {
             // Cut selected text
             if let Err(e) = app_handle.emit("menu_cut", ()) {
-                eprintln!("Failed to emit cut event: {}", e);
+                log::error!("Failed to emit cut event: {}", e);
             }
         }
         "SelectAll" => {
             // Select all text in current context
             if let Err(e) = app_handle.emit("menu_select_all", ()) {
-                eprintln!("Failed to emit select all event: {}", e);
+                log::error!("Failed to emit select all event: {}", e);
             }
         }
         "clear_history" => {
             if let Err(e) = state.clear_history().await {
-                eprintln!("Failed to clear history: {}", e);
+                log::error!("Failed to clear history: {}", e);
             } else {
                 // Emit event to refresh frontend
                 let _ = app_handle.emit("history_cleared", ());
@@ -57,16 +57,16 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
         "show_statistics" => match state.get_statistics().await {
             Ok(stats) => {
                 if let Err(e) = app_handle.emit("show_statistics", &stats) {
-                    eprintln!("Failed to emit statistics event: {}", e);
+                    log::error!("Failed to emit statistics event: {}", e);
                 }
             }
             Err(e) => {
-                eprintln!("Failed to get statistics: {}", e);
+                log::error!("Failed to get statistics: {}", e);
             }
         },
         "show_preferences" => {
             if let Err(e) = app_handle.emit("show_preferences", ()) {
-                eprintln!("Failed to emit preferences event: {}", e);
+                log::error!("Failed to emit preferences event: {}", e);
             }
         }
         "toggle_monitoring" => {
@@ -78,17 +78,17 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
             };
 
             if let Err(e) = result {
-                eprintln!("Failed to toggle monitoring: {}", e);
+                log::error!("Failed to toggle monitoring: {}", e);
             } else {
                 // Emit event to update menu label
                 let new_is_monitoring = state.is_monitoring().await;
                 if let Err(e) = app_handle.emit("monitoring_toggled", new_is_monitoring) {
-                    eprintln!("Failed to emit monitoring toggle event: {}", e);
+                    log::error!("Failed to emit monitoring toggle event: {}", e);
                 }
             }
         }
         _ => {
-            println!("Unknown menu event: {}", event_id);
+            log::warn!("Unknown menu event: {}", event_id);
         }
     }
 }
@@ -96,6 +96,18 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .targets([
+                    tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),
+                    tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::LogDir {
+                        file_name: Some("clipboard-app".to_string()),
+                    }),
+                    tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Webview),
+                ])
+                .level(log::LevelFilter::Info)
+                .build(),
+        )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
@@ -103,7 +115,7 @@ pub fn run() {
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, _event| {
-                    println!("Global shortcut triggered: {:?}", shortcut);
+                    log::info!("Global shortcut triggered: {:?}", shortcut);
 
                     // Show/focus the main window when global shortcut is pressed
                     if let Some(window) = app.get_webview_window("main") {
@@ -237,9 +249,9 @@ pub fn run() {
                             )
                             .await
                         {
-                            eprintln!("Failed to register global shortcut on startup: {}", e);
+                            log::error!("Failed to register global shortcut on startup: {}", e);
                         } else {
-                            println!(
+                            log::info!(
                                 "Global shortcut registered on startup: {}",
                                 config.global_shortcut
                             );
@@ -294,7 +306,11 @@ pub fn run() {
             check_for_update,
             install_update,
             should_check_for_updates,
-            set_window_title
+            set_window_title,
+            get_log_content,
+            clear_logs,
+            set_log_level,
+            get_current_log_level
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

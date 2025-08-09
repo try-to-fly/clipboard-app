@@ -144,7 +144,7 @@ impl AppIconExtractor {
             }
         })
         .unwrap_or_else(|_| {
-            eprintln!("提取应用图标时发生异常：{}", bundle_id);
+            log::error!("提取应用图标时发生异常：{}", bundle_id);
             None
         })
         .ok_or_else(|| anyhow::anyhow!("Failed to extract icon data"))

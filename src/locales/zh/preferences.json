@@ -7,7 +7,8 @@
     "shortcuts": "快捷键",
     "system": "系统",
     "language": "语言",
-    "analytics": "统计"
+    "analytics": "统计",
+    "logs": "日志"
   },
   "text": {
     "title": "文本限制",
@@ -91,13 +92,7 @@
     },
     "dataNotCollected": {
       "title": "我们不会收集",
-      "items": [
-        "剪贴板内容",
-        "个人身份信息",
-        "文件内容或路径",
-        "网络浏览历史",
-        "任何敏感数据"
-      ]
+      "items": ["剪贴板内容", "个人身份信息", "文件内容或路径", "网络浏览历史", "任何敏感数据"]
     },
     "provider": "统计服务由 <link>Aptabase</link> 提供，完全符合 GDPR 和 CCPA 隐私法规。"
   },
@@ -132,14 +127,45 @@
     },
     "dataNotCollected": {
       "title": "我们不会收集",
-      "items": [
-        "剪贴板内容",
-        "个人身份信息",
-        "文件内容或路径",
-        "网络浏览历史",
-        "任何敏感数据"
-      ]
+      "items": ["剪贴板内容", "个人身份信息", "文件内容或路径", "网络浏览历史", "任何敏感数据"]
     },
     "provider": "统计服务由 <link>Aptabase</link> 提供，完全符合 GDPR 和 CCPA 隐私法规。"
+  },
+  "logs": {
+    "title": "日志查看器",
+    "description": "查看实时应用程序日志，支持过滤和搜索功能。",
+    "viewLogs": "查看应用程序日志",
+    "openViewer": "打开日志查看器",
+    "clearLogs": "清空日志",
+    "logLevel": "级别",
+    "searchPlaceholder": "搜索日志...",
+    "loading": "加载日志中...",
+    "noLogs": "暂无日志",
+    "noMatches": "没有匹配的日志",
+    "entriesCount": "{{filtered}} / {{total}} 条",
+    "storageInfo": "日志文件存储在系统日志目录中，包含以下信息：",
+    "levels": {
+      "all": "所有级别",
+      "error": "错误",
+      "warn": "警告",
+      "info": "信息",
+      "debug": "调试",
+      "trace": "跟踪"
+    },
+    "messages": {
+      "logsCleared": "日志已清空",
+      "logsCopied": "日志已复制到剪贴板",
+      "logLevelSet": "日志级别已设置为 {{level}}"
+    },
+    "autoRefreshOn": "自动刷新已启用",
+    "autoRefreshOff": "自动刷新已禁用",
+    "autoOn": "自动",
+    "autoOff": "手动",
+    "errors": {
+      "loadFailed": "加载日志失败",
+      "clearFailed": "清空日志失败",
+      "setLevelFailed": "设置日志级别失败"
+    },
+    "features": ["实时日志查看", "按日志级别过滤", "搜索日志内容", "复制日志到剪贴板"]
   }
 }

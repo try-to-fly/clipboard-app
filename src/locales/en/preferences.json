@@ -7,7 +7,8 @@
     "shortcuts": "Shortcuts",
     "system": "System",
     "language": "Language",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "logs": "Logs"
   },
   "text": {
     "title": "Text Limits",
@@ -141,5 +142,47 @@
       ]
     },
     "provider": "Analytics provided by <link>Aptabase</link>, fully compliant with GDPR and CCPA privacy regulations."
+  },
+  "logs": {
+    "title": "Log Viewer",
+    "description": "View real-time application logs with filtering and search capabilities.",
+    "viewLogs": "View Application Logs",
+    "openViewer": "Open Log Viewer",
+    "clearLogs": "Clear Logs",
+    "logLevel": "Level",
+    "searchPlaceholder": "Search logs...",
+    "loading": "Loading logs...",
+    "noLogs": "No logs available",
+    "noMatches": "No logs match your filters",
+    "entriesCount": "{{filtered}} of {{total}} entries",
+    "storageInfo": "Log files are stored in the system log directory and contain information about:",
+    "levels": {
+      "all": "All Levels",
+      "error": "Error",
+      "warn": "Warning",
+      "info": "Info",
+      "debug": "Debug",
+      "trace": "Trace"
+    },
+    "messages": {
+      "logsCleared": "Logs cleared successfully",
+      "logsCopied": "Logs copied to clipboard",
+      "logLevelSet": "Log level set to {{level}}"
+    },
+    "autoRefreshOn": "Auto refresh enabled",
+    "autoRefreshOff": "Auto refresh disabled",
+    "autoOn": "Auto",
+    "autoOff": "Manual",
+    "errors": {
+      "loadFailed": "Failed to load logs",
+      "clearFailed": "Failed to clear logs",
+      "setLevelFailed": "Failed to set log level"
+    },
+    "features": [
+      "Real-time log viewing",
+      "Filter by log level",
+      "Search through log content",
+      "Copy logs to clipboard"
+    ]
   }
 }

@@ -15,12 +15,12 @@ pub struct AppListManager;
 
 impl AppListManager {
     pub fn get_installed_applications() -> Result<Vec<InstalledApp>> {
-        println!("[AppListManager] Starting to get installed applications...");
+        log::debug!("[AppListManager] Starting to get installed applications...");
         let mut apps = Vec::new();
 
-        println!("[AppListManager] Getting running applications...");
+        log::debug!("[AppListManager] Getting running applications...");
         let running_apps = Self::get_running_applications()?;
-        println!(
+        log::debug!(
             "[AppListManager] Found {} running applications",
             running_apps.len()
         );
@@ -39,7 +39,7 @@ impl AppListManager {
 
         // Sort by name
         apps.sort_by(|a, b| a.name.cmp(&b.name));
-        println!("[AppListManager] Total applications found: {}", apps.len());
+        log::info!("[AppListManager] Total applications found: {}", apps.len());
         Ok(apps)
     }
 
@@ -151,9 +151,9 @@ impl AppListManager {
                 .unwrap_or_default(),
         ];
 
-        println!("[AppListManager] Scanning application directories...");
+        log::debug!("[AppListManager] Scanning application directories...");
         for app_dir in &app_dirs {
-            println!("[AppListManager] Scanning directory: {:?}", app_dir);
+            log::debug!("[AppListManager] Scanning directory: {:?}", app_dir);
             if let Ok(entries) = std::fs::read_dir(app_dir) {
                 let mut count = 0;
                 for entry in entries.flatten() {
@@ -170,7 +170,7 @@ impl AppListManager {
                         }
                         Err(e) => {
                             // Log error but continue with other apps
-                            println!(
+                            log::warn!(
                                 "Warning: Failed to parse app bundle at {:?}: {}",
                                 entry.path(),
                                 e
@@ -178,12 +178,13 @@ impl AppListManager {
                         }
                     }
                 }
-                println!(
+                log::debug!(
                     "[AppListManager] Found {} additional apps in {:?}",
-                    count, app_dir
+                    count,
+                    app_dir
                 );
             } else {
-                println!("[AppListManager] Could not read directory: {:?}", app_dir);
+                log::warn!("[AppListManager] Could not read directory: {:?}", app_dir);
             }
         }
 
@@ -203,9 +204,9 @@ impl AppListManager {
                 .unwrap_or_default(),
         ];
 
-        println!("[AppListManager] Scanning Windows application directories...");
+        log::debug!("[AppListManager] Scanning Windows application directories...");
         for app_dir in &app_dirs {
-            println!("[AppListManager] Scanning directory: {:?}", app_dir);
+            log::debug!("[AppListManager] Scanning directory: {:?}", app_dir);
             if let Ok(entries) = std::fs::read_dir(app_dir) {
                 let mut count = 0;
                 for entry in entries.flatten() {
@@ -223,7 +224,7 @@ impl AppListManager {
                                         }
                                         Ok(None) => {}
                                         Err(e) => {
-                                            println!(
+                                            log::warn!(
                                                 "Warning: Failed to parse executable at {:?}: {}",
                                                 app_entry.path(),
                                                 e
@@ -235,12 +236,13 @@ impl AppListManager {
                         }
                     }
                 }
-                println!(
+                log::debug!(
                     "[AppListManager] Found {} additional apps in {:?}",
-                    count, app_dir
+                    count,
+                    app_dir
                 );
             } else {
-                println!("[AppListManager] Could not read directory: {:?}", app_dir);
+                log::warn!("[AppListManager] Could not read directory: {:?}", app_dir);
             }
         }
 

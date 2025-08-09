@@ -7,7 +7,8 @@
     "shortcuts": "Raccourcis",
     "system": "Système",
     "language": "Langue",
-    "analytics": "Analyse"
+    "analytics": "Analyse",
+    "logs": "Journaux"
   },
   "text": {
     "title": "Limites du texte",
@@ -115,5 +116,43 @@
     "portuguese": "Português",
     "russian": "Русский",
     "italian": "Italiano"
+  },
+  "logs": {
+    "title": "Visionneuse de Journaux",
+    "description": "Afficher les journaux d'application en temps réel avec des capacités de filtrage et de recherche.",
+    "viewLogs": "Afficher les Journaux d'Application",
+    "openViewer": "Ouvrir le Visualiseur de Journaux",
+    "clearLogs": "Effacer les Journaux",
+    "logLevel": "Niveau",
+    "searchPlaceholder": "Rechercher dans les journaux...",
+    "loading": "Chargement des journaux...",
+    "noLogs": "Aucun journal",
+    "noMatches": "Aucun journal correspondant",
+    "entriesCount": "{{filtered}} / {{total}} entrées",
+    "storageInfo": "Les fichiers de journaux sont stockés dans le répertoire de journaux système et contiennent des informations sur :",
+    "levels": {
+      "all": "Tous les niveaux",
+      "error": "Erreur",
+      "warn": "Avertissement",
+      "info": "Information",
+      "debug": "Débogage",
+      "trace": "Traçage"
+    },
+    "messages": {
+      "logsCleared": "Journaux effacés",
+      "logsCopied": "Journaux copiés dans le presse-papiers",
+      "logLevelSet": "Niveau de journal défini sur {{level}}"
+    },
+    "errors": {
+      "loadFailed": "Échec du chargement des journaux",
+      "clearFailed": "Échec de l'effacement des journaux",
+      "setLevelFailed": "Échec de la définition du niveau de journal"
+    },
+    "features": [
+      "Affichage des journaux en temps réel",
+      "Filtrer par niveau de journal",
+      "Rechercher dans le contenu du journal",
+      "Copier les journaux dans le presse-papiers"
+    ]
   }
 }

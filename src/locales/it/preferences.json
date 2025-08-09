@@ -7,7 +7,8 @@
     "shortcuts": "Shortcuts",
     "system": "System",
     "language": "Language",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "logs": "Registri"
   },
   "text": {
     "title": "Text Limits",
@@ -141,5 +142,43 @@
       ]
     },
     "provider": "Analytics provided by <link>Aptabase</link>, fully compliant with GDPR and CCPA privacy regulations."
+  },
+  "logs": {
+    "title": "Visualizzatore Registri",
+    "description": "Visualizza i registri dell'applicazione in tempo reale con funzionalità di filtro e ricerca.",
+    "viewLogs": "Visualizza Registri dell'Applicazione",
+    "openViewer": "Apri Visualizzatore Registri",
+    "clearLogs": "Cancella Registri",
+    "logLevel": "Livello",
+    "searchPlaceholder": "Cerca nei registri...",
+    "loading": "Caricamento registri...",
+    "noLogs": "Nessun registro",
+    "noMatches": "Nessun registro corrispondente",
+    "entriesCount": "{{filtered}} / {{total}} voci",
+    "storageInfo": "I file di registro sono archiviati nella directory di registro di sistema e contengono informazioni su:",
+    "levels": {
+      "all": "Tutti i livelli",
+      "error": "Errore",
+      "warn": "Avvertimento",
+      "info": "Informazione",
+      "debug": "Debug",
+      "trace": "Tracciamento"
+    },
+    "messages": {
+      "logsCleared": "Registri cancellati",
+      "logsCopied": "Registri copiati negli appunti",
+      "logLevelSet": "Livello di registro impostato su {{level}}"
+    },
+    "errors": {
+      "loadFailed": "Caricamento registri fallito",
+      "clearFailed": "Cancellazione registri fallita",
+      "setLevelFailed": "Impostazione livello registro fallita"
+    },
+    "features": [
+      "Visualizzazione registri in tempo reale",
+      "Filtra per livello di registro",
+      "Cerca nel contenuto del registro",
+      "Copia registri negli appunti"
+    ]
   }
 }

@@ -53,25 +53,41 @@ pub struct ContentDetector;
 impl ContentDetector {
     pub fn detect(text: &str) -> (ContentSubType, Option<ContentMetadata>) {
         let trimmed = text.trim();
+        log::debug!(
+            "[ContentDetector] 开始检测内容类型，长度: {}字符",
+            trimmed.len()
+        );
+        log::trace!(
+            "[ContentDetector] 内容前100字符: {}",
+            if trimmed.len() > 100 {
+                &trimmed[..100]
+            } else {
+                trimmed
+            }
+        );
 
         // URL检测
         if Self::is_url(trimmed) {
+            log::debug!("[ContentDetector] 检测到URL类型");
             let metadata = Self::parse_url_metadata(trimmed);
             return (ContentSubType::Url, Some(metadata));
         }
 
         // IP地址检测
         if Self::is_ip_address(trimmed) {
+            log::debug!("[ContentDetector] 检测到IP地址类型");
             return (ContentSubType::IpAddress, None);
         }
 
         // 邮箱检测
         if Self::is_email(trimmed) {
+            log::debug!("[ContentDetector] 检测到邮箱地址类型");
             return (ContentSubType::Email, None);
         }
 
         // 颜色检测
         if let Some(color_formats) = Self::detect_color(trimmed) {
+            log::debug!("[ContentDetector] 检测到颜色类型: {:?}", color_formats);
             let metadata = ContentMetadata {
                 detected_language: None,
                 url_parts: None,
@@ -83,16 +99,22 @@ impl ContentDetector {
 
         // JSON检测
         if Self::is_json(trimmed) {
+            log::debug!("[ContentDetector] 检测到JSON类型");
             return (ContentSubType::Json, None);
         }
 
         // 命令行检测
         if Self::is_command(trimmed) {
+            log::debug!("[ContentDetector] 检测到命令行类型");
             return (ContentSubType::Command, None);
         }
 
         // 时间戳检测
         if let Some(timestamp_formats) = Self::detect_timestamp(trimmed) {
+            log::debug!(
+                "[ContentDetector] 检测到时间戳类型: {:?}",
+                timestamp_formats
+            );
             let metadata = ContentMetadata {
                 detected_language: None,
                 url_parts: None,
@@ -104,11 +126,13 @@ impl ContentDetector {
 
         // Markdown检测
         if Self::is_markdown(trimmed) {
+            log::debug!("[ContentDetector] 检测到Markdown类型");
             return (ContentSubType::Markdown, None);
         }
 
         // 代码检测
         if let Some(language) = Self::detect_code_language(trimmed) {
+            log::debug!("[ContentDetector] 检测到代码类型，语言: {}", language);
             let metadata = ContentMetadata {
                 detected_language: Some(language),
                 url_parts: None,
@@ -119,6 +143,7 @@ impl ContentDetector {
         }
 
         // 默认为纯文本
+        log::debug!("[ContentDetector] 未匹配到特定类型，归类为纯文本");
         (ContentSubType::PlainText, None)
     }
 
@@ -153,12 +178,22 @@ impl ContentDetector {
                 .map(|(k, v)| (k.to_string(), v.to_string()))
                 .collect();
 
+            log::trace!(
+                "[ContentDetector] URL解析成功: {} -> {}://{}{}",
+                url,
+                parsed.scheme(),
+                parsed.host_str().unwrap_or(""),
+                parsed.path()
+            );
+
             metadata.url_parts = Some(UrlParts {
                 protocol: parsed.scheme().to_string(),
                 host: parsed.host_str().unwrap_or("").to_string(),
                 path: parsed.path().to_string(),
                 query_params,
             });
+        } else {
+            log::trace!("[ContentDetector] URL解析失败: {}", url);
         }
 
         metadata
@@ -332,10 +367,16 @@ impl ContentDetector {
 
         for (pattern, language) in patterns {
             if Regex::new(pattern).unwrap().is_match(text) {
+                log::trace!(
+                    "[ContentDetector] 代码语言匹配: {} -> {}",
+                    pattern,
+                    language
+                );
                 return Some(language.to_string());
             }
         }
 
+        log::trace!("[ContentDetector] 未检测到已知代码语言");
         None
     }
 }
@@ -348,19 +389,19 @@ mod tests {
     fn test_timestamp_detection() {
         // 测试毫秒级时间戳
         let (sub_type, metadata) = ContentDetector::detect("1754568465706");
-        println!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
+        log::debug!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
         assert!(matches!(sub_type, ContentSubType::Timestamp));
 
         // 测试秒级时间戳
         let (sub_type, metadata) = ContentDetector::detect("1754568465");
-        println!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
+        log::debug!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
         assert!(matches!(sub_type, ContentSubType::Timestamp));
     }
 
     #[test]
     fn test_color_detection() {
         let (sub_type, metadata) = ContentDetector::detect("#ff0000");
-        println!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
+        log::debug!("Detected: {:?}, metadata: {:?}", sub_type, metadata);
         assert!(matches!(sub_type, ContentSubType::Color));
     }
 }

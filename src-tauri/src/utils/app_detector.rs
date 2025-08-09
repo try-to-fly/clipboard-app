@@ -83,7 +83,7 @@ fn get_active_app_info_macos() -> Option<AppInfo> {
         }
     })
     .unwrap_or_else(|_| {
-        eprintln!("获取活动应用程序时发生异常，已安全处理");
+        log::error!("获取活动应用程序时发生异常，已安全处理");
         None
     })
 }

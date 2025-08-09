@@ -7,7 +7,8 @@
     "shortcuts": "Shortcuts",
     "system": "System",
     "language": "Language",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "logs": "로그"
   },
   "text": {
     "title": "Text Limits",
@@ -141,5 +142,43 @@
       ]
     },
     "provider": "Analytics provided by <link>Aptabase</link>, fully compliant with GDPR and CCPA privacy regulations."
+  },
+  "logs": {
+    "title": "로그 뷰어",
+    "description": "필터링 및 검색 기능과 함께 애플리케이션 로그를 실시간으로 보세요.",
+    "viewLogs": "애플리케이션 로그 보기",
+    "openViewer": "로그 뷰어 열기",
+    "clearLogs": "로그 지우기",
+    "logLevel": "레벨",
+    "searchPlaceholder": "로그 검색...",
+    "loading": "로그 로딩 중...",
+    "noLogs": "로그가 없습니다",
+    "noMatches": "일치하는 로그가 없습니다",
+    "entriesCount": "{{filtered}} / {{total}} 항목",
+    "storageInfo": "로그 파일은 시스템 로그 디렉토리에 저장되며 다음 정보를 포함합니다:",
+    "levels": {
+      "all": "모든 레벨",
+      "error": "오류",
+      "warn": "경고",
+      "info": "정보",
+      "debug": "디버그",
+      "trace": "추적"
+    },
+    "messages": {
+      "logsCleared": "로그가 지워졌습니다",
+      "logsCopied": "로그가 클립보드에 복사되었습니다",
+      "logLevelSet": "로그 레벨이 {{level}}(으)로 설정되었습니다"
+    },
+    "errors": {
+      "loadFailed": "로그 로드에 실패했습니다",
+      "clearFailed": "로그 지우기에 실패했습니다",
+      "setLevelFailed": "로그 레벨 설정에 실패했습니다"
+    },
+    "features": [
+      "실시간 로그 보기",
+      "로그 레벨별 필터링",
+      "로그 내용 검색",
+      "로그를 클립보드에 복사"
+    ]
   }
 }
