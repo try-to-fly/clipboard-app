@@ -21,8 +21,6 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
   const [textContentType, setTextContentType] = useState<ContentSubType>('plain_text');
   const [mediaMetadata, setMediaMetadata] = useState<any>(null);
   const [isLoadingText, setIsLoadingText] = useState(false);
-  const [isFFprobeAvailable, setIsFFprobeAvailable] = useState<boolean | null>(null);
-  const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
 
   useEffect(() => {
     if (metadata) {
@@ -122,7 +120,6 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
   useEffect(() => {
     const initialize = async () => {
       const available = await checkFFprobeAvailable();
-      setIsFFprobeAvailable(available);
       
       // 如果是媒体文件且 FFprobe 可用，自动获取元数据
       if (available && (previewType === 'image' || previewType === 'video' || previewType === 'audio')) {

@@ -889,7 +889,7 @@ export function PreferencesModal() {
                         </CardHeader>
                         <CardContent>
                           <ul className="text-sm text-muted-foreground space-y-1">
-                            {t('analytics.dataCollected.items', { returnObjects: true }).map((item: string, index: number) => (
+                            {(t('analytics.dataCollected.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
                               <li key={index}>• {item}</li>
                             ))}
                           </ul>
@@ -904,7 +904,7 @@ export function PreferencesModal() {
                         </CardHeader>
                         <CardContent>
                           <ul className="text-sm text-red-600/80 dark:text-red-400/80 space-y-1">
-                            {t('analytics.dataNotCollected.items', { returnObjects: true }).map((item: string, index: number) => (
+                            {(t('analytics.dataNotCollected.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
                               <li key={index}>• {item}</li>
                             ))}
                           </ul>

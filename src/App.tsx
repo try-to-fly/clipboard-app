@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';
-import { getCurrentWindow } from '@tauri-apps/api/window';
 import { getSystemLanguage } from './i18n/config';
 import { ThemeProvider } from './components/theme-provider';
 import { ThemeToggle } from './components/theme-toggle';
@@ -22,7 +21,7 @@ import { analytics, ANALYTICS_EVENTS } from './services/analytics';
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { i18n, t } = useTranslation(['common']);
+  const { i18n } = useTranslation(['common']);
   const { startMonitoring, setupEventListener } = useClipboardStore();
   const { loadConfig } = useConfigStore();
 
