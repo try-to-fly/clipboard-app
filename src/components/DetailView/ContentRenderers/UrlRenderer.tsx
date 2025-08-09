@@ -14,9 +14,12 @@ interface UrlRendererProps {
 }
 
 export function UrlRenderer({ content, metadata }: UrlRendererProps) {
-  const { copyToClipboard, fetchUrlContent, checkFFprobeAvailable, extractMediaMetadata } = useClipboardStore();
+  const { copyToClipboard, fetchUrlContent, checkFFprobeAvailable, extractMediaMetadata } =
+    useClipboardStore();
   const [urlParts, setUrlParts] = useState<UrlParts | null>(null);
-  const [previewType, setPreviewType] = useState<'none' | 'image' | 'video' | 'audio' | 'text'>('none');
+  const [previewType, setPreviewType] = useState<'none' | 'image' | 'video' | 'audio' | 'text'>(
+    'none'
+  );
   const [textContent, setTextContent] = useState<string>('');
   const [textContentType, setTextContentType] = useState<ContentSubType>('plain_text');
   const [mediaMetadata, setMediaMetadata] = useState<any>(null);
@@ -28,14 +31,15 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
         const parsed = JSON.parse(metadata);
         setUrlParts(parsed.url_parts);
       } catch (e) {
+        console.warn('Metadata parsing failed:', e);
         // 如果metadata解析失败，手动解析URL
         try {
           const url = new URL(content);
           const parsedUrl = queryString.parseUrl(content);
-          const queryParams = Object.entries(parsedUrl.query || {}).map(([k, v]) => 
-            [k, Array.isArray(v) ? v.join(',') : String(v)] as [string, string]
+          const queryParams = Object.entries(parsedUrl.query || {}).map(
+            ([k, v]) => [k, Array.isArray(v) ? v.join(',') : String(v)] as [string, string]
           );
-          
+
           setUrlParts({
             protocol: url.protocol.replace(':', ''),
             host: url.host,
@@ -55,7 +59,12 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
       setPreviewType('video');
     } else if (content.match(/\.(mp3|wav|flac|aac|ogg|m4a)(\?|$)/i)) {
       setPreviewType('audio');
-    } else if (content.match(/\.(json|xml|html|htm|css|js|ts|jsx|tsx|py|java|cpp|c|h|php|rb|go|rs|sql|md|txt|log|csv|yaml|yml|toml|ini|conf|sh|bat)(\?|$)/i) || content.includes('/api/')) {
+    } else if (
+      content.match(
+        /\.(json|xml|html|htm|css|js|ts|jsx|tsx|py|java|cpp|c|h|php|rb|go|rs|sql|md|txt|log|csv|yaml|yml|toml|ini|conf|sh|bat)(\?|$)/i
+      ) ||
+      content.includes('/api/')
+    ) {
       // 文本类型或API
       fetchTextContent(content);
     }
@@ -66,10 +75,10 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
     try {
       // 使用Tauri命令获取URL内容，绕过浏览器CORS限制
       const data = await fetchUrlContent(fetchUrl);
-      
+
       // 根据URL扩展名确定内容类型
       const contentType = getContentTypeFromUrl(fetchUrl);
-      
+
       // 如果是JSON内容，尝试格式化
       let processedContent = data;
       if (contentType === 'json') {
@@ -81,7 +90,7 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
           // 如果JSON解析失败，就使用原始内容
         }
       }
-      
+
       setTextContent(processedContent);
       setTextContentType(contentType);
       setPreviewType('text');
@@ -115,14 +124,16 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
     return 'plain_text';
   };
 
-
   // 在组件加载时检查 FFprobe 可用性并自动获取媒体元数据
   useEffect(() => {
     const initialize = async () => {
       const available = await checkFFprobeAvailable();
-      
+
       // 如果是媒体文件且 FFprobe 可用，自动获取元数据
-      if (available && (previewType === 'image' || previewType === 'video' || previewType === 'audio')) {
+      if (
+        available &&
+        (previewType === 'image' || previewType === 'video' || previewType === 'audio')
+      ) {
         try {
           const metadata = await extractMediaMetadata(content);
           setMediaMetadata(metadata);
@@ -152,11 +163,21 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
               <Badge variant="secondary">URL链接</Badge>
             </div>
             <div id="url-renderer-actions" className="flex gap-2">
-              <Button id="url-renderer-copy-btn" onClick={() => handleCopy(content)} size="sm" variant="outline">
+              <Button
+                id="url-renderer-copy-btn"
+                onClick={() => handleCopy(content)}
+                size="sm"
+                variant="outline"
+              >
                 <Copy className="w-4 h-4 mr-2" />
                 复制URL
               </Button>
-              <Button id="url-renderer-open-btn" onClick={handleOpenUrl} size="sm" variant="outline">
+              <Button
+                id="url-renderer-open-btn"
+                onClick={handleOpenUrl}
+                size="sm"
+                variant="outline"
+              >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 打开链接
               </Button>
@@ -189,7 +210,7 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
                   </span>
                 )}
               </div>
-              
+
               {urlParts.query_params.length > 0 && (
                 <details className="group">
                   <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
@@ -197,13 +218,16 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
                   </summary>
                   <div className="mt-2 space-y-1">
                     {urlParts.query_params.map(([key, value], index) => (
-                      <div key={index} className="flex items-center gap-1 p-1 bg-muted rounded text-xs">
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 p-1 bg-muted rounded text-xs"
+                      >
                         <code className="font-medium text-primary">{key}</code>
                         <span className="text-muted-foreground">=</span>
                         <code className="flex-1 break-all text-muted-foreground">{value}</code>
-                        <Button 
+                        <Button
                           onClick={() => handleCopy(value)}
-                          size="sm" 
+                          size="sm"
                           variant="ghost"
                           className="h-5 w-5 p-0"
                         >
@@ -230,22 +254,20 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
               {mediaMetadata && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {mediaMetadata.width && mediaMetadata.height && (
-                    <span>{mediaMetadata.width}x{mediaMetadata.height}</span>
+                    <span>
+                      {mediaMetadata.width}x{mediaMetadata.height}
+                    </span>
                   )}
-                  {mediaMetadata.format && (
-                    <span>• {mediaMetadata.format}</span>
-                  )}
-                  {mediaMetadata.size && (
-                    <span>• {mediaMetadata.size}</span>
-                  )}
+                  {mediaMetadata.format && <span>• {mediaMetadata.format}</span>}
+                  {mediaMetadata.size && <span>• {mediaMetadata.size}</span>}
                 </div>
               )}
             </div>
           </CardHeader>
           <CardContent>
-            <img 
-              src={content} 
-              alt="预览" 
+            <img
+              src={content}
+              alt="预览"
               className="max-w-full h-auto rounded border"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -266,30 +288,20 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
               {mediaMetadata && (
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   {mediaMetadata.width && mediaMetadata.height && (
-                    <span>{mediaMetadata.width}x{mediaMetadata.height}</span>
+                    <span>
+                      {mediaMetadata.width}x{mediaMetadata.height}
+                    </span>
                   )}
-                  {mediaMetadata.fps && (
-                    <span>• {mediaMetadata.fps}fps</span>
-                  )}
-                  {mediaMetadata.duration && (
-                    <span>• {mediaMetadata.duration}</span>
-                  )}
-                  {mediaMetadata.codec && (
-                    <span>• {mediaMetadata.codec}</span>
-                  )}
-                  {mediaMetadata.bitrate && (
-                    <span>• {mediaMetadata.bitrate}</span>
-                  )}
+                  {mediaMetadata.fps && <span>• {mediaMetadata.fps}fps</span>}
+                  {mediaMetadata.duration && <span>• {mediaMetadata.duration}</span>}
+                  {mediaMetadata.codec && <span>• {mediaMetadata.codec}</span>}
+                  {mediaMetadata.bitrate && <span>• {mediaMetadata.bitrate}</span>}
                 </div>
               )}
             </div>
           </CardHeader>
           <CardContent>
-            <video 
-              src={content} 
-              controls 
-              className="max-w-full h-auto rounded border"
-            />
+            <video src={content} controls className="max-w-full h-auto rounded border" />
           </CardContent>
         </Card>
       )}
@@ -304,28 +316,16 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
               </span>
               {mediaMetadata && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {mediaMetadata.duration && (
-                    <span>{mediaMetadata.duration}</span>
-                  )}
-                  {mediaMetadata.bitrate && (
-                    <span>• {mediaMetadata.bitrate}</span>
-                  )}
-                  {mediaMetadata.sample_rate && (
-                    <span>• {mediaMetadata.sample_rate}Hz</span>
-                  )}
-                  {mediaMetadata.codec && (
-                    <span>• {mediaMetadata.codec}</span>
-                  )}
+                  {mediaMetadata.duration && <span>{mediaMetadata.duration}</span>}
+                  {mediaMetadata.bitrate && <span>• {mediaMetadata.bitrate}</span>}
+                  {mediaMetadata.sample_rate && <span>• {mediaMetadata.sample_rate}Hz</span>}
+                  {mediaMetadata.codec && <span>• {mediaMetadata.codec}</span>}
                 </div>
               )}
             </div>
           </CardHeader>
           <CardContent>
-            <audio 
-              src={content} 
-              controls 
-              className="w-full"
-            />
+            <audio src={content} controls className="w-full" />
           </CardContent>
         </Card>
       )}
@@ -342,10 +342,7 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
           <CardContent className="p-0">
             {textContent && (
               <div className="h-[500px]">
-                <UnifiedTextRenderer 
-                  content={textContent}
-                  contentSubType={textContentType}
-                />
+                <UnifiedTextRenderer content={textContent} contentSubType={textContentType} />
               </div>
             )}
           </CardContent>

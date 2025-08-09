@@ -31,9 +31,9 @@ export function EmailRenderer({ content }: EmailRendererProps) {
               <Copy className="w-4 h-4 mr-2" />
               复制邮箱
             </Button>
-            <Button 
-              onClick={() => window.location.href = `mailto:${content}`}
-              size="sm" 
+            <Button
+              onClick={() => (window.location.href = `mailto:${content}`)}
+              size="sm"
               variant="outline"
             >
               <Send className="w-4 h-4 mr-2" />
@@ -57,10 +57,8 @@ export function EmailRenderer({ content }: EmailRendererProps) {
               <span className="text-sm font-medium text-muted-foreground">用户名:</span>
             </div>
             <div className="flex items-center gap-2">
-              <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
-                {username}
-              </code>
-              <Button 
+              <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">{username}</code>
+              <Button
                 onClick={() => handleCopy(username)}
                 size="sm"
                 variant="ghost"
@@ -70,17 +68,15 @@ export function EmailRenderer({ content }: EmailRendererProps) {
               </Button>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <AtSign className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">域名:</span>
             </div>
             <div className="flex items-center gap-2">
-              <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
-                {domain}
-              </code>
-              <Button 
+              <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">{domain}</code>
+              <Button
                 onClick={() => handleCopy(domain)}
                 size="sm"
                 variant="ghost"

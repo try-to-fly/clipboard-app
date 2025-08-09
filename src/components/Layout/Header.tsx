@@ -9,7 +9,8 @@ import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
 
 export const Header: React.FC = () => {
   const { t } = useTranslation(['common', 'clipboard']);
-  const { isMonitoring, startMonitoring, stopMonitoring, clearHistory, fetchStatistics } = useClipboardStore();
+  const { isMonitoring, startMonitoring, stopMonitoring, clearHistory, fetchStatistics } =
+    useClipboardStore();
   const [showStatistics, setShowStatistics] = useState(false);
 
   const handleToggleMonitoring = async () => {
@@ -30,7 +31,7 @@ export const Header: React.FC = () => {
       <div className="header-left">
         <h1 className="app-title">{t('common:appTitle')}</h1>
       </div>
-      
+
       <div className="header-right">
         <Tooltip.Provider>
           <Tooltip.Root>
@@ -43,16 +44,15 @@ export const Header: React.FC = () => {
               </button>
             </Tooltip.Trigger>
             <Tooltip.Content className="tooltip-content">
-              {isMonitoring ? t('clipboard:actions.stopMonitoring') : t('clipboard:actions.startMonitoring')}
+              {isMonitoring
+                ? t('clipboard:actions.stopMonitoring')
+                : t('clipboard:actions.startMonitoring')}
             </Tooltip.Content>
           </Tooltip.Root>
 
           <Tooltip.Root>
             <Tooltip.Trigger asChild>
-              <button
-                className="icon-button"
-                onClick={handleShowStatistics}
-              >
+              <button className="icon-button" onClick={handleShowStatistics}>
                 <BarChart size={20} />
               </button>
             </Tooltip.Trigger>
@@ -95,15 +95,12 @@ export const Header: React.FC = () => {
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
-          
+
           <LanguageSwitcher />
         </Tooltip.Provider>
       </div>
-      
-      <StatisticsModal 
-        isOpen={showStatistics} 
-        onClose={() => setShowStatistics(false)} 
-      />
+
+      <StatisticsModal isOpen={showStatistics} onClose={() => setShowStatistics(false)} />
     </header>
   );
 };

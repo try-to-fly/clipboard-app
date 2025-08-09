@@ -1,20 +1,14 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Switch } from "../ui/switch";
-import { Slider } from "../ui/slider";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Label } from "../ui/label";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Switch } from '../ui/switch';
+import { Slider } from '../ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Label } from '../ui/label';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import {
   Settings,
   Keyboard,
@@ -25,13 +19,13 @@ import {
   CheckCircle,
   Globe,
   BarChart3,
-} from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
-import { useConfigStore } from "../../stores/configStore";
-import { ShortcutRecorder } from "./ShortcutRecorder";
-import * as Toast from "@radix-ui/react-toast";
-import { analytics } from "../../services/analytics";
-import { getSystemLanguage } from "../../i18n/config";
+} from 'lucide-react';
+import { invoke } from '@tauri-apps/api/core';
+import { useConfigStore } from '../../stores/configStore';
+import { ShortcutRecorder } from './ShortcutRecorder';
+import * as Toast from '@radix-ui/react-toast';
+import { analytics } from '../../services/analytics';
+import { getSystemLanguage } from '../../i18n/config';
 
 export function PreferencesModal() {
   const { t, i18n } = useTranslation(['preferences', 'common']);
@@ -54,22 +48,14 @@ export function PreferencesModal() {
 
   const [localConfig, setLocalConfig] = useState(config);
   const [autoStartupEnabled, setAutoStartupEnabled] = useState(false);
-  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(
-    config?.auto_update ?? true,
-  );
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(config?.auto_update ?? true);
   const [shortcutError, setShortcutError] = useState<string | null>(null);
-  const [availableApps, setAvailableApps] = useState<
-    { name: string; bundle_id: string }[]
-  >([]);
+  const [availableApps, setAvailableApps] = useState<{ name: string; bundle_id: string }[]>([]);
   const [updateCheckLoading, setUpdateCheckLoading] = useState(false);
   const [showUpdateToast, setShowUpdateToast] = useState(false);
-  const [updateToastMessage, setUpdateToastMessage] = useState("");
-  const [updateToastType, setUpdateToastType] = useState<"success" | "error">(
-    "success",
-  );
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(
-    analytics.isEnabled(),
-  );
+  const [updateToastMessage, setUpdateToastMessage] = useState('');
+  const [updateToastType, setUpdateToastType] = useState<'success' | 'error'>('success');
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(analytics.isEnabled());
   const [selectedLanguage, setSelectedLanguage] = useState(() => {
     return config?.language || i18n.language || getSystemLanguage();
   });
@@ -101,20 +87,20 @@ export function PreferencesModal() {
   const loadAvailableApps = async () => {
     try {
       const apps = await invoke<{ name: string; bundle_id: string }[]>(
-        "get_installed_applications",
+        'get_installed_applications'
       );
-      console.log("Loaded apps:", apps.length);
+      console.log('Loaded apps:', apps.length);
       setAvailableApps(apps);
     } catch (error) {
-      console.error("Failed to load applications:", error);
+      console.error('Failed to load applications:', error);
     }
   };
 
   const validateShortcut = async (shortcut: string): Promise<boolean> => {
     try {
-      return await invoke<boolean>("validate_shortcut", { shortcut });
+      return await invoke<boolean>('validate_shortcut', { shortcut });
     } catch (error) {
-      console.error("Failed to validate shortcut:", error);
+      console.error('Failed to validate shortcut:', error);
       return false;
     }
   };
@@ -156,7 +142,7 @@ export function PreferencesModal() {
 
       setShowPreferences(false);
     } catch (error) {
-      console.error("Failed to save preferences:", error);
+      console.error('Failed to save preferences:', error);
     }
   };
 
@@ -183,24 +169,15 @@ export function PreferencesModal() {
           </DialogHeader>
 
           <div className="flex-1 flex flex-col min-h-0 px-6">
-            <Tabs
-              defaultValue="text"
-              className="w-full flex-1 flex flex-col min-h-0"
-            >
+            <Tabs defaultValue="text" className="w-full flex-1 flex flex-col min-h-0">
               <TabsList className="grid w-full grid-cols-7 mb-4 flex-shrink-0">
                 <TabsTrigger value="text">{t('tabs.text')}</TabsTrigger>
                 <TabsTrigger value="image">{t('tabs.image')}</TabsTrigger>
-                <TabsTrigger
-                  value="security"
-                  className="flex items-center gap-1"
-                >
+                <TabsTrigger value="security" className="flex items-center gap-1">
                   <Shield className="w-4 h-4" />
                   {t('tabs.security')}
                 </TabsTrigger>
-                <TabsTrigger
-                  value="shortcuts"
-                  className="flex items-center gap-1"
-                >
+                <TabsTrigger value="shortcuts" className="flex items-center gap-1">
                   <Keyboard className="w-4 h-4" />
                   {t('tabs.shortcuts')}
                 </TabsTrigger>
@@ -239,7 +216,7 @@ export function PreferencesModal() {
                                     ...prev,
                                     text: { ...prev.text, max_size_mb: value },
                                   }
-                                : prev,
+                                : prev
                             )
                           }
                           min={0.1}
@@ -253,9 +230,7 @@ export function PreferencesModal() {
                       </div>
 
                       <div className="space-y-3">
-                        <Label className="text-sm font-medium">
-                          {t('text.expiration')}
-                        </Label>
+                        <Label className="text-sm font-medium">{t('text.expiration')}</Label>
                         <RadioGroup
                           value={getExpiryDisplayValue(localConfig.text.expiry)}
                           onValueChange={(value) => {
@@ -268,21 +243,18 @@ export function PreferencesModal() {
                                       expiry: createExpiryOption(value),
                                     },
                                   }
-                                : prev,
+                                : prev
                             );
                           }}
                           className="grid grid-cols-2 gap-4"
                         >
                           {[
-                            { value: "7", label: t('text.expirationOptions.7days') },
-                            { value: "14", label: t('text.expirationOptions.14days') },
-                            { value: "30", label: t('text.expirationOptions.30days') },
-                            { value: "never", label: t('text.expirationOptions.never') },
+                            { value: '7', label: t('text.expirationOptions.7days') },
+                            { value: '14', label: t('text.expirationOptions.14days') },
+                            { value: '30', label: t('text.expirationOptions.30days') },
+                            { value: 'never', label: t('text.expirationOptions.never') },
                           ].map((option) => (
-                            <div
-                              key={option.value}
-                              className="flex items-center space-x-2"
-                            >
+                            <div key={option.value} className="flex items-center space-x-2">
                               <RadioGroupItem
                                 value={option.value}
                                 id={`text-expiry-${option.value}`}
@@ -310,9 +282,7 @@ export function PreferencesModal() {
                   <div>
                     <h3 className="text-lg font-semibold mb-4">{t('image.title')}</h3>
                     <div className="space-y-3">
-                      <Label className="text-sm font-medium">
-                        {t('image.expiration')}
-                      </Label>
+                      <Label className="text-sm font-medium">{t('image.expiration')}</Label>
                       <RadioGroup
                         value={getExpiryDisplayValue(localConfig.image.expiry)}
                         onValueChange={(value) => {
@@ -325,21 +295,18 @@ export function PreferencesModal() {
                                     expiry: createExpiryOption(value),
                                   },
                                 }
-                              : prev,
+                              : prev
                           );
                         }}
                         className="grid grid-cols-2 gap-4"
                       >
                         {[
-                          { value: "7", label: t('image.expirationOptions.7days') },
-                          { value: "14", label: t('image.expirationOptions.14days') },
-                          { value: "30", label: t('image.expirationOptions.30days') },
-                          { value: "never", label: t('image.expirationOptions.never') },
+                          { value: '7', label: t('image.expirationOptions.7days') },
+                          { value: '14', label: t('image.expirationOptions.14days') },
+                          { value: '30', label: t('image.expirationOptions.30days') },
+                          { value: 'never', label: t('image.expirationOptions.never') },
                         ].map((option) => (
-                          <div
-                            key={option.value}
-                            className="flex items-center space-x-2"
-                          >
+                          <div key={option.value} className="flex items-center space-x-2">
                             <RadioGroupItem
                               value={option.value}
                               id={`image-expiry-${option.value}`}
@@ -370,43 +337,37 @@ export function PreferencesModal() {
                     </p>
 
                     <div className="space-y-3">
-                      {localConfig.excluded_apps_v2?.map(
-                        (excludedApp, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 bg-secondary rounded-lg border"
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-medium text-sm">
-                                {excludedApp.name}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {excludedApp.bundle_id}
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                setLocalConfig((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        excluded_apps_v2:
-                                          prev.excluded_apps_v2?.filter(
-                                            (_, i) => i !== index,
-                                          ) || [],
-                                      }
-                                    : prev,
-                                )
-                              }
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
+                      {localConfig.excluded_apps_v2?.map((excludedApp, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-secondary rounded-lg border"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">{excludedApp.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {excludedApp.bundle_id}
+                            </span>
                           </div>
-                        ),
-                      )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setLocalConfig((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      excluded_apps_v2:
+                                        prev.excluded_apps_v2?.filter((_, i) => i !== index) || [],
+                                    }
+                                  : prev
+                              )
+                            }
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
 
                       <div className="space-y-2">
                         <Label className="text-sm font-medium flex items-center gap-2">
@@ -418,7 +379,7 @@ export function PreferencesModal() {
                           onValueChange={(value) => {
                             if (value) {
                               const selectedApp = availableApps.find(
-                                (app) => app.bundle_id === value,
+                                (app) => app.bundle_id === value
                               );
                               if (selectedApp) {
                                 setLocalConfig((prev) =>
@@ -433,7 +394,7 @@ export function PreferencesModal() {
                                           },
                                         ],
                                       }
-                                    : prev,
+                                    : prev
                                 );
                               }
                             }
@@ -447,16 +408,12 @@ export function PreferencesModal() {
                               .filter(
                                 (app) =>
                                   !localConfig.excluded_apps_v2?.some(
-                                    (excluded) =>
-                                      excluded.bundle_id === app.bundle_id,
-                                  ),
+                                    (excluded) => excluded.bundle_id === app.bundle_id
+                                  )
                               )
                               .sort((a, b) => a.name.localeCompare(b.name))
                               .map((app) => (
-                                <SelectItem
-                                  key={app.bundle_id}
-                                  value={app.bundle_id}
-                                >
+                                <SelectItem key={app.bundle_id} value={app.bundle_id}>
                                   {app.name}
                                 </SelectItem>
                               ))}
@@ -488,16 +445,12 @@ export function PreferencesModal() {
                                   ...prev,
                                   global_shortcut: shortcut,
                                 }
-                              : prev,
+                              : prev
                           )
                         }
                         onValidate={validateShortcut}
                       />
-                      {shortcutError && (
-                        <p className="text-sm text-destructive">
-                          {shortcutError}
-                        </p>
-                      )}
+                      {shortcutError && <p className="text-sm text-destructive">{shortcutError}</p>}
                     </div>
                   </div>
                 </div>
@@ -539,72 +492,55 @@ export function PreferencesModal() {
                       <Button
                         variant="secondary"
                         onClick={async () => {
-                          const { invoke } = await import(
-                            "@tauri-apps/api/core"
-                          );
-                          const { ask, message } = await import(
-                            "@tauri-apps/plugin-dialog"
-                          );
+                          const { invoke } = await import('@tauri-apps/api/core');
+                          const { ask, message } = await import('@tauri-apps/plugin-dialog');
 
                           setUpdateCheckLoading(true);
                           try {
-                            console.log("Starting manual update check...");
-                            const { getVersion } = await import(
-                              "@tauri-apps/api/app"
-                            );
+                            console.log('Starting manual update check...');
+                            const { getVersion } = await import('@tauri-apps/api/app');
                             const currentVersion = await getVersion();
-                            console.log("Current version:", currentVersion);
-                            const updateInfo =
-                              await invoke<any>("check_for_update");
-                            console.log("Update check result:", updateInfo);
+                            console.log('Current version:', currentVersion);
+                            const updateInfo = await invoke<any>('check_for_update');
+                            console.log('Update check result:', updateInfo);
 
                             if (updateInfo.available === true) {
-                              console.log("Update available, showing dialog");
+                              console.log('Update available, showing dialog');
                               const yes = await ask(
                                 `${t('system.update.newVersionAvailable', { version: updateInfo.version })}!\n\n${updateInfo.notes || t('system.update.updateNotes')}\n\n是否立即更新？`,
                                 {
                                   title: t('system.update.updateTitle'),
                                   okLabel: t('system.update.updateNow'),
                                   cancelLabel: t('system.update.later'),
-                                },
+                                }
                               );
                               if (yes) {
                                 try {
-                                  await invoke("install_update");
+                                  await invoke('install_update');
                                   // App will restart automatically after update
                                 } catch (installError) {
-                                  console.error(
-                                    "Failed to install update:",
-                                    installError,
-                                  );
+                                  console.error('Failed to install update:', installError);
                                   await message(t('system.update.installFailed'), {
                                     title: t('system.update.updateError'),
                                   });
                                 }
                               }
                             } else {
-                              console.log(
-                                "No updates available, showing toast",
-                              );
+                              console.log('No updates available, showing toast');
                               setUpdateToastMessage(
-                                t('system.update.upToDate', { version: currentVersion }),
+                                t('system.update.upToDate', { version: currentVersion })
                               );
-                              setUpdateToastType("success");
+                              setUpdateToastType('success');
                               setShowUpdateToast(true);
                             }
                           } catch (error) {
-                            console.error(
-                              "Failed to check for updates:",
-                              error,
-                            );
+                            console.error('Failed to check for updates:', error);
                             const errorMessage =
-                              typeof error === "string"
-                                ? error
-                                : t('system.update.networkError');
+                              typeof error === 'string' ? error : t('system.update.networkError');
                             setUpdateToastMessage(
-                              t('system.update.checkError', { error: errorMessage }),
+                              t('system.update.checkError', { error: errorMessage })
                             );
-                            setUpdateToastType("error");
+                            setUpdateToastType('error');
                             setShowUpdateToast(true);
                           } finally {
                             setUpdateCheckLoading(false);
@@ -612,7 +548,9 @@ export function PreferencesModal() {
                         }}
                         disabled={updateCheckLoading}
                       >
-                        {updateCheckLoading ? t('system.update.checking') : t('system.update.checkNow')}
+                        {updateCheckLoading
+                          ? t('system.update.checking')
+                          : t('system.update.checkNow')}
                       </Button>
                     </div>
                   </div>
@@ -699,154 +637,95 @@ export function PreferencesModal() {
                     </p>
 
                     <div className="space-y-3">
-                      <Label className="text-sm font-medium">
-                        {t('language.title')}
-                      </Label>
+                      <Label className="text-sm font-medium">{t('language.title')}</Label>
                       <RadioGroup
                         value={selectedLanguage}
                         onValueChange={setSelectedLanguage}
                         className="grid grid-cols-1 gap-4"
                       >
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="system"
-                            id="lang-system"
-                          />
-                          <Label
-                            htmlFor="lang-system"
-                            className="text-sm font-normal"
-                          >
-                            {t('language.systemDefault')} ({
-                              getSystemLanguage() === 'zh' ? '中文' :
-                              getSystemLanguage() === 'ja' ? '日本語' :
-                              getSystemLanguage() === 'es' ? 'Español' :
-                              getSystemLanguage() === 'fr' ? 'Français' :
-                              getSystemLanguage() === 'de' ? 'Deutsch' :
-                              getSystemLanguage() === 'ko' ? '한국어' :
-                              getSystemLanguage() === 'pt' ? 'Português' :
-                              getSystemLanguage() === 'ru' ? 'Русский' :
-                              getSystemLanguage() === 'it' ? 'Italiano' :
-                              'English'
-                            })
+                          <RadioGroupItem value="system" id="lang-system" />
+                          <Label htmlFor="lang-system" className="text-sm font-normal">
+                            {t('language.systemDefault')} (
+                            {getSystemLanguage() === 'zh'
+                              ? '中文'
+                              : getSystemLanguage() === 'ja'
+                                ? '日本語'
+                                : getSystemLanguage() === 'es'
+                                  ? 'Español'
+                                  : getSystemLanguage() === 'fr'
+                                    ? 'Français'
+                                    : getSystemLanguage() === 'de'
+                                      ? 'Deutsch'
+                                      : getSystemLanguage() === 'ko'
+                                        ? '한국어'
+                                        : getSystemLanguage() === 'pt'
+                                          ? 'Português'
+                                          : getSystemLanguage() === 'ru'
+                                            ? 'Русский'
+                                            : getSystemLanguage() === 'it'
+                                              ? 'Italiano'
+                                              : 'English'}
+                            )
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="zh"
-                            id="lang-zh"
-                          />
-                          <Label
-                            htmlFor="lang-zh"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="zh" id="lang-zh" />
+                          <Label htmlFor="lang-zh" className="text-sm font-normal">
                             {t('language.chinese')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="en"
-                            id="lang-en"
-                          />
-                          <Label
-                            htmlFor="lang-en"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="en" id="lang-en" />
+                          <Label htmlFor="lang-en" className="text-sm font-normal">
                             {t('language.english')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="ja"
-                            id="lang-ja"
-                          />
-                          <Label
-                            htmlFor="lang-ja"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="ja" id="lang-ja" />
+                          <Label htmlFor="lang-ja" className="text-sm font-normal">
                             {t('language.japanese')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="es"
-                            id="lang-es"
-                          />
-                          <Label
-                            htmlFor="lang-es"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="es" id="lang-es" />
+                          <Label htmlFor="lang-es" className="text-sm font-normal">
                             {t('language.spanish')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="fr"
-                            id="lang-fr"
-                          />
-                          <Label
-                            htmlFor="lang-fr"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="fr" id="lang-fr" />
+                          <Label htmlFor="lang-fr" className="text-sm font-normal">
                             {t('language.french')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="de"
-                            id="lang-de"
-                          />
-                          <Label
-                            htmlFor="lang-de"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="de" id="lang-de" />
+                          <Label htmlFor="lang-de" className="text-sm font-normal">
                             {t('language.german')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="ko"
-                            id="lang-ko"
-                          />
-                          <Label
-                            htmlFor="lang-ko"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="ko" id="lang-ko" />
+                          <Label htmlFor="lang-ko" className="text-sm font-normal">
                             {t('language.korean')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="pt"
-                            id="lang-pt"
-                          />
-                          <Label
-                            htmlFor="lang-pt"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="pt" id="lang-pt" />
+                          <Label htmlFor="lang-pt" className="text-sm font-normal">
                             {t('language.portuguese')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="ru"
-                            id="lang-ru"
-                          />
-                          <Label
-                            htmlFor="lang-ru"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="ru" id="lang-ru" />
+                          <Label htmlFor="lang-ru" className="text-sm font-normal">
                             {t('language.russian')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="it"
-                            id="lang-it"
-                          />
-                          <Label
-                            htmlFor="lang-it"
-                            className="text-sm font-normal"
-                          >
+                          <RadioGroupItem value="it" id="lang-it" />
+                          <Label htmlFor="lang-it" className="text-sm font-normal">
                             {t('language.italian')}
                           </Label>
                         </div>
@@ -876,9 +755,7 @@ export function PreferencesModal() {
                             analytics.setEnabled(checked);
                           }}
                         />
-                        <Label className="text-sm font-medium">
-                          {t('analytics.enable')}
-                        </Label>
+                        <Label className="text-sm font-medium">{t('analytics.enable')}</Label>
                       </div>
 
                       <Card className="bg-secondary/50">
@@ -889,7 +766,11 @@ export function PreferencesModal() {
                         </CardHeader>
                         <CardContent>
                           <ul className="text-sm text-muted-foreground space-y-1">
-                            {(t('analytics.dataCollected.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+                            {(
+                              t('analytics.dataCollected.items', {
+                                returnObjects: true,
+                              }) as string[]
+                            ).map((item: string, index: number) => (
                               <li key={index}>• {item}</li>
                             ))}
                           </ul>
@@ -904,7 +785,11 @@ export function PreferencesModal() {
                         </CardHeader>
                         <CardContent>
                           <ul className="text-sm text-red-600/80 dark:text-red-400/80 space-y-1">
-                            {(t('analytics.dataNotCollected.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+                            {(
+                              t('analytics.dataNotCollected.items', {
+                                returnObjects: true,
+                              }) as string[]
+                            ).map((item: string, index: number) => (
                               <li key={index}>• {item}</li>
                             ))}
                           </ul>
@@ -921,7 +806,7 @@ export function PreferencesModal() {
                             className="underline"
                           >
                             Aptabase
-                          </a>{" "}
+                          </a>{' '}
                           {t('analytics.provider').split('</link>')[1]}
                         </p>
                       </div>
@@ -950,12 +835,14 @@ export function PreferencesModal() {
         duration={4000}
       >
         <Toast.Title className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
-          {updateToastType === "success" ? (
+          {updateToastType === 'success' ? (
             <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
           ) : (
             <X className="h-4 w-4 text-red-600 dark:text-red-400" />
           )}
-          {updateToastType === "success" ? t('system.update.checkComplete') : t('system.update.checkFailed')}
+          {updateToastType === 'success'
+            ? t('system.update.checkComplete')
+            : t('system.update.checkFailed')}
         </Toast.Title>
         <Toast.Description className="text-sm text-muted-foreground mt-1">
           {updateToastMessage}

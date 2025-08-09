@@ -60,17 +60,17 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
         scale: selectedScale,
         skipRecording: true,
       });
-      
+
       setPreviewUrl(convertedData);
       setShowOriginal(false);
-      
+
       // 计算转换后的大小和分辨率
       const base64Part = convertedData.split(',')[1];
       if (base64Part && metadata) {
         const binarySize = atob(base64Part).length;
         const newWidth = Math.round(metadata.width * selectedScale);
         const newHeight = Math.round(metadata.height * selectedScale);
-        
+
         setConvertedMetadata({
           size: binarySize,
           width: newWidth,
@@ -91,13 +91,13 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
         base64Data: previewUrl,
         skipRecording: true,
       });
-      
+
       // 显示成功提示
       const toast = document.createElement('div');
       toast.className = 'toast-notification';
       toast.textContent = t('imagePreview.copySuccess');
       document.body.appendChild(toast);
-      
+
       setTimeout(() => {
         toast.remove();
       }, 2000);
@@ -110,13 +110,15 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = previewUrl;
-    const extension = previewUrl.includes('jpeg') ? 'jpg' : 
-                     previewUrl.includes('webp') ? 'webp' : 'png';
+    const extension = previewUrl.includes('jpeg')
+      ? 'jpg'
+      : previewUrl.includes('webp')
+        ? 'webp'
+        : 'png';
     const scaleSuffix = selectedScale !== 1.0 ? `_${Math.round(selectedScale * 100)}` : '';
     link.download = `image${scaleSuffix}.${extension}`;
     link.click();
   };
-
 
   return (
     <div id="image-preview" className="space-y-4">
@@ -137,10 +139,13 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('imagePreview.scale')}</span>
-              <Select value={selectedScale.toString()} onValueChange={(value) => setSelectedScale(parseFloat(value))}>
+              <Select
+                value={selectedScale.toString()}
+                onValueChange={(value) => setSelectedScale(parseFloat(value))}
+              >
                 <SelectTrigger className="w-20">
                   <SelectValue />
                 </SelectTrigger>
@@ -153,40 +158,24 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
               </Select>
             </div>
 
-            <Button 
-              onClick={handleConvert}
-              disabled={isConverting}
-              size="sm"
-            >
+            <Button onClick={handleConvert} disabled={isConverting} size="sm">
               {isConverting ? t('imagePreview.converting') : t('imagePreview.convert')}
             </Button>
 
             {convertedMetadata && (
               <>
-                <Button 
-                  onClick={handleCopyConverted}
-                  size="sm"
-                  variant="outline"
-                >
+                <Button onClick={handleCopyConverted} size="sm" variant="outline">
                   <Copy className="w-4 h-4 mr-1" />
                   {t('imagePreview.copy')}
                 </Button>
-                <Button 
-                  onClick={handleDownload}
-                  size="sm"
-                  variant="outline"
-                >
+                <Button onClick={handleDownload} size="sm" variant="outline">
                   <Download className="w-4 h-4" />
                 </Button>
               </>
             )}
-            
+
             {onOpenWithSystem && (
-              <Button 
-                onClick={onOpenWithSystem}
-                size="sm"
-                variant="outline"
-              >
+              <Button onClick={onOpenWithSystem} size="sm" variant="outline">
                 <Maximize2 className="w-4 h-4" />
               </Button>
             )}
@@ -199,27 +188,32 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
         <div className="flex flex-wrap gap-2">
           {metadata && (
             <Button
-              variant={showOriginal ? "default" : "outline"}
+              variant={showOriginal ? 'default' : 'outline'}
               size="sm"
               onClick={() => {
                 setShowOriginal(true);
                 setPreviewUrl(imageUrl);
               }}
             >
-              <Badge variant="secondary" className="mr-2">{t('imagePreview.original')}</Badge>
+              <Badge variant="secondary" className="mr-2">
+                {t('imagePreview.original')}
+              </Badge>
               {metadata.width}×{metadata.height} · {formatFileSize(metadata.file_size)}
             </Button>
           )}
           {convertedMetadata && (
             <Button
-              variant={!showOriginal ? "default" : "outline"}
+              variant={!showOriginal ? 'default' : 'outline'}
               size="sm"
               onClick={() => {
                 setShowOriginal(false);
               }}
             >
-              <Badge variant="secondary" className="mr-2">{t('imagePreview.converted')}</Badge>
-              {convertedMetadata.width}×{convertedMetadata.height} · {formatFileSize(convertedMetadata.size)}
+              <Badge variant="secondary" className="mr-2">
+                {t('imagePreview.converted')}
+              </Badge>
+              {convertedMetadata.width}×{convertedMetadata.height} ·{' '}
+              {formatFileSize(convertedMetadata.size)}
             </Button>
           )}
         </div>
@@ -230,10 +224,10 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
         <CardContent id="image-preview-content" className="p-0">
           <ScrollArea id="image-preview-scroll" className="max-h-[60vh]">
             <div id="image-preview-wrapper" className="p-4">
-              <img 
+              <img
                 id="image-preview-img"
-                src={showOriginal ? imageUrl : previewUrl} 
-                alt={showOriginal ? t('imagePreview.originalAlt') : t('imagePreview.convertedAlt')} 
+                src={showOriginal ? imageUrl : previewUrl}
+                alt={showOriginal ? t('imagePreview.originalAlt') : t('imagePreview.convertedAlt')}
                 className="max-w-full h-auto rounded-md border cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={onOpenWithSystem}
               />

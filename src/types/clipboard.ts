@@ -15,7 +15,7 @@ export interface ClipboardEntry {
 
 export type ContentType = 'text' | 'image' | 'file' | 'unknown';
 
-export type ContentSubType = 
+export type ContentSubType =
   | 'plain_text'
   | 'url'
   | 'ip_address'

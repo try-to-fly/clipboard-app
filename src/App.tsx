@@ -35,7 +35,7 @@ function AppContent() {
       } else {
         title = 'Clipboard Manager';
       }
-      
+
       // Call the Tauri command to update window title
       await invoke('set_window_title', { title });
     } catch (error) {
@@ -47,16 +47,17 @@ function AppContent() {
     // Track app opened event
     const startTime = Date.now();
     analytics.track(ANALYTICS_EVENTS.APP_OPENED);
-    
+
     setupEventListener();
     startMonitoring();
-    
+
     // Load config and set language
     loadConfig().then(async () => {
       // Config is loaded, check if we have a language preference
       const savedConfig = useConfigStore.getState().config;
       if (savedConfig?.language) {
-        const targetLanguage = savedConfig.language === 'system' ? getSystemLanguage() : savedConfig.language;
+        const targetLanguage =
+          savedConfig.language === 'system' ? getSystemLanguage() : savedConfig.language;
         await i18n.changeLanguage(targetLanguage);
         // Update window title after language change
         await updateWindowTitle(targetLanguage);
@@ -65,7 +66,7 @@ function AppContent() {
         await updateWindowTitle(i18n.language);
       }
     });
-    
+
     // Track startup time
     const startupTime = Date.now() - startTime;
     analytics.trackPerformance(ANALYTICS_EVENTS.STARTUP_TIME, startupTime);
@@ -91,7 +92,10 @@ function AppContent() {
       <ClipboardMenuHandler />
       <PreferencesModal />
       <div id="app-container" className="flex flex-col h-screen">
-        <div id="app-header" className="flex items-center justify-between p-3 bg-background border-b">
+        <div
+          id="app-header"
+          className="flex items-center justify-between p-3 bg-background border-b"
+        >
           <div id="search-container" className="flex-1">
             <SearchBar />
           </div>
@@ -101,7 +105,10 @@ function AppContent() {
           </div>
         </div>
         <div id="main-content" className="flex flex-1 gap-4 p-4 overflow-hidden min-h-0">
-          <div id="clipboard-list-container" className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden">
+          <div
+            id="clipboard-list-container"
+            className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden"
+          >
             <ClipboardList />
           </div>
           <div id="detail-view-container" className="flex-1 min-w-0 overflow-hidden flex flex-col">

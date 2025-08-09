@@ -38,15 +38,21 @@ impl UpdateManager {
     /// Check for updates
     pub async fn check_for_updates(app: &AppHandle) -> Result<Option<UpdateInfo>> {
         println!("[UpdateManager] Starting update check...");
-        println!("[UpdateManager] Current app version: {}", app.package_info().version);
-        
+        println!(
+            "[UpdateManager] Current app version: {}",
+            app.package_info().version
+        );
+
         let updater = app.updater_builder().build()?;
         println!("[UpdateManager] Updater built successfully");
 
         match updater.check().await {
             Ok(Some(update)) => {
                 println!("[UpdateManager] Update available: {}", update.version);
-                println!("[UpdateManager] Update notes: {}", update.body.as_ref().unwrap_or(&"No notes".to_string()));
+                println!(
+                    "[UpdateManager] Update notes: {}",
+                    update.body.as_ref().unwrap_or(&"No notes".to_string())
+                );
                 println!("[UpdateManager] Update date: {:?}", update.date);
                 let info = UpdateInfo {
                     version: update.version.clone(),
@@ -61,7 +67,10 @@ impl UpdateManager {
                 println!("[UpdateManager] This could mean:");
                 println!("  - Remote version is same or older than current version");
                 println!("  - No release manifest found at the endpoint");
-                println!("  - Current version {} is already the latest", app.package_info().version);
+                println!(
+                    "  - Current version {} is already the latest",
+                    app.package_info().version
+                );
                 Ok(None)
             }
             Err(e) => {

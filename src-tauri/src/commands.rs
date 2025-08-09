@@ -27,7 +27,10 @@ pub struct CleanupResult {
 }
 
 #[tauri::command]
-pub async fn start_monitoring(app: tauri::AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+pub async fn start_monitoring(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
     let result = state.start_monitoring().await.map_err(|e| e.to_string());
     if result.is_ok() {
         let app_handle = app.clone();
@@ -39,7 +42,10 @@ pub async fn start_monitoring(app: tauri::AppHandle, state: State<'_, AppState>)
 }
 
 #[tauri::command]
-pub async fn stop_monitoring(app: tauri::AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+pub async fn stop_monitoring(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
     let result = state.stop_monitoring().await.map_err(|e| e.to_string());
     if result.is_ok() {
         let app_handle = app.clone();
@@ -64,7 +70,11 @@ pub async fn get_clipboard_history(
 }
 
 #[tauri::command]
-pub async fn toggle_favorite(app: tauri::AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
+pub async fn toggle_favorite(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    id: String,
+) -> Result<(), String> {
     let result = state.toggle_favorite(id).await.map_err(|e| e.to_string());
     if result.is_ok() {
         let app_handle = app.clone();
@@ -76,7 +86,11 @@ pub async fn toggle_favorite(app: tauri::AppHandle, state: State<'_, AppState>, 
 }
 
 #[tauri::command]
-pub async fn delete_entry(app: tauri::AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
+pub async fn delete_entry(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    id: String,
+) -> Result<(), String> {
     let result = state.delete_entry(id).await.map_err(|e| e.to_string());
     if result.is_ok() {
         let app_handle = app.clone();
@@ -88,7 +102,10 @@ pub async fn delete_entry(app: tauri::AppHandle, state: State<'_, AppState>, id:
 }
 
 #[tauri::command]
-pub async fn clear_history(app: tauri::AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+pub async fn clear_history(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
     let result = state.clear_history().await.map_err(|e| e.to_string());
     if result.is_ok() {
         let app_handle = app.clone();
@@ -105,7 +122,11 @@ pub async fn get_statistics(state: State<'_, AppState>) -> Result<Statistics, St
 }
 
 #[tauri::command]
-pub async fn copy_to_clipboard(app: tauri::AppHandle, state: State<'_, AppState>, content: String) -> Result<(), String> {
+pub async fn copy_to_clipboard(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    content: String,
+) -> Result<(), String> {
     let result = state
         .copy_to_clipboard(content)
         .await
@@ -551,12 +572,14 @@ pub async fn extract_media_metadata(url: String) -> Result<serde_json::Value, St
 
     // 使用 ffprobe 提取媒体信息
     let output = Command::new("ffprobe")
-        .args(&[
-            "-v", "quiet",
-            "-print_format", "json",
+        .args([
+            "-v",
+            "quiet",
+            "-print_format",
+            "json",
             "-show_format",
             "-show_streams",
-            &url
+            &url,
         ])
         .output()
         .map_err(|e| format!("Failed to execute ffprobe: {}", e))?;
@@ -583,7 +606,10 @@ pub async fn extract_media_metadata(url: String) -> Result<serde_json::Value, St
                 if let Ok(duration_f64) = duration_str.parse::<f64>() {
                     let minutes = (duration_f64 / 60.0) as u32;
                     let seconds = (duration_f64 % 60.0) as u32;
-                    result.insert("duration".to_string(), serde_json::Value::String(format!("{}:{:02}", minutes, seconds)));
+                    result.insert(
+                        "duration".to_string(),
+                        serde_json::Value::String(format!("{}:{:02}", minutes, seconds)),
+                    );
                 }
             }
         }
@@ -591,7 +617,10 @@ pub async fn extract_media_metadata(url: String) -> Result<serde_json::Value, St
             if let Some(bit_rate_str) = bit_rate.as_str() {
                 if let Ok(bit_rate_i64) = bit_rate_str.parse::<i64>() {
                     let kbps = bit_rate_i64 / 1000;
-                    result.insert("bitrate".to_string(), serde_json::Value::String(format!("{} kbps", kbps)));
+                    result.insert(
+                        "bitrate".to_string(),
+                        serde_json::Value::String(format!("{} kbps", kbps)),
+                    );
                 }
             }
         }
@@ -615,11 +644,16 @@ pub async fn extract_media_metadata(url: String) -> Result<serde_json::Value, St
                             if let Some(fps_str) = r_frame_rate.as_str() {
                                 // 处理分数形式的帧率，如 "30/1"
                                 if let Some(slash_pos) = fps_str.find('/') {
-                                    let numerator: f64 = fps_str[..slash_pos].parse().unwrap_or(0.0);
-                                    let denominator: f64 = fps_str[slash_pos + 1..].parse().unwrap_or(1.0);
+                                    let numerator: f64 =
+                                        fps_str[..slash_pos].parse().unwrap_or(0.0);
+                                    let denominator: f64 =
+                                        fps_str[slash_pos + 1..].parse().unwrap_or(1.0);
                                     if denominator != 0.0 {
                                         let fps = numerator / denominator;
-                                        result.insert("fps".to_string(), serde_json::Value::String(format!("{:.2}", fps)));
+                                        result.insert(
+                                            "fps".to_string(),
+                                            serde_json::Value::String(format!("{:.2}", fps)),
+                                        );
                                     }
                                 }
                             }
@@ -778,7 +812,7 @@ pub async fn check_for_update(
     state: State<'_, AppState>,
 ) -> Result<UpdateInfo, String> {
     println!("[check_for_update] Manual update check requested");
-    
+
     // Update last check time in config
     let mut config = state.get_config().await.map_err(|e| e.to_string())?;
     config.last_update_check = Some(UpdateManager::get_current_timestamp());
@@ -831,5 +865,3 @@ pub async fn should_check_for_updates(state: State<'_, AppState>) -> Result<bool
 pub async fn set_window_title(window: Window, title: String) -> Result<(), String> {
     window.set_title(&title).map_err(|e| e.to_string())
 }
-
-

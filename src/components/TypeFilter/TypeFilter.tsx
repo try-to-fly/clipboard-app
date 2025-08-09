@@ -13,27 +13,30 @@ interface FilterOption {
 export function TypeFilter() {
   const { t } = useTranslation('clipboard');
   const { selectedType, setSelectedType } = useClipboardStore();
-  
-  const filterOptions = useMemo((): FilterOption[] => [
-    { value: 'all', label: t('contentTypes.allTypes'), icon: '📋' },
-    { value: 'text', label: t('contentTypes.allText'), icon: '📝' },
-    { value: 'text:plain_text', label: t('contentTypes.plainText'), icon: '📄' },
-    { value: 'text:url', label: t('contentTypes.url'), icon: '🔗' },
-    { value: 'text:ip_address', label: t('contentTypes.ipAddress'), icon: '🌐' },
-    { value: 'text:email', label: t('contentTypes.email'), icon: '📧' },
-    { value: 'text:color', label: t('contentTypes.color'), icon: '🎨' },
-    { value: 'text:code', label: t('contentTypes.codeSnippet'), icon: '💻' },
-    { value: 'text:command', label: t('contentTypes.command'), icon: '⌨️' },
-    { value: 'text:timestamp', label: t('contentTypes.timestamp'), icon: '🕐' },
-    { value: 'text:json', label: t('contentTypes.json'), icon: '{}' },
-    { value: 'text:markdown', label: t('contentTypes.markdown'), icon: '📑' },
-    { value: 'image', label: t('contentTypes.image'), icon: '🖼️' },
-    { value: 'file', label: t('contentTypes.file'), icon: '📁' },
-  ], [t]);
+
+  const filterOptions = useMemo(
+    (): FilterOption[] => [
+      { value: 'all', label: t('contentTypes.allTypes'), icon: '📋' },
+      { value: 'text', label: t('contentTypes.allText'), icon: '📝' },
+      { value: 'text:plain_text', label: t('contentTypes.plainText'), icon: '📄' },
+      { value: 'text:url', label: t('contentTypes.url'), icon: '🔗' },
+      { value: 'text:ip_address', label: t('contentTypes.ipAddress'), icon: '🌐' },
+      { value: 'text:email', label: t('contentTypes.email'), icon: '📧' },
+      { value: 'text:color', label: t('contentTypes.color'), icon: '🎨' },
+      { value: 'text:code', label: t('contentTypes.codeSnippet'), icon: '💻' },
+      { value: 'text:command', label: t('contentTypes.command'), icon: '⌨️' },
+      { value: 'text:timestamp', label: t('contentTypes.timestamp'), icon: '🕐' },
+      { value: 'text:json', label: t('contentTypes.json'), icon: '{}' },
+      { value: 'text:markdown', label: t('contentTypes.markdown'), icon: '📑' },
+      { value: 'image', label: t('contentTypes.image'), icon: '🖼️' },
+      { value: 'file', label: t('contentTypes.file'), icon: '📁' },
+    ],
+    [t]
+  );
 
   // 获取当前选中项的显示文本
   const getDisplayText = (value: string) => {
-    const option = filterOptions.find(opt => opt.value === value);
+    const option = filterOptions.find((opt) => opt.value === value);
     return option ? `${option.icon} ${option.label}` : `📋 ${t('contentTypes.allTypes')}`;
   };
 
@@ -52,9 +55,9 @@ export function TypeFilter() {
           <Select.Content className="type-filter-content" position="popper" sideOffset={5}>
             <Select.Viewport className="type-filter-viewport">
               {filterOptions.map((option) => (
-                <Select.Item 
+                <Select.Item
                   key={option.value}
-                  value={option.value} 
+                  value={option.value}
                   className="type-filter-select-item"
                 >
                   <Select.ItemText>

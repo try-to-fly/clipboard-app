@@ -11,10 +11,14 @@ interface StatisticsModalProps {
   statistics?: Statistics | null;
 }
 
-export const StatisticsModal: React.FC<StatisticsModalProps> = ({ isOpen, onClose, statistics: propStatistics }) => {
+export const StatisticsModal: React.FC<StatisticsModalProps> = ({
+  isOpen,
+  onClose,
+  statistics: propStatistics,
+}) => {
   const { t } = useTranslation(['statistics', 'common', 'clipboard']);
   const { statistics: storeStatistics, copyToClipboard } = useClipboardStore();
-  
+
   // Use prop statistics if provided, otherwise fall back to store statistics
   const statistics = propStatistics || storeStatistics;
 
@@ -63,9 +67,13 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({ isOpen, onClos
                       <div className="item-content">
                         <div className="content-preview">
                           {entry.content_type.includes('image') ? (
-                            <span className="content-type-badge">📷 {t('clipboard:contentTypes.image')}</span>
+                            <span className="content-type-badge">
+                              📷 {t('clipboard:contentTypes.image')}
+                            </span>
                           ) : entry.content_type.includes('file') ? (
-                            <span className="content-type-badge">📄 {t('clipboard:contentTypes.file')}</span>
+                            <span className="content-type-badge">
+                              📄 {t('clipboard:contentTypes.file')}
+                            </span>
                           ) : (
                             <span className="content-text">
                               {entry.content_data?.substring(0, 50)}
@@ -74,7 +82,9 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({ isOpen, onClos
                           )}
                         </div>
                         <div className="item-meta">
-                          <span className="copy-count">{t('statistics:copiedTimes', { count: entry.copy_count })}</span>
+                          <span className="copy-count">
+                            {t('statistics:copiedTimes', { count: entry.copy_count })}
+                          </span>
                           {entry.is_favorite && <Star size={12} className="favorite-icon" />}
                         </div>
                       </div>

@@ -14,7 +14,6 @@ import {
 } from './ContentRenderers';
 import { ImagePreview } from './ImagePreview';
 
-
 const parseMetadata = (metadataString?: string | null): ContentMetadata | null => {
   if (!metadataString) return null;
   try {
@@ -47,7 +46,7 @@ export function DetailView() {
         setImageUrl('');
       }
     };
-    
+
     loadImage();
 
     // 解析内容子类型
@@ -64,7 +63,10 @@ export function DetailView() {
   if (!selectedEntry) {
     return (
       <Card id="detail-view-empty" className="flex-1 flex flex-col">
-        <CardContent id="detail-view-empty-content" className="flex-1 flex items-center justify-center p-8">
+        <CardContent
+          id="detail-view-empty-content"
+          className="flex-1 flex items-center justify-center p-8"
+        >
           <div id="detail-view-empty-message" className="text-center text-muted-foreground">
             <p>{t('detail.selectItem')}</p>
           </div>
@@ -87,12 +89,12 @@ export function DetailView() {
 
   const getContentType = () => {
     const type = selectedEntry.content_type.toLowerCase();
-    
+
     // 如果是文本类型，显示具体的子类型
     if (type.includes('text') || type.includes('string')) {
       return t(`detail.contentTypes.${contentSubType}`) || t('detail.contentTypes.text');
     }
-    
+
     if (type.includes('image')) return t('detail.contentTypes.image');
     if (type.includes('file')) return t('detail.contentTypes.file');
     return t('detail.unknown');
@@ -115,7 +117,7 @@ export function DetailView() {
     if (selectedEntry.content_type.toLowerCase().includes('image')) {
       const metadata = parseMetadata(selectedEntry.metadata);
       const imageMetadata = metadata?.image_metadata;
-      
+
       if (imageUrl && selectedEntry.file_path) {
         return (
           <ImagePreview
@@ -173,14 +175,22 @@ export function DetailView() {
       case 'command':
       case 'plain_text':
       default:
-        return <UnifiedTextRenderer content={content} contentSubType={contentSubType} metadata={metadata} />;
+        return (
+          <UnifiedTextRenderer
+            content={content}
+            contentSubType={contentSubType}
+            metadata={metadata}
+          />
+        );
     }
   };
 
   return (
     <Card id="detail-view" className="flex-1 flex flex-col overflow-hidden">
       <CardHeader id="detail-view-header" className="pb-3">
-        <CardTitle id="detail-view-title" className="text-lg">{t('detail.title')}</CardTitle>
+        <CardTitle id="detail-view-title" className="text-lg">
+          {t('detail.title')}
+        </CardTitle>
         <div id="detail-view-metadata" className="grid grid-cols-2 gap-3 mt-3 text-sm">
           <div id="detail-view-type" className="flex items-center gap-2">
             <span className="text-muted-foreground">{t('detail.type')}</span>

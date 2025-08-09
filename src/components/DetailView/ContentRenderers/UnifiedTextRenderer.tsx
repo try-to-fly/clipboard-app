@@ -18,7 +18,10 @@ interface UnifiedTextRendererProps {
 }
 
 // 内容类型到Monaco语言的映射
-const getLanguageForContentType = (contentSubType: ContentSubType, metadata?: string | null): string => {
+const getLanguageForContentType = (
+  contentSubType: ContentSubType,
+  metadata?: string | null
+): string => {
   switch (contentSubType) {
     case 'code':
       // Get detected language from metadata
@@ -46,7 +49,10 @@ const getLanguageForContentType = (contentSubType: ContentSubType, metadata?: st
 };
 
 // 内容类型到显示名称的映射
-const getDisplayNameForContentType = (contentSubType: ContentSubType, t: (key: string) => string): string => {
+const getDisplayNameForContentType = (
+  contentSubType: ContentSubType,
+  t: (key: string) => string
+): string => {
   switch (contentSubType) {
     case 'code':
       return t('codeEditor.code');
@@ -62,7 +68,11 @@ const getDisplayNameForContentType = (contentSubType: ContentSubType, t: (key: s
   }
 };
 
-export function UnifiedTextRenderer({ content, contentSubType, metadata }: UnifiedTextRendererProps) {
+export function UnifiedTextRenderer({
+  content,
+  contentSubType,
+  metadata,
+}: UnifiedTextRendererProps) {
   const { t } = useTranslation(['common']);
   const [editedContent, setEditedContent] = useState(content);
   const [isCopied, setIsCopied] = useState(false);
@@ -87,7 +97,6 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
     }
   };
 
-
   return (
     <div className="h-full flex flex-col">
       <Card id="text-renderer" className="flex-1 flex flex-col">
@@ -110,51 +119,53 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
 
         <CardContent id="text-renderer-content" className="p-0 flex-1 flex flex-col">
           <div id="text-renderer-editor-container" className="border-t flex-1">
-            <Suspense fallback={
-              <div id="text-renderer-loading" className="flex items-center justify-center h-32">
-                <div className="text-sm text-muted-foreground">{t('codeEditor.loading')}</div>
-              </div>
-            }>
+            <Suspense
+              fallback={
+                <div id="text-renderer-loading" className="flex items-center justify-center h-32">
+                  <div className="text-sm text-muted-foreground">{t('codeEditor.loading')}</div>
+                </div>
+              }
+            >
               <MonacoEditor
                 key={`${language}-${resolvedTheme}-${content.substring(0, 50)}`}
                 height="100%"
-              language={language}
-              value={editedContent}
-              onChange={(value) => setEditedContent(value || '')}
-              theme={monacoTheme}
-              beforeMount={(monaco) => {
-                defineMonacoThemes(monaco);
-              }}
-              options={{
-                readOnly: false,
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                wordWrap: 'on',
-                fontSize: 13,
-                lineNumbers: 'on',
-                renderWhitespace: 'selection',
-                automaticLayout: true,
-                padding: { top: 16, bottom: 16 },
-                tabSize: 2,
-                insertSpaces: true,
-                quickSuggestions: true,
-                suggestOnTriggerCharacters: true,
-                acceptSuggestionOnEnter: 'on',
-                wordBasedSuggestions: 'currentDocument',
-                parameterHints: { enabled: true },
-                folding: true,
-                foldingHighlight: true,
-                unfoldOnClickAfterEndOfLine: true,
-                selectOnLineNumbers: true,
-                contextmenu: true,
-                cursorBlinking: 'blink',
-                cursorSmoothCaretAnimation: 'on',
-              }}
-            />
-          </Suspense>
-        </div>
-      </CardContent>
-    </Card>
+                language={language}
+                value={editedContent}
+                onChange={(value) => setEditedContent(value || '')}
+                theme={monacoTheme}
+                beforeMount={(monaco) => {
+                  defineMonacoThemes(monaco);
+                }}
+                options={{
+                  readOnly: false,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  fontSize: 13,
+                  lineNumbers: 'on',
+                  renderWhitespace: 'selection',
+                  automaticLayout: true,
+                  padding: { top: 16, bottom: 16 },
+                  tabSize: 2,
+                  insertSpaces: true,
+                  quickSuggestions: true,
+                  suggestOnTriggerCharacters: true,
+                  acceptSuggestionOnEnter: 'on',
+                  wordBasedSuggestions: 'currentDocument',
+                  parameterHints: { enabled: true },
+                  folding: true,
+                  foldingHighlight: true,
+                  unfoldOnClickAfterEndOfLine: true,
+                  selectOnLineNumbers: true,
+                  contextmenu: true,
+                  cursorBlinking: 'blink',
+                  cursorSmoothCaretAnimation: 'on',
+                }}
+              />
+            </Suspense>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

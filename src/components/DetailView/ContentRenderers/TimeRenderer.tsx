@@ -21,7 +21,7 @@ export function TimeRenderer({ content, metadata }: TimeRendererProps) {
 
   useEffect(() => {
     let parsedDate: Date | null = null;
-    
+
     if (metadata) {
       try {
         const parsed = JSON.parse(metadata);
@@ -59,7 +59,7 @@ export function TimeRenderer({ content, metadata }: TimeRendererProps) {
 
     if (parsedDate) {
       setDate(parsedDate);
-      
+
       // 生成多种格式
       const dateFormats = [
         format(parsedDate, 'yyyy-MM-dd HH:mm:ss', { locale: zhCN }),
@@ -130,7 +130,7 @@ export function TimeRenderer({ content, metadata }: TimeRendererProps) {
                   <code className="flex-1 p-2 bg-muted rounded font-mono text-sm break-all">
                     {item.value}
                   </code>
-                  <Button 
+                  <Button
                     onClick={() => handleCopy(item.value)}
                     size="sm"
                     variant="ghost"

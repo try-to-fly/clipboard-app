@@ -33,7 +33,7 @@ export function ClipboardMenuHandler() {
               const newValue = currentValue.slice(0, start) + text + currentValue.slice(end);
               activeElement.value = newValue;
               activeElement.setSelectionRange(start + text.length, start + text.length);
-              
+
               // 触发 input 事件，确保 React 能够检测到变化
               const event = new Event('input', { bubbles: true });
               activeElement.dispatchEvent(event);
@@ -42,7 +42,7 @@ export function ClipboardMenuHandler() {
               try {
                 document.execCommand('insertText', false, text);
               } catch (e) {
-                console.warn('execCommand failed, falling back to clipboard write');
+                console.warn('execCommand failed, falling back to clipboard write', e);
               }
             }
             console.log('Menu paste:', text.substring(0, 50));
@@ -59,10 +59,12 @@ export function ClipboardMenuHandler() {
           if (selection && selection.toString()) {
             const selectedText = selection.toString();
             await writeText(selectedText);
-            
+
             // 尝试删除选中的文本
             if (document.activeElement) {
-              const activeElement = document.activeElement as HTMLInputElement | HTMLTextAreaElement;
+              const activeElement = document.activeElement as
+                | HTMLInputElement
+                | HTMLTextAreaElement;
               if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
                 const start = activeElement.selectionStart || 0;
                 const end = activeElement.selectionEnd || 0;
@@ -70,7 +72,7 @@ export function ClipboardMenuHandler() {
                 const newValue = currentValue.slice(0, start) + currentValue.slice(end);
                 activeElement.value = newValue;
                 activeElement.setSelectionRange(start, start);
-                
+
                 // 触发 input 事件
                 const event = new Event('input', { bubbles: true });
                 activeElement.dispatchEvent(event);
@@ -79,7 +81,7 @@ export function ClipboardMenuHandler() {
                 try {
                   document.execCommand('delete');
                 } catch (e) {
-                  console.warn('execCommand delete failed');
+                  console.warn('execCommand delete failed', e);
                 }
               }
             }
@@ -102,6 +104,7 @@ export function ClipboardMenuHandler() {
               try {
                 document.execCommand('selectAll');
               } catch (e) {
+                console.warn('execCommand selectAll failed, using Selection API', e);
                 // 备用方案：使用 Selection API
                 const range = document.createRange();
                 range.selectNodeContents(document.body);
@@ -115,13 +118,13 @@ export function ClipboardMenuHandler() {
         } catch (error) {
           console.error('Menu select all failed:', error);
         }
-      })
+      }),
     ]);
 
     // 清理函数
     return () => {
-      unlisten.then(listeners => {
-        listeners.forEach(unlistenFn => unlistenFn());
+      unlisten.then((listeners) => {
+        listeners.forEach((unlistenFn) => unlistenFn());
       });
     };
   }, []);

@@ -20,7 +20,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
   useEffect(() => {
     console.log('[ColorRenderer] content:', content);
     console.log('[ColorRenderer] metadata:', metadata);
-    
+
     if (metadata) {
       try {
         const parsed = JSON.parse(metadata);
@@ -47,7 +47,10 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
       let hex = color.substring(1);
       // 处理3位HEX颜色，转换为6位
       if (hex.length === 3) {
-        hex = hex.split('').map(c => c + c).join('');
+        hex = hex
+          .split('')
+          .map((c) => c + c)
+          .join('');
       }
       if (hex.length === 6) {
         formats.hex = '#' + hex;
@@ -77,7 +80,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
         const hsl: [number, number, number] = [
           parseInt(matches[0]),
           parseInt(matches[1]),
-          parseInt(matches[2])
+          parseInt(matches[2]),
         ];
         rgb = colorConvert.hsl.rgb(hsl) as [number, number, number];
         formats.hsl = color;
@@ -131,11 +134,11 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
 
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
-            <div 
+            <div
               className="w-24 h-24 rounded-lg border-2 border-muted flex items-center justify-center shadow-sm"
-              style={{ 
+              style={{
                 backgroundColor: colorFormats.hex || content,
-                color: getContrastColor()
+                color: getContrastColor(),
               }}
             >
               <Palette className="w-8 h-8" />
@@ -156,7 +159,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
                   <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
                     {colorFormats.hex}
                   </code>
-                  <Button 
+                  <Button
                     onClick={() => handleCopy(colorFormats.hex!)}
                     size="sm"
                     variant="ghost"
@@ -167,7 +170,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
                 </div>
               </div>
             )}
-            
+
             {colorFormats.rgb && (
               <div className="space-y-2">
                 <span className="text-sm font-medium text-muted-foreground">RGB:</span>
@@ -175,7 +178,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
                   <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
                     {colorFormats.rgb}
                   </code>
-                  <Button 
+                  <Button
                     onClick={() => handleCopy(colorFormats.rgb!)}
                     size="sm"
                     variant="ghost"
@@ -186,7 +189,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
                 </div>
               </div>
             )}
-            
+
             {colorFormats.rgba && (
               <div className="space-y-2">
                 <span className="text-sm font-medium text-muted-foreground">RGBA:</span>
@@ -194,7 +197,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
                   <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
                     {colorFormats.rgba}
                   </code>
-                  <Button 
+                  <Button
                     onClick={() => handleCopy(colorFormats.rgba!)}
                     size="sm"
                     variant="ghost"
@@ -205,7 +208,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
                 </div>
               </div>
             )}
-            
+
             {colorFormats.hsl && (
               <div className="space-y-2">
                 <span className="text-sm font-medium text-muted-foreground">HSL:</span>
@@ -213,7 +216,7 @@ export function ColorRenderer({ content, metadata }: ColorRendererProps) {
                   <code className="flex-1 p-2 bg-muted rounded font-mono text-sm">
                     {colorFormats.hsl}
                   </code>
-                  <Button 
+                  <Button
                     onClick={() => handleCopy(colorFormats.hsl!)}
                     size="sm"
                     variant="ghost"

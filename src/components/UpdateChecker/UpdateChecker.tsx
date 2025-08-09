@@ -29,7 +29,7 @@ export function UpdateChecker() {
     });
 
     return () => {
-      unlisten.then(fn => fn());
+      unlisten.then((fn) => fn());
     };
   }, []);
 
@@ -37,7 +37,7 @@ export function UpdateChecker() {
     try {
       // Check if we should check for updates (based on auto_update config and last check time)
       const shouldCheck = await invoke<boolean>('should_check_for_updates');
-      
+
       if (!shouldCheck) {
         console.log('[UpdateChecker] Skipping update check (disabled or checked recently)');
         return;
@@ -45,7 +45,7 @@ export function UpdateChecker() {
 
       console.log('[UpdateChecker] Checking for updates on startup...');
       const info = await invoke<UpdateInfo>('check_for_update');
-      
+
       if (info.available) {
         console.log('[UpdateChecker] Update available, showing notification');
         setUpdateInfo(info);
@@ -64,10 +64,10 @@ export function UpdateChecker() {
     const notes = updateInfo.notes || t('updateChecker.defaultNotes');
     const yes = await ask(
       t('updateChecker.newVersionMessage', { version: updateInfo.version, notes }),
-      { 
+      {
         title: t('updateChecker.updateTitle'),
         okLabel: t('updateChecker.updateNow'),
-        cancelLabel: t('updateChecker.later')
+        cancelLabel: t('updateChecker.later'),
       }
     );
 
@@ -78,9 +78,9 @@ export function UpdateChecker() {
         // App will restart automatically after update
       } catch (error) {
         console.error('Failed to install update:', error);
-        await message(t('updateChecker.updateFailed'), { 
+        await message(t('updateChecker.updateFailed'), {
           title: t('updateChecker.error'),
-          kind: 'error'
+          kind: 'error',
         });
         setDownloading(false);
       }
@@ -108,34 +108,28 @@ export function UpdateChecker() {
           <Download size={16} />
           {t('updateChecker.newVersionTitle', { version: updateInfo.version })}
         </Toast.Title>
-        
+
         <Toast.Description className="update-toast-description">
           {downloading ? (
             <div className="download-progress">
-              <div className="progress-text">{t('updateChecker.updating', { progress: downloadProgress })}</div>
+              <div className="progress-text">
+                {t('updateChecker.updating', { progress: downloadProgress })}
+              </div>
               <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${downloadProgress}%` }}
-                />
+                <div className="progress-fill" style={{ width: `${downloadProgress}%` }} />
               </div>
             </div>
           ) : (
             <>
               <div className="update-notes">
-                {updateInfo.notes?.split('\n').slice(0, 2).join('\n') || t('updateChecker.updateNotesDefault')}
+                {updateInfo.notes?.split('\n').slice(0, 2).join('\n') ||
+                  t('updateChecker.updateNotesDefault')}
               </div>
               <div className="update-actions">
-                <button 
-                  className="update-btn primary"
-                  onClick={handleInstallUpdate}
-                >
+                <button className="update-btn primary" onClick={handleInstallUpdate}>
                   {t('updateChecker.updateNow')}
                 </button>
-                <button 
-                  className="update-btn secondary"
-                  onClick={handleDismiss}
-                >
+                <button className="update-btn secondary" onClick={handleDismiss}>
                   {t('updateChecker.later')}
                 </button>
               </div>

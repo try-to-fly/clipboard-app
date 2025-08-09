@@ -74,8 +74,7 @@ impl ClipboardMonitor {
                 }
 
                 if let Err(e) =
-                    Self::check_clipboard(&last_hash, &tx, &processor, &config_manager)
-                        .await
+                    Self::check_clipboard(&last_hash, &tx, &processor, &config_manager).await
                 {
                     eprintln!("剪切板检查错误: {}", e);
                 }
@@ -94,12 +93,12 @@ impl ClipboardMonitor {
         let app_info = get_active_app_info();
 
         // 检查文本内容 - 使用独立的剪切板实例，避免长时间锁定
-        let text_result = tokio::task::spawn_blocking(|| {
-            match arboard::Clipboard::new() {
-                Ok(mut temp_clipboard) => temp_clipboard.get_text(),
-                Err(e) => Err(e)
-            }
-        }).await.unwrap_or(Err(arboard::Error::ClipboardNotSupported));
+        let text_result = tokio::task::spawn_blocking(|| match arboard::Clipboard::new() {
+            Ok(mut temp_clipboard) => temp_clipboard.get_text(),
+            Err(e) => Err(e),
+        })
+        .await
+        .unwrap_or(Err(arboard::Error::ClipboardNotSupported));
 
         if let Ok(text) = text_result {
             // 先trim处理文本
@@ -171,12 +170,12 @@ impl ClipboardMonitor {
         }
 
         // 检查图片内容 - 使用独立的剪切板实例
-        let image_result = tokio::task::spawn_blocking(|| {
-            match arboard::Clipboard::new() {
-                Ok(mut temp_clipboard) => temp_clipboard.get_image(),
-                Err(e) => Err(e)
-            }
-        }).await.unwrap_or(Err(arboard::Error::ClipboardNotSupported));
+        let image_result = tokio::task::spawn_blocking(|| match arboard::Clipboard::new() {
+            Ok(mut temp_clipboard) => temp_clipboard.get_image(),
+            Err(e) => Err(e),
+        })
+        .await
+        .unwrap_or(Err(arboard::Error::ClipboardNotSupported));
 
         if let Ok(image_data) = image_result {
             // arboard 返回的图片数据包含宽高信息
@@ -240,8 +239,8 @@ impl ClipboardMonitor {
                         // 降级到自动检测
                         if let Ok(file_path) = processor.process_image(bytes).await {
                             // 获取实际保存的文件大小
-                            let actual_size = Self::get_saved_file_size(&file_path)
-                                .unwrap_or(bytes.len() as u64);
+                            let actual_size =
+                                Self::get_saved_file_size(&file_path).unwrap_or(bytes.len() as u64);
 
                             // 创建图片元数据（使用压缩后的文件大小）
                             let image_metadata = serde_json::json!({

@@ -16,9 +16,7 @@ export const EmptyState: React.FC = () => {
       {!isMonitoring ? (
         <>
           <p className="text-muted-foreground mb-4">{t('emptyState.clickToStart')}</p>
-          <Button onClick={startMonitoring}>
-            {t('actions.startMonitoring')}
-          </Button>
+          <Button onClick={startMonitoring}>{t('actions.startMonitoring')}</Button>
         </>
       ) : (
         <p className="text-muted-foreground">{t('emptyState.copyToStart')}</p>

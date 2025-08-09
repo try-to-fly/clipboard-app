@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Run lint-staged for JavaScript/TypeScript files
+pnpm exec lint-staged
+
+# Check if there are any Rust files staged
+if git diff --cached --name-only | grep -q "\.rs$"; then
+  echo "Running Rust formatting and linting..."
+  
+  # Run cargo fmt check
+  cd src-tauri && cargo fmt --check
+  if [ $? -ne 0 ]; then
+    echo "❌ Rust formatting check failed. Please run 'cd src-tauri && cargo fmt' to format your code."
+    exit 1
+  fi
+  
+  # Run cargo clippy
+  cargo clippy -- -D warnings
+  if [ $? -ne 0 ]; then
+    echo "❌ Rust clippy check failed. Please fix the warnings."
+    exit 1
+  fi
+  
+  cd ..
+  echo "✅ Rust checks passed!"
+fi

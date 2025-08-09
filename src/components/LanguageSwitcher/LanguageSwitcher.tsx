@@ -30,7 +30,7 @@ export const LanguageSwitcher: React.FC = () => {
   const handleLanguageChange = async (languageCode: string) => {
     // Change i18n language
     await i18n.changeLanguage(languageCode);
-    
+
     // Save to config if config is loaded
     if (config) {
       await updateConfig({
@@ -40,7 +40,7 @@ export const LanguageSwitcher: React.FC = () => {
     }
   };
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0];
 
   return (
     <DropdownMenu>

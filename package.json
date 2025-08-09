@@ -8,9 +8,14 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "version:patch": "node scripts/update-version.js patch",
     "version:minor": "node scripts/update-version.js minor",
-    "version:major": "node scripts/update-version.js major"
+    "version:major": "node scripts/update-version.js major",
+    "prepare": "husky"
   },
   "dependencies": {
     "@aptabase/tauri": "^0.4.1",
@@ -54,15 +59,29 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.33.0",
     "@tauri-apps/cli": "^2",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.21",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
     "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
     "shadcn-ui": "^0.9.5",
     "tailwindcss": "^3.4.0",
     "typescript": "~5.6.2",
+    "typescript-eslint": "^8.39.0",
     "vite": "^6.0.3"
   }
 }

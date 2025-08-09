@@ -26,7 +26,7 @@ export function useResolvedTheme(): ResolvedTheme {
     if (theme === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       mediaQuery.addEventListener('change', updateTheme);
-      
+
       return () => {
         mediaQuery.removeEventListener('change', updateTheme);
       };

@@ -34,9 +34,9 @@ export function IpRenderer({ content }: IpRendererProps) {
               <Copy className="w-4 h-4 mr-2" />
               {t('renderers.ip.copy')}
             </Button>
-            <Button 
+            <Button
               onClick={() => window.open(`https://www.ipaddress.com/ipv4/${content}`, '_blank')}
-              size="sm" 
+              size="sm"
               variant="outline"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
@@ -55,13 +55,17 @@ export function IpRenderer({ content }: IpRendererProps) {
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">{t('renderers.ip.type')}</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              {t('renderers.ip.type')}
+            </span>
             <Badge variant="outline">{ipType}</Badge>
           </div>
-          
+
           {!isIPv6 && (
             <div className="space-y-2">
-              <span className="text-sm font-medium text-muted-foreground">{t('renderers.ip.ipv4Format')}</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                {t('renderers.ip.ipv4Format')}
+              </span>
               <div className="flex items-center justify-center gap-1 p-3 bg-muted rounded">
                 {content.split('.').map((octet, i) => (
                   <div key={i} className="flex items-center">

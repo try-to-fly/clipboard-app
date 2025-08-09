@@ -182,25 +182,25 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
     const state = get();
     const now = Date.now();
     const cacheExpiry = 5 * 60 * 1000; // 5分钟缓存过期时间
-    
+
     // 检查缓存
     const cached = state.urlContentCache.get(url);
-    if (cached && (now - cached.timestamp) < cacheExpiry) {
+    if (cached && now - cached.timestamp < cacheExpiry) {
       console.log(`[fetchUrlContent] 使用缓存内容: ${url}`);
       return cached.content;
     }
-    
+
     try {
       console.log(`[fetchUrlContent] 请求新内容: ${url}`);
       const content = await invoke<string>('fetch_url_content', { url });
-      
+
       // 更新缓存
       set((state) => {
         const newCache = new Map(state.urlContentCache);
         newCache.set(url, { content, timestamp: now });
         return { urlContentCache: newCache };
       });
-      
+
       return content;
     } catch (error) {
       throw new Error(String(error));
@@ -221,25 +221,25 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
     const state = get();
     const now = Date.now();
     const cacheExpiry = 10 * 60 * 1000; // 10分钟缓存过期时间
-    
+
     // 检查缓存
     const cached = state.mediaMetadataCache.get(url);
-    if (cached && (now - cached.timestamp) < cacheExpiry) {
+    if (cached && now - cached.timestamp < cacheExpiry) {
       console.log(`[extractMediaMetadata] 使用缓存元数据: ${url}`);
       return cached.metadata;
     }
-    
+
     try {
       console.log(`[extractMediaMetadata] 提取媒体元数据: ${url}`);
       const metadata = await invoke<any>('extract_media_metadata', { url });
-      
+
       // 更新缓存
       set((state) => {
         const newCache = new Map(state.mediaMetadataCache);
         newCache.set(url, { metadata, timestamp: now });
         return { mediaMetadataCache: newCache };
       });
-      
+
       return metadata;
     } catch (error) {
       console.error('Failed to extract media metadata:', error);
@@ -269,31 +269,38 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
     let filtered = state.entries;
 
     if (state.selectedType !== 'all') {
-      filtered = filtered.filter(entry => {
+      filtered = filtered.filter((entry) => {
         const type = entry.content_type.toLowerCase();
-        
+
         // 处理子类型筛选
         if (state.selectedType.startsWith('text:')) {
           if (!type.includes('text') && !type.includes('string')) {
             return false;
           }
-          
+
           const subtype = state.selectedType.replace('text:', '');
           if (subtype === 'all') {
             return true;
           }
-          
+
           // 检查content_subtype字段
           let entrySubtype = 'plain_text';
           if (entry.content_subtype) {
             // content_subtype直接是字符串，不需要JSON解析
             entrySubtype = entry.content_subtype;
-            console.log('[Filter] Entry:', entry.content_data?.substring(0, 20), 'subtype:', entrySubtype, 'filtering for:', subtype);
+            console.log(
+              '[Filter] Entry:',
+              entry.content_data?.substring(0, 20),
+              'subtype:',
+              entrySubtype,
+              'filtering for:',
+              subtype
+            );
           }
-          
+
           return entrySubtype === subtype;
         }
-        
+
         // 处理主类型筛选
         if (state.selectedType === 'text') {
           return type.includes('text') || type.includes('string');
@@ -308,9 +315,10 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
 
     if (state.searchTerm) {
       const searchLower = state.searchTerm.toLowerCase();
-      filtered = filtered.filter(entry => 
-        entry.content_data?.toLowerCase().includes(searchLower) ||
-        entry.source_app?.toLowerCase().includes(searchLower)
+      filtered = filtered.filter(
+        (entry) =>
+          entry.content_data?.toLowerCase().includes(searchLower) ||
+          entry.source_app?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -345,9 +353,9 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
         }
 
         // 自动选中最新的素材
-        return { 
+        return {
           entries: newEntries,
-          selectedEntry: updatedEntry
+          selectedEntry: updatedEntry,
         };
       });
     });

@@ -213,12 +213,14 @@ pub fn run() {
                 if cfg!(debug_assertions) {
                     let _ = dotenvy::dotenv();
                 }
-                
+
                 // Initialize Aptabase plugin
                 let aptabase_key = std::env::var("APTABASE_APP_KEY")
                     .unwrap_or_else(|_| "A-DEV-0000000000".to_string());
-                
-                let _ = app.handle().plugin(tauri_plugin_aptabase::Builder::new(&aptabase_key).build());
+
+                let _ = app
+                    .handle()
+                    .plugin(tauri_plugin_aptabase::Builder::new(&aptabase_key).build());
 
                 let state = AppState::new().await?;
 
@@ -298,9 +300,9 @@ pub fn run() {
         .expect("error while running tauri application")
         .run(|app_handle, event| {
             use tauri_plugin_aptabase::EventTracker;
-            
+
             match event {
-                tauri::RunEvent::Ready { .. } => {
+                tauri::RunEvent::Ready => {
                     // Use async runtime to send events in proper context
                     let handle = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
@@ -309,7 +311,7 @@ pub fn run() {
                         let _ = handle.track_event("app_started", None);
                     });
                 }
-                tauri::RunEvent::Exit { .. } => {
+                tauri::RunEvent::Exit => {
                     let _ = app_handle.track_event("app_exited", None);
                 }
                 _ => {}

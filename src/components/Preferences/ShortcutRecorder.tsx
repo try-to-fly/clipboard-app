@@ -20,29 +20,29 @@ interface RecordedKeys {
 }
 
 const MAC_KEY_SYMBOLS: Record<string, string> = {
-  'cmd': '⌘',
-  'ctrl': '⌃',
-  'alt': '⌥',
-  'shift': '⇧',
-  'meta': '⌘',
-  'control': '⌃',
-  'option': '⌥',
-  'enter': '↵',
-  'return': '↵',
-  'escape': '⎋',
-  'esc': '⎋',
-  'tab': '⇥',
-  'space': '␣',
-  'backspace': '⌫',
-  'delete': '⌦',
-  'arrowup': '↑',
-  'arrowdown': '↓',
-  'arrowleft': '←',
-  'arrowright': '→',
-  'up': '↑',
-  'down': '↓',
-  'left': '←',
-  'right': '→',
+  cmd: '⌘',
+  ctrl: '⌃',
+  alt: '⌥',
+  shift: '⇧',
+  meta: '⌘',
+  control: '⌃',
+  option: '⌥',
+  enter: '↵',
+  return: '↵',
+  escape: '⎋',
+  esc: '⎋',
+  tab: '⇥',
+  space: '␣',
+  backspace: '⌫',
+  delete: '⌦',
+  arrowup: '↑',
+  arrowdown: '↓',
+  arrowleft: '←',
+  arrowright: '→',
+  up: '↑',
+  down: '↓',
+  left: '←',
+  right: '→',
 };
 
 export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecorderProps) {
@@ -55,10 +55,10 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
   // Convert shortcut string to display format with symbols
   const formatShortcut = (shortcut: string): string => {
     if (!shortcut) return '';
-    
+
     return shortcut
       .split('+')
-      .map(part => {
+      .map((part) => {
         const key = part.toLowerCase().trim();
         return MAC_KEY_SYMBOLS[key] || part.toUpperCase();
       })
@@ -68,7 +68,7 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
   // Convert recorded keys to shortcut string
   const keysToShortcut = (keys: RecordedKeys): string => {
     const parts: string[] = [];
-    
+
     if (keys.modifiers.cmd || keys.modifiers.ctrl) {
       parts.push('CmdOrCtrl');
     }
@@ -78,23 +78,23 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
     if (keys.modifiers.shift) {
       parts.push('Shift');
     }
-    
+
     // Add the main key (capitalize first letter)
     const mainKey = keys.key.charAt(0).toUpperCase() + keys.key.slice(1).toLowerCase();
     parts.push(mainKey);
-    
+
     return parts.join('+');
   };
 
   // Handle key recording
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!isRecording) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
 
     const key = e.key.toLowerCase();
-    
+
     // Skip modifier-only keys
     if (['meta', 'control', 'alt', 'shift', 'cmd', 'ctrl'].includes(key)) {
       return;
@@ -107,7 +107,7 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
         ctrl: e.ctrlKey,
         alt: e.altKey,
         shift: e.shiftKey,
-      }
+      },
     };
 
     setRecordedKeys(recorded);
@@ -139,7 +139,7 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
     if (!recordedKeys) return;
 
     const newShortcut = keysToShortcut(recordedKeys);
-    
+
     // Validate the shortcut
     if (onValidate) {
       setIsValidating(true);
@@ -151,6 +151,7 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
           return;
         }
       } catch (error) {
+        console.error('Failed to validate shortcut:', error);
         setValidationError('Failed to validate shortcut');
         setIsValidating(false);
         return;
@@ -165,7 +166,8 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
   };
 
   const currentDisplay = recordedKeys ? formatShortcut(keysToShortcut(recordedKeys)) : '';
-  const hasValidKeys = recordedKeys && 
+  const hasValidKeys =
+    recordedKeys &&
     (recordedKeys.modifiers.cmd || recordedKeys.modifiers.ctrl || recordedKeys.modifiers.alt) &&
     recordedKeys.key !== '';
 
@@ -177,38 +179,29 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
             <Keyboard className="w-4 h-4" />
             <span>{formatShortcut(value) || '未设置'}</span>
           </div>
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={startRecording}
-          >
+          <Button variant="outline" size="sm" onClick={startRecording}>
             更改
           </Button>
         </div>
       ) : (
         <div className="space-y-3">
-          <div 
+          <div
             ref={inputRef}
             className={cn(
-              "flex items-center justify-center p-4 border-2 rounded-lg min-h-[60px] font-mono text-sm transition-colors",
-              "border-primary bg-primary/10 text-primary",
-              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              'flex items-center justify-center p-4 border-2 rounded-lg min-h-[60px] font-mono text-sm transition-colors',
+              'border-primary bg-primary/10 text-primary',
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
             )}
             tabIndex={0}
           >
             {currentDisplay || '请按下快捷键组合...'}
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={cancelRecording}
-              title="取消"
-            >
+            <Button variant="outline" size="sm" onClick={cancelRecording} title="取消">
               <X className="w-4 h-4" />
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -218,7 +211,7 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
             >
               <RotateCcw className="w-4 h-4" />
             </Button>
-            
+
             <Button
               variant="default"
               size="sm"
@@ -235,13 +228,9 @@ export function ShortcutRecorder({ value, onChange, onValidate }: ShortcutRecord
           </div>
         </div>
       )}
-      
-      {validationError && (
-        <p className="text-sm text-destructive">
-          {validationError}
-        </p>
-      )}
-      
+
+      {validationError && <p className="text-sm text-destructive">{validationError}</p>}
+
       {isRecording && (
         <p className="text-sm text-muted-foreground italic">
           快捷键必须包含至少一个修饰键（⌘、⌃、⌥）

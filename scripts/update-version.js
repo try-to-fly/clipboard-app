@@ -9,8 +9,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Function to get the next version based on version type
 function getNextVersion(currentVersion, versionType) {
-  const [major, minor, patch] = currentVersion.split('.').map(num => parseInt(num, 10));
-  
+  const [major, minor, patch] = currentVersion.split('.').map((num) => parseInt(num, 10));
+
   switch (versionType) {
     case 'patch':
       return `${major}.${minor}.${patch + 1}`;
@@ -80,16 +80,69 @@ function updateGitHubWorkflow(newVersion) {
   }
 }
 
+// Function to run code quality checks
+function runQualityChecks() {
+  console.log('🔍 Running code quality checks...\n');
+
+  // Check TypeScript compilation
+  console.log('📘 Checking TypeScript compilation...');
+  try {
+    execSync('pnpm run build', { stdio: 'inherit' });
+    console.log('✅ TypeScript compilation passed\n');
+  } catch (error) {
+    console.error(
+      '❌ TypeScript compilation failed. Please fix TypeScript errors before bumping version.'
+    );
+    process.exit(1);
+  }
+
+  // Check ESLint
+  console.log('🔍 Running ESLint...');
+  try {
+    execSync('pnpm run lint', { stdio: 'inherit' });
+    console.log('✅ ESLint checks passed\n');
+  } catch (error) {
+    console.error('❌ ESLint checks failed. Please fix linting errors before bumping version.');
+    console.log('💡 Tip: Run "pnpm run lint:fix" to automatically fix some issues.');
+    process.exit(1);
+  }
+
+  // Check Rust formatting
+  console.log('🦀 Checking Rust formatting...');
+  try {
+    execSync('cd src-tauri && cargo fmt --check', { stdio: 'inherit' });
+    console.log('✅ Rust formatting passed\n');
+  } catch (error) {
+    console.error('❌ Rust formatting check failed. Please run "cd src-tauri && cargo fmt"');
+    process.exit(1);
+  }
+
+  // Check Rust with clippy
+  console.log('🦀 Running Rust clippy...');
+  try {
+    execSync('cd src-tauri && cargo clippy -- -D warnings', { stdio: 'inherit' });
+    console.log('✅ Rust clippy checks passed\n');
+  } catch (error) {
+    console.error('❌ Rust clippy checks failed. Please fix the warnings.');
+    process.exit(1);
+  }
+
+  console.log('✨ All quality checks passed!\n');
+}
+
 // Main function
 function main() {
   const versionType = process.argv[2] || 'patch';
-  
+
   if (!['patch', 'minor', 'major'].includes(versionType)) {
     console.error('❌ Invalid version type. Use: patch, minor, or major');
     process.exit(1);
   }
 
   try {
+    // Run quality checks first
+    runQualityChecks();
+
     // Get current version from package.json
     const packagePath = path.join(process.cwd(), 'package.json');
     const packageContent = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
@@ -107,18 +160,20 @@ function main() {
 
     // Git operations
     console.log('\n📝 Creating git commit...');
-    execSync('git add package.json src-tauri/Cargo.toml src-tauri/tauri.conf.json src-tauri/Cargo.lock .github/workflows/test-build.yml', { stdio: 'inherit' });
+    execSync(
+      'git add package.json src-tauri/Cargo.toml src-tauri/tauri.conf.json src-tauri/Cargo.lock .github/workflows/test-build.yml',
+      { stdio: 'inherit' }
+    );
     execSync(`git commit -m "chore: bump version to ${newVersion}"`, { stdio: 'inherit' });
-    
+
     console.log('\n🏷️  Creating git tag...');
     execSync(`git tag -a v${newVersion} -m "Release version ${newVersion}"`, { stdio: 'inherit' });
-    
+
     console.log(`\n✨ Version update complete!`);
     console.log(`📋 Next steps:`);
     console.log(`   1. Push changes: git push origin main`);
     console.log(`   2. Push tag: git push origin v${newVersion}`);
     console.log(`   3. GitHub Actions will automatically build and release`);
-
   } catch (error) {
     console.error('❌ Error updating version:', error.message);
     process.exit(1);

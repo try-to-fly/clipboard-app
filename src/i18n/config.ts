@@ -123,7 +123,7 @@ i18n
     fallbackLng: 'zh',
     defaultNS: 'common',
     ns: ['common', 'clipboard', 'preferences', 'statistics'],
-    
+
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],

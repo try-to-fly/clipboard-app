@@ -1,9 +1,7 @@
 import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
 
-export type ExpiryOption = 
-  | { Days: number }
-  | "Never";
+export type ExpiryOption = { Days: number } | 'Never';
 
 export interface TextConfig {
   max_size_mb: number;
@@ -56,7 +54,7 @@ interface ConfigStore {
   cleanupExpiredEntries: () => Promise<void>;
   setShowPreferences: (show: boolean) => void;
   formatBytes: (bytes: number) => string;
-  
+
   // Helper functions for ExpiryOption
   getExpiryDisplayValue: (expiry: ExpiryOption) => string;
   createExpiryOption: (value: string) => ExpiryOption;
@@ -65,10 +63,10 @@ interface ConfigStore {
 const defaultConfig: AppConfig = {
   text: {
     max_size_mb: 1.0,
-    expiry: "Never",
+    expiry: 'Never',
   },
   image: {
-    expiry: "Never",
+    expiry: 'Never',
   },
   excluded_apps_v2: [
     {
@@ -175,26 +173,26 @@ export const useConfigStore = create<ConfigStore>((set, get) => ({
 
   formatBytes: (bytes: number) => {
     if (bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   },
-  
+
   getExpiryDisplayValue: (expiry: ExpiryOption) => {
-    if (expiry === "Never") return "never";
-    if (typeof expiry === "object" && "Days" in expiry) {
+    if (expiry === 'Never') return 'never';
+    if (typeof expiry === 'object' && 'Days' in expiry) {
       return expiry.Days.toString();
     }
-    return "never";
+    return 'never';
   },
-  
+
   createExpiryOption: (value: string) => {
-    if (value === "never") return "Never";
+    if (value === 'never') return 'Never';
     const days = parseInt(value);
-    if (isNaN(days)) return "Never";
+    if (isNaN(days)) return 'Never';
     return { Days: days };
   },
 }));
