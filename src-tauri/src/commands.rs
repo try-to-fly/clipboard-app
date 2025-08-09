@@ -518,6 +518,131 @@ pub async fn fetch_url_content(url: String) -> Result<String, String> {
     }
 }
 
+#[tauri::command]
+pub async fn check_ffprobe_available() -> Result<bool, String> {
+    use std::process::Command;
+
+    println!("[check_ffprobe_available] 检查 ffprobe 是否可用");
+
+    // 尝试执行 ffprobe -version 命令
+    match Command::new("ffprobe").arg("-version").output() {
+        Ok(output) => {
+            let available = output.status.success();
+            println!("[check_ffprobe_available] ffprobe 可用: {}", available);
+            Ok(available)
+        }
+        Err(e) => {
+            println!("[check_ffprobe_available] ffprobe 不可用: {}", e);
+            Ok(false)
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn extract_media_metadata(url: String) -> Result<serde_json::Value, String> {
+    use std::process::Command;
+
+    println!("[extract_media_metadata] 提取媒体元数据: {}", url);
+
+    // 首先检查 ffprobe 是否可用
+    if !check_ffprobe_available().await? {
+        return Err("FFprobe not available".to_string());
+    }
+
+    // 使用 ffprobe 提取媒体信息
+    let output = Command::new("ffprobe")
+        .args(&[
+            "-v", "quiet",
+            "-print_format", "json",
+            "-show_format",
+            "-show_streams",
+            &url
+        ])
+        .output()
+        .map_err(|e| format!("Failed to execute ffprobe: {}", e))?;
+
+    if !output.status.success() {
+        let error_msg = String::from_utf8_lossy(&output.stderr);
+        println!("[extract_media_metadata] ffprobe 执行失败: {}", error_msg);
+        return Err(format!("FFprobe execution failed: {}", error_msg));
+    }
+
+    let json_output = String::from_utf8(output.stdout)
+        .map_err(|e| format!("Failed to parse ffprobe output as UTF-8: {}", e))?;
+
+    // 解析 JSON 输出
+    let metadata: serde_json::Value = serde_json::from_str(&json_output)
+        .map_err(|e| format!("Failed to parse ffprobe JSON output: {}", e))?;
+
+    // 提取关键信息
+    let mut result = serde_json::Map::new();
+
+    if let Some(format) = metadata.get("format") {
+        if let Some(duration) = format.get("duration") {
+            if let Some(duration_str) = duration.as_str() {
+                if let Ok(duration_f64) = duration_str.parse::<f64>() {
+                    let minutes = (duration_f64 / 60.0) as u32;
+                    let seconds = (duration_f64 % 60.0) as u32;
+                    result.insert("duration".to_string(), serde_json::Value::String(format!("{}:{:02}", minutes, seconds)));
+                }
+            }
+        }
+        if let Some(bit_rate) = format.get("bit_rate") {
+            if let Some(bit_rate_str) = bit_rate.as_str() {
+                if let Ok(bit_rate_i64) = bit_rate_str.parse::<i64>() {
+                    let kbps = bit_rate_i64 / 1000;
+                    result.insert("bitrate".to_string(), serde_json::Value::String(format!("{} kbps", kbps)));
+                }
+            }
+        }
+    }
+
+    if let Some(streams) = metadata.get("streams") {
+        if let Some(streams_array) = streams.as_array() {
+            for stream in streams_array {
+                if let Some(codec_type) = stream.get("codec_type") {
+                    if codec_type == "video" {
+                        if let Some(width) = stream.get("width") {
+                            result.insert("width".to_string(), width.clone());
+                        }
+                        if let Some(height) = stream.get("height") {
+                            result.insert("height".to_string(), height.clone());
+                        }
+                        if let Some(codec_name) = stream.get("codec_name") {
+                            result.insert("codec".to_string(), codec_name.clone());
+                        }
+                        if let Some(r_frame_rate) = stream.get("r_frame_rate") {
+                            if let Some(fps_str) = r_frame_rate.as_str() {
+                                // 处理分数形式的帧率，如 "30/1"
+                                if let Some(slash_pos) = fps_str.find('/') {
+                                    let numerator: f64 = fps_str[..slash_pos].parse().unwrap_or(0.0);
+                                    let denominator: f64 = fps_str[slash_pos + 1..].parse().unwrap_or(1.0);
+                                    if denominator != 0.0 {
+                                        let fps = numerator / denominator;
+                                        result.insert("fps".to_string(), serde_json::Value::String(format!("{:.2}", fps)));
+                                    }
+                                }
+                            }
+                        }
+                    } else if codec_type == "audio" {
+                        if let Some(sample_rate) = stream.get("sample_rate") {
+                            result.insert("sample_rate".to_string(), sample_rate.clone());
+                        }
+                        if result.get("codec").is_none() {
+                            if let Some(codec_name) = stream.get("codec_name") {
+                                result.insert("codec".to_string(), codec_name.clone());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    println!("[extract_media_metadata] 成功提取元数据: {:?}", result);
+    Ok(serde_json::Value::Object(result))
+}
+
 // Configuration commands
 #[tauri::command]
 pub async fn get_config(state: State<'_, AppState>) -> Result<AppConfig, String> {

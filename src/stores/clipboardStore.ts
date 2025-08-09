@@ -14,6 +14,7 @@ interface ClipboardStore {
   selectedType: string;
   selectedEntry: ClipboardEntry | null;
   urlContentCache: Map<string, { content: string; timestamp: number }>;
+  mediaMetadataCache: Map<string, { metadata: any; timestamp: number }>;
 
   // Actions
   startMonitoring: () => Promise<void>;
@@ -29,6 +30,8 @@ interface ClipboardStore {
   openFileWithSystem: (filePath: string) => Promise<void>;
   getAppIcon: (bundleId: string) => Promise<string | null>;
   fetchUrlContent: (url: string) => Promise<string>;
+  checkFFprobeAvailable: () => Promise<boolean>;
+  extractMediaMetadata: (url: string) => Promise<any>;
   setSearchTerm: (term: string) => void;
   setSelectedType: (type: string) => void;
   setSelectedEntry: (entry: ClipboardEntry | null) => void;
@@ -46,6 +49,7 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
   selectedType: 'all',
   selectedEntry: null,
   urlContentCache: new Map(),
+  mediaMetadataCache: new Map(),
 
   startMonitoring: async () => {
     try {
@@ -199,6 +203,46 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
       
       return content;
     } catch (error) {
+      throw new Error(String(error));
+    }
+  },
+
+  checkFFprobeAvailable: async () => {
+    try {
+      console.log('[checkFFprobeAvailable] 检查 FFprobe 是否可用');
+      return await invoke<boolean>('check_ffprobe_available');
+    } catch (error) {
+      console.error('Failed to check FFprobe availability:', error);
+      return false;
+    }
+  },
+
+  extractMediaMetadata: async (url: string) => {
+    const state = get();
+    const now = Date.now();
+    const cacheExpiry = 10 * 60 * 1000; // 10分钟缓存过期时间
+    
+    // 检查缓存
+    const cached = state.mediaMetadataCache.get(url);
+    if (cached && (now - cached.timestamp) < cacheExpiry) {
+      console.log(`[extractMediaMetadata] 使用缓存元数据: ${url}`);
+      return cached.metadata;
+    }
+    
+    try {
+      console.log(`[extractMediaMetadata] 提取媒体元数据: ${url}`);
+      const metadata = await invoke<any>('extract_media_metadata', { url });
+      
+      // 更新缓存
+      set((state) => {
+        const newCache = new Map(state.mediaMetadataCache);
+        newCache.set(url, { metadata, timestamp: now });
+        return { mediaMetadataCache: newCache };
+      });
+      
+      return metadata;
+    } catch (error) {
+      console.error('Failed to extract media metadata:', error);
       throw new Error(String(error));
     }
   },

@@ -276,6 +276,8 @@ pub fn run() {
             convert_and_scale_image,
             copy_converted_image,
             fetch_url_content,
+            check_ffprobe_available,
+            extract_media_metadata,
             get_config,
             update_config,
             get_cache_statistics,

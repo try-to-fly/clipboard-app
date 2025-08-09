@@ -15,7 +15,8 @@
       "Bash(cargo clippy:*)",
       "Bash(cargo fix:*)",
       "WebFetch(domain:aptabase.com)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "WebFetch(domain:tauri.app)"
     ],
     "deny": []
   }

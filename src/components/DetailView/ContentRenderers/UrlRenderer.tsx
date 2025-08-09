@@ -1,14 +1,12 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { Copy, ExternalLink, Globe, FileJson } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Copy, ExternalLink, Globe, FileText, Image, Video, Music } from 'lucide-react';
 import queryString from 'query-string';
 import { useClipboardStore } from '../../../stores/clipboardStore';
-import { UrlParts } from '../../../types/clipboard';
+import { UrlParts, ContentSubType } from '../../../types/clipboard';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Card, CardContent, CardHeader } from '../../ui/card';
-import { ScrollArea } from '../../ui/scroll-area';
-
-const MonacoEditor = lazy(() => import('@monaco-editor/react'));
+import { UnifiedTextRenderer } from './UnifiedTextRenderer';
 
 interface UrlRendererProps {
   content: string;
@@ -16,10 +14,15 @@ interface UrlRendererProps {
 }
 
 export function UrlRenderer({ content, metadata }: UrlRendererProps) {
-  const { copyToClipboard, fetchUrlContent } = useClipboardStore();
+  const { copyToClipboard, fetchUrlContent, checkFFprobeAvailable, extractMediaMetadata } = useClipboardStore();
   const [urlParts, setUrlParts] = useState<UrlParts | null>(null);
-  const [previewType, setPreviewType] = useState<'none' | 'image' | 'video' | 'json'>('none');
-  const [jsonContent, setJsonContent] = useState<string>('');
+  const [previewType, setPreviewType] = useState<'none' | 'image' | 'video' | 'audio' | 'text'>('none');
+  const [textContent, setTextContent] = useState<string>('');
+  const [textContentType, setTextContentType] = useState<ContentSubType>('plain_text');
+  const [mediaMetadata, setMediaMetadata] = useState<any>(null);
+  const [isLoadingText, setIsLoadingText] = useState(false);
+  const [isFFprobeAvailable, setIsFFprobeAvailable] = useState<boolean | null>(null);
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
 
   useEffect(() => {
     if (metadata) {
@@ -48,38 +51,91 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
     }
 
     // 检测内容类型
-    if (content.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i)) {
+    if (content.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?|$)/i)) {
       setPreviewType('image');
-    } else if (content.match(/\.(mp4|webm|ogg)(\?|$)/i)) {
+    } else if (content.match(/\.(mp4|webm|ogg|avi|mov|mkv|flv)(\?|$)/i)) {
       setPreviewType('video');
-    } else if (content.match(/\.(json)(\?|$)/i) || content.includes('/api/')) {
-      // 可能是JSON API
-      fetchJsonContent(content);
+    } else if (content.match(/\.(mp3|wav|flac|aac|ogg|m4a)(\?|$)/i)) {
+      setPreviewType('audio');
+    } else if (content.match(/\.(json|xml|html|htm|css|js|ts|jsx|tsx|py|java|cpp|c|h|php|rb|go|rs|sql|md|txt|log|csv|yaml|yml|toml|ini|conf|sh|bat)(\?|$)/i) || content.includes('/api/')) {
+      // 文本类型或API
+      fetchTextContent(content);
     }
   }, [content, metadata]);
 
-  const fetchJsonContent = async (fetchUrl: string) => {
+  const fetchTextContent = async (fetchUrl: string) => {
+    setIsLoadingText(true);
     try {
       // 使用Tauri命令获取URL内容，绕过浏览器CORS限制
       const data = await fetchUrlContent(fetchUrl);
       
-      // 检查是否是有效的JSON
-      try {
-        const parsed = JSON.parse(data);
-        setJsonContent(JSON.stringify(parsed, null, 2));
-        setPreviewType('json');
-      } catch (e) {
-        // 如果不是JSON，就显示原始内容
-        setJsonContent(data);
-        setPreviewType('json');
+      // 根据URL扩展名确定内容类型
+      const contentType = getContentTypeFromUrl(fetchUrl);
+      
+      // 如果是JSON内容，尝试格式化
+      let processedContent = data;
+      if (contentType === 'json') {
+        try {
+          const parsed = JSON.parse(data);
+          processedContent = JSON.stringify(parsed, null, 2);
+        } catch (jsonError) {
+          console.log('JSON 解析失败，显示原始内容:', jsonError);
+          // 如果JSON解析失败，就使用原始内容
+        }
       }
+      
+      setTextContent(processedContent);
+      setTextContentType(contentType);
+      setPreviewType('text');
     } catch (e) {
       console.error('获取URL内容失败:', e);
       // 如果获取失败，显示提示信息
-      setJsonContent(`// 无法获取URL内容\n// 错误信息: ${String(e)}`);
-      setPreviewType('json');
+      setTextContent(`// 无法获取URL内容\n// 错误信息: ${String(e)}`);
+      setTextContentType('plain_text');
+      setPreviewType('text');
+    } finally {
+      setIsLoadingText(false);
     }
   };
+
+  const getContentTypeFromUrl = (url: string): ContentSubType => {
+    if (url.match(/\.(json)(\?|$)/i) || url.includes('/api/')) {
+      return 'json';
+    } else if (url.match(/\.(html|htm)(\?|$)/i)) {
+      return 'code'; // HTML will be detected by UnifiedTextRenderer
+    } else if (url.match(/\.(css)(\?|$)/i)) {
+      return 'code';
+    } else if (url.match(/\.(js|jsx|ts|tsx)(\?|$)/i)) {
+      return 'code';
+    } else if (url.match(/\.(py|java|cpp|c|h|php|rb|go|rs)(\?|$)/i)) {
+      return 'code';
+    } else if (url.match(/\.(md)(\?|$)/i)) {
+      return 'markdown';
+    } else if (url.match(/\.(sh|bat)(\?|$)/i)) {
+      return 'command';
+    }
+    return 'plain_text';
+  };
+
+
+  // 在组件加载时检查 FFprobe 可用性并自动获取媒体元数据
+  useEffect(() => {
+    const initialize = async () => {
+      const available = await checkFFprobeAvailable();
+      setIsFFprobeAvailable(available);
+      
+      // 如果是媒体文件且 FFprobe 可用，自动获取元数据
+      if (available && (previewType === 'image' || previewType === 'video' || previewType === 'audio')) {
+        try {
+          const metadata = await extractMediaMetadata(content);
+          setMediaMetadata(metadata);
+        } catch (error) {
+          console.error('自动获取媒体元数据失败:', error);
+        }
+      }
+    };
+    initialize();
+  }, [previewType, content]);
 
   const handleCopy = async (text: string) => {
     await copyToClipboard(text);
@@ -111,58 +167,55 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <div>
-            <span className="text-sm font-medium text-muted-foreground">完整URL:</span>
-            <code className="block mt-1 p-2 bg-muted rounded text-sm font-mono break-all">
+            <code className="block p-2 bg-muted rounded text-xs font-mono break-all">
               {content}
             </code>
           </div>
 
           {urlParts && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <span className="text-sm font-medium text-muted-foreground">协议:</span>
-                <code className="block mt-1 p-2 bg-muted rounded text-sm font-mono">
-                  {urlParts.protocol}
-                </code>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-muted-foreground">主机:</span>
-                <code className="block mt-1 p-2 bg-muted rounded text-sm font-mono">
-                  {urlParts.host}
-                </code>
-              </div>
-              <div className="md:col-span-2">
-                <span className="text-sm font-medium text-muted-foreground">路径:</span>
-                <code className="block mt-1 p-2 bg-muted rounded text-sm font-mono break-all">
-                  {urlParts.path}
-                </code>
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-muted rounded">
+                  <span className="text-muted-foreground">协议:</span>
+                  <code className="font-mono">{urlParts.protocol}</code>
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-muted rounded">
+                  <span className="text-muted-foreground">主机:</span>
+                  <code className="font-mono">{urlParts.host}</code>
+                </span>
+                {urlParts.path && urlParts.path !== '/' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-muted rounded">
+                    <span className="text-muted-foreground">路径:</span>
+                    <code className="font-mono">{urlParts.path}</code>
+                  </span>
+                )}
               </div>
               
               {urlParts.query_params.length > 0 && (
-                <div className="md:col-span-2">
-                  <span className="text-sm font-medium text-muted-foreground">查询参数:</span>
-                  <ScrollArea className="mt-2 max-h-32">
-                    <div className="space-y-1">
-                      {urlParts.query_params.map(([key, value], index) => (
-                        <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
-                          <code className="font-medium text-primary">{key}</code>
-                          <span className="text-muted-foreground">=</span>
-                          <code className="flex-1 break-all">{value}</code>
-                          <Button 
-                            onClick={() => handleCopy(value)}
-                            size="sm" 
-                            variant="ghost"
-                            className="h-6 w-6 p-0"
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                    {urlParts.query_params.length} 个查询参数
+                  </summary>
+                  <div className="mt-2 space-y-1">
+                    {urlParts.query_params.map(([key, value], index) => (
+                      <div key={index} className="flex items-center gap-1 p-1 bg-muted rounded text-xs">
+                        <code className="font-medium text-primary">{key}</code>
+                        <span className="text-muted-foreground">=</span>
+                        <code className="flex-1 break-all text-muted-foreground">{value}</code>
+                        <Button 
+                          onClick={() => handleCopy(value)}
+                          size="sm" 
+                          variant="ghost"
+                          className="h-5 w-5 p-0"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </details>
               )}
             </div>
           )}
@@ -171,8 +224,26 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
 
       {previewType === 'image' && (
         <Card>
-          <CardHeader className="pb-3">
-            <span className="text-sm font-medium">图片预览</span>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium flex items-center gap-2">
+                <Image className="w-4 h-4" />
+                图片预览
+              </span>
+              {mediaMetadata && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  {mediaMetadata.width && mediaMetadata.height && (
+                    <span>{mediaMetadata.width}x{mediaMetadata.height}</span>
+                  )}
+                  {mediaMetadata.format && (
+                    <span>• {mediaMetadata.format}</span>
+                  )}
+                  {mediaMetadata.size && (
+                    <span>• {mediaMetadata.size}</span>
+                  )}
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <img 
@@ -189,8 +260,32 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
 
       {previewType === 'video' && (
         <Card>
-          <CardHeader className="pb-3">
-            <span className="text-sm font-medium">视频预览</span>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium flex items-center gap-2">
+                <Video className="w-4 h-4" />
+                视频预览
+              </span>
+              {mediaMetadata && (
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  {mediaMetadata.width && mediaMetadata.height && (
+                    <span>{mediaMetadata.width}x{mediaMetadata.height}</span>
+                  )}
+                  {mediaMetadata.fps && (
+                    <span>• {mediaMetadata.fps}fps</span>
+                  )}
+                  {mediaMetadata.duration && (
+                    <span>• {mediaMetadata.duration}</span>
+                  )}
+                  {mediaMetadata.codec && (
+                    <span>• {mediaMetadata.codec}</span>
+                  )}
+                  {mediaMetadata.bitrate && (
+                    <span>• {mediaMetadata.bitrate}</span>
+                  )}
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <video 
@@ -202,40 +297,60 @@ export function UrlRenderer({ content, metadata }: UrlRendererProps) {
         </Card>
       )}
 
-      {previewType === 'json' && jsonContent && (
-        <Card id="url-renderer-json">
-          <CardHeader id="url-renderer-json-header" className="pb-3">
-            <div id="url-renderer-json-title" className="flex items-center gap-2">
-              <FileJson className="w-4 h-4" />
-              <span className="text-sm font-medium">内容预览</span>
+      {previewType === 'audio' && (
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium flex items-center gap-2">
+                <Music className="w-4 h-4" />
+                音频预览
+              </span>
+              {mediaMetadata && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  {mediaMetadata.duration && (
+                    <span>{mediaMetadata.duration}</span>
+                  )}
+                  {mediaMetadata.bitrate && (
+                    <span>• {mediaMetadata.bitrate}</span>
+                  )}
+                  {mediaMetadata.sample_rate && (
+                    <span>• {mediaMetadata.sample_rate}Hz</span>
+                  )}
+                  {mediaMetadata.codec && (
+                    <span>• {mediaMetadata.codec}</span>
+                  )}
+                </div>
+              )}
             </div>
           </CardHeader>
-          <CardContent id="url-renderer-json-content" className="p-0">
-            <div id="url-renderer-json-editor" className="border-t">
-              <Suspense fallback={
-                <div id="url-renderer-json-loading" className="flex items-center justify-center h-32">
-                  <div className="text-sm text-muted-foreground">加载编辑器...</div>
-                </div>
-              }>
-                <MonacoEditor
-                  height="400px"
-                  language="json"
-                  value={jsonContent}
-                  theme="vs-dark"
-                  options={{
-                    readOnly: true,
-                    minimap: { enabled: false },
-                    scrollBeyondLastLine: false,
-                    wordWrap: 'on',
-                    fontSize: 13,
-                    lineNumbers: 'on',
-                    automaticLayout: true,
-                    folding: true,
-                    padding: { top: 16, bottom: 16 },
-                  }}
-                />
-              </Suspense>
+          <CardContent>
+            <audio 
+              src={content} 
+              controls 
+              className="w-full"
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {previewType === 'text' && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              <span className="text-sm font-medium">内容预览</span>
+              {isLoadingText && <span className="text-xs text-muted-foreground">加载中...</span>}
             </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {textContent && (
+              <div className="h-[500px]">
+                <UnifiedTextRenderer 
+                  content={textContent}
+                  contentSubType={textContentType}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
