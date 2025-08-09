@@ -1,0 +1,34 @@
+{
+  "actions": {
+    "startMonitoring": "Iniciar Monitoreo",
+    "stopMonitoring": "Detener Monitoreo",
+    "viewStatistics": "Ver Estadísticas",
+    "clearHistory": "Limpiar Historial",
+    "confirmClear": "Confirmar Limpieza",
+    "clearConfirmMessage": "¿Estás seguro de que quieres limpiar todo el historial del portapapeles? Esta acción no se puede deshacer.",
+    "copiedTimes": "Copiado {{count}} veces",
+    "favorite": "Favorito",
+    "unfavorite": "Quitar de Favoritos"
+  },
+  "contentTypes": {
+    "allTypes": "Todos los Tipos",
+    "allText": "Todo el Texto",
+    "plainText": "Texto Plano",
+    "url": "Enlace URL",
+    "ipAddress": "Dirección IP",
+    "email": "Dirección de Email",
+    "color": "Valor de Color",
+    "codeSnippet": "Fragmento de Código",
+    "command": "Línea de Comandos",
+    "timestamp": "Marca de Tiempo",
+    "json": "Datos JSON",
+    "markdown": "Markdown",
+    "image": "Imagen",
+    "file": "Archivo"
+  },
+  "emptyState": {
+    "noHistory": "Sin historial del portapapeles",
+    "clickToStart": "Haz clic en el botón de inicio para comenzar el monitoreo",
+    "copyToStart": "Copia algo de contenido para empezar"
+  }
+}

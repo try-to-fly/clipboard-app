@@ -1,0 +1,145 @@
+{
+  "appTitle": "Clipboard Manager",
+  "search": "Search content or app...",
+  "all": "All",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saving": "Saving...",
+  "copy": "Copy",
+  "delete": "Delete",
+  "from": "From",
+  "noData": "No data",
+  "unknownApp": "Unknown app",
+  "times": "times",
+  "days": {
+    "7": "7 Days",
+    "14": "14 Days",
+    "30": "30 Days"
+  },
+  "forever": "Forever",
+  "detail": {
+    "title": "Detail Preview",
+    "selectItem": "Select an item to view details",
+    "type": "Type:",
+    "source": "Source:",
+    "time": "Time:",
+    "copyCount": "Copy Count:",
+    "loading": "Loading image...",
+    "unknown": "Unknown",
+    "contentTypes": {
+      "plain_text": "Plain Text",
+      "url": "URL Link",
+      "ip_address": "IP Address",
+      "email": "Email Address",
+      "color": "Color Value",
+      "code": "Code Snippet",
+      "command": "Command Line",
+      "timestamp": "Timestamp",
+      "json": "JSON Data",
+      "markdown": "Markdown",
+      "text": "Text",
+      "image": "Image",
+      "file": "File"
+    }
+  },
+  "updateChecker": {
+    "newVersionTitle": "New version {{version}} available",
+    "newVersionMessage": "New version {{version}} available!\n\n{{notes}}\n\nUpdate now?",
+    "updateTitle": "Software Update",
+    "updateNow": "Update Now",
+    "later": "Later",
+    "updating": "Downloading update... {{progress}}%",
+    "defaultNotes": "Update contents:\n- Performance optimization\n- Bug fixes",
+    "updateFailed": "Update failed, please try again later",
+    "error": "Error",
+    "updateNotesDefault": "Includes performance improvements and bug fixes"
+  },
+  "codeEditor": {
+    "code": "Code",
+    "json": "JSON", 
+    "markdown": "Markdown",
+    "command": "Command",
+    "text": "Text",
+    "copy": "Copy",
+    "copied": "Copied",
+    "loading": "Loading editor...",
+    "copyFailed": "Copy failed"
+  },
+  "renderers": {
+    "ip": {
+      "title": "{{type}} Address",
+      "copy": "Copy IP Address",
+      "query": "Query IP Info",
+      "type": "Type:",
+      "ipv4Format": "IPv4 Format Breakdown:"
+    },
+    "email": {
+      "title": "Email Address",
+      "copy": "Copy Email",
+      "sendMail": "Send Email",
+      "username": "Username:",
+      "domain": "Domain:"
+    },
+    "color": {
+      "title": "Color Value",
+      "copy": "Copy Original Value",
+      "rgbValues": "RGB Values:",
+      "parseError": "Failed to parse color metadata",
+      "hexParseError": "Failed to parse HEX color"
+    },
+    "time": {
+      "title": "Timestamp",
+      "copy": "Copy Original Value",
+      "parseError": "Failed to parse time metadata",
+      "invalidFormat": "Unable to parse time format",
+      "formats": {
+        "standard": "Standard Format",
+        "chinese": "Chinese Format", 
+        "relative": "Relative Time",
+        "iso": "ISO Format",
+        "unixSeconds": "Unix Seconds",
+        "unixMs": "Unix Milliseconds"
+      }
+    },
+    "url": {
+      "title": "URL Link",
+      "copy": "Copy URL",
+      "open": "Open Link",
+      "fullUrl": "Full URL:",
+      "protocol": "Protocol:",
+      "host": "Host:",
+      "path": "Path:",
+      "queryParams": "Query Parameters:",
+      "imagePreview": "Image Preview",
+      "videoPreview": "Video Preview", 
+      "contentPreview": "Content Preview",
+      "fetchError": "Failed to fetch URL content",
+      "fetchErrorComment": "// Unable to fetch URL content\n// Error: {{error}}",
+      "previewAlt": "Preview"
+    }
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "settings": {
+    "open": "Open settings"
+  },
+  "imagePreview": {
+    "format": "Format:",
+    "scale": "Scale:",
+    "convert": "Convert",
+    "converting": "Converting...",
+    "copy": "Copy",
+    "original": "Original",
+    "converted": "Converted",
+    "convertError": "Image conversion failed: {{error}}",
+    "copyError": "Copy failed: {{error}}",
+    "copySuccess": "Converted image copied to clipboard",
+    "originalAlt": "Original image",
+    "convertedAlt": "Converted image"
+  }
+}

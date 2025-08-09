@@ -1,0 +1,145 @@
+{
+  "appTitle": "クリップボードマネージャー",
+  "search": "内容またはアプリを検索...",
+  "all": "すべて",
+  "confirm": "確認",
+  "cancel": "キャンセル",
+  "save": "保存",
+  "saving": "保存中...",
+  "copy": "コピー",
+  "delete": "削除",
+  "from": "から",
+  "noData": "データなし",
+  "unknownApp": "不明なアプリ",
+  "times": "回",
+  "days": {
+    "7": "7日間",
+    "14": "14日間",
+    "30": "30日間"
+  },
+  "forever": "無期限",
+  "detail": {
+    "title": "詳細プレビュー",
+    "selectItem": "詳細を表示するアイテムを選択してください",
+    "type": "種類：",
+    "source": "ソース：",
+    "time": "時刻：",
+    "copyCount": "コピー回数：",
+    "loading": "画像読み込み中...",
+    "unknown": "不明",
+    "contentTypes": {
+      "plain_text": "プレーンテキスト",
+      "url": "URLリンク",
+      "ip_address": "IPアドレス",
+      "email": "メールアドレス",
+      "color": "カラー値",
+      "code": "コードスニペット",
+      "command": "コマンドライン",
+      "timestamp": "タイムスタンプ",
+      "json": "JSONデータ",
+      "markdown": "Markdown",
+      "text": "テキスト",
+      "image": "画像",
+      "file": "ファイル"
+    }
+  },
+  "updateChecker": {
+    "newVersionTitle": "新しいバージョン {{version}} が利用可能です",
+    "newVersionMessage": "新しいバージョン {{version}} が利用可能です！\n\n{{notes}}\n\n今すぐ更新しますか？",
+    "updateTitle": "ソフトウェア更新",
+    "updateNow": "今すぐ更新",
+    "later": "後で",
+    "updating": "更新をダウンロード中... {{progress}}%",
+    "defaultNotes": "更新内容：\n- パフォーマンス最適化\n- バグ修正",
+    "updateFailed": "更新に失敗しました。後でもう一度お試しください",
+    "error": "エラー",
+    "updateNotesDefault": "パフォーマンス改善とバグ修正が含まれています"
+  },
+  "codeEditor": {
+    "code": "コード",
+    "json": "JSON", 
+    "markdown": "Markdown",
+    "command": "コマンド",
+    "text": "テキスト",
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "loading": "エディターを読み込み中...",
+    "copyFailed": "コピーに失敗しました"
+  },
+  "renderers": {
+    "ip": {
+      "title": "{{type}}アドレス",
+      "copy": "IPアドレスをコピー",
+      "query": "IP情報を照会",
+      "type": "種類：",
+      "ipv4Format": "IPv4形式の内訳："
+    },
+    "email": {
+      "title": "メールアドレス",
+      "copy": "メールをコピー",
+      "sendMail": "メールを送信",
+      "username": "ユーザー名：",
+      "domain": "ドメイン："
+    },
+    "color": {
+      "title": "カラー値",
+      "copy": "元の値をコピー",
+      "rgbValues": "RGB値：",
+      "parseError": "カラーメタデータの解析に失敗しました",
+      "hexParseError": "HEXカラーの解析に失敗しました"
+    },
+    "time": {
+      "title": "タイムスタンプ",
+      "copy": "元の値をコピー",
+      "parseError": "時刻メタデータの解析に失敗しました",
+      "invalidFormat": "時刻形式を解析できません",
+      "formats": {
+        "standard": "標準形式",
+        "chinese": "中国語形式", 
+        "relative": "相対時刻",
+        "iso": "ISO形式",
+        "unixSeconds": "Unix秒",
+        "unixMs": "Unixミリ秒"
+      }
+    },
+    "url": {
+      "title": "URLリンク",
+      "copy": "URLをコピー",
+      "open": "リンクを開く",
+      "fullUrl": "完全なURL：",
+      "protocol": "プロトコル：",
+      "host": "ホスト：",
+      "path": "パス：",
+      "queryParams": "クエリパラメータ：",
+      "imagePreview": "画像プレビュー",
+      "videoPreview": "ビデオプレビュー", 
+      "contentPreview": "コンテンツプレビュー",
+      "fetchError": "URLコンテンツの取得に失敗しました",
+      "fetchErrorComment": "// URLコンテンツを取得できません\n// エラー: {{error}}",
+      "previewAlt": "プレビュー"
+    }
+  },
+  "theme": {
+    "toggle": "テーマを切り替え",
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム"
+  },
+  "settings": {
+    "open": "設定を開く"
+  },
+  "imagePreview": {
+    "format": "形式：",
+    "scale": "スケール：",
+    "convert": "変換",
+    "converting": "変換中...",
+    "copy": "コピー",
+    "original": "オリジナル",
+    "converted": "変換済み",
+    "convertError": "画像変換に失敗しました: {{error}}",
+    "copyError": "コピーに失敗しました: {{error}}",
+    "copySuccess": "変換済み画像をクリップボードにコピーしました",
+    "originalAlt": "元の画像",
+    "convertedAlt": "変換済み画像"
+  }
+}

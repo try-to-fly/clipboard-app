@@ -1,0 +1,145 @@
+{
+  "appTitle": "Gestionnaire de Presse-papiers",
+  "search": "Rechercher du contenu ou une application...",
+  "all": "Tout",
+  "confirm": "Confirmer",
+  "cancel": "Annuler",
+  "save": "Enregistrer",
+  "saving": "Enregistrement...",
+  "copy": "Copier",
+  "delete": "Supprimer",
+  "from": "De",
+  "noData": "Aucune donnée",
+  "unknownApp": "Application inconnue",
+  "times": "fois",
+  "days": {
+    "7": "7 Jours",
+    "14": "14 Jours",
+    "30": "30 Jours"
+  },
+  "forever": "Pour toujours",
+  "detail": {
+    "title": "Aperçu des détails",
+    "selectItem": "Sélectionner un élément pour voir les détails",
+    "type": "Type :",
+    "source": "Source :",
+    "time": "Heure :",
+    "copyCount": "Nombre de copies :",
+    "loading": "Chargement de l'image...",
+    "unknown": "Inconnu",
+    "contentTypes": {
+      "plain_text": "Texte brut",
+      "url": "Lien URL",
+      "ip_address": "Adresse IP",
+      "email": "Adresse email",
+      "color": "Valeur de couleur",
+      "code": "Fragment de code",
+      "command": "Ligne de commande",
+      "timestamp": "Horodatage",
+      "json": "Données JSON",
+      "markdown": "Markdown",
+      "text": "Texte",
+      "image": "Image",
+      "file": "Fichier"
+    }
+  },
+  "updateChecker": {
+    "newVersionTitle": "Nouvelle version {{version}} disponible",
+    "newVersionMessage": "Nouvelle version {{version}} disponible !\n\n{{notes}}\n\nMettre à jour maintenant ?",
+    "updateTitle": "Mise à jour logicielle",
+    "updateNow": "Mettre à jour maintenant",
+    "later": "Plus tard",
+    "updating": "Téléchargement de la mise à jour... {{progress}}%",
+    "defaultNotes": "Contenu de la mise à jour :\n- Optimisation des performances\n- Corrections de bugs",
+    "updateFailed": "Échec de la mise à jour, veuillez réessayer plus tard",
+    "error": "Erreur",
+    "updateNotesDefault": "Inclut des améliorations de performance et des corrections de bugs"
+  },
+  "codeEditor": {
+    "code": "Code",
+    "json": "JSON",
+    "markdown": "Markdown",
+    "command": "Commande",
+    "text": "Texte",
+    "copy": "Copier",
+    "copied": "Copié",
+    "loading": "Chargement de l'éditeur...",
+    "copyFailed": "Échec de la copie"
+  },
+  "renderers": {
+    "ip": {
+      "title": "Adresse {{type}}",
+      "copy": "Copier l'adresse IP",
+      "query": "Interroger les informations IP",
+      "type": "Type :",
+      "ipv4Format": "Détail du format IPv4 :"
+    },
+    "email": {
+      "title": "Adresse email",
+      "copy": "Copier l'email",
+      "sendMail": "Envoyer un email",
+      "username": "Nom d'utilisateur :",
+      "domain": "Domaine :"
+    },
+    "color": {
+      "title": "Valeur de couleur",
+      "copy": "Copier la valeur originale",
+      "rgbValues": "Valeurs RGB :",
+      "parseError": "Échec de l'analyse des métadonnées de couleur",
+      "hexParseError": "Échec de l'analyse de la couleur HEX"
+    },
+    "time": {
+      "title": "Horodatage",
+      "copy": "Copier la valeur originale",
+      "parseError": "Échec de l'analyse des métadonnées de temps",
+      "invalidFormat": "Impossible d'analyser le format de temps",
+      "formats": {
+        "standard": "Format standard",
+        "chinese": "Format chinois",
+        "relative": "Temps relatif",
+        "iso": "Format ISO",
+        "unixSeconds": "Secondes Unix",
+        "unixMs": "Millisecondes Unix"
+      }
+    },
+    "url": {
+      "title": "Lien URL",
+      "copy": "Copier l'URL",
+      "open": "Ouvrir le lien",
+      "fullUrl": "URL complète :",
+      "protocol": "Protocole :",
+      "host": "Hôte :",
+      "path": "Chemin :",
+      "queryParams": "Paramètres de requête :",
+      "imagePreview": "Aperçu de l'image",
+      "videoPreview": "Aperçu de la vidéo",
+      "contentPreview": "Aperçu du contenu",
+      "fetchError": "Échec de récupération du contenu URL",
+      "fetchErrorComment": "// Impossible de récupérer le contenu de l'URL\n// Erreur : {{error}}",
+      "previewAlt": "Aperçu"
+    }
+  },
+  "theme": {
+    "toggle": "Basculer le thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "settings": {
+    "open": "Ouvrir les paramètres"
+  },
+  "imagePreview": {
+    "format": "Format :",
+    "scale": "Échelle :",
+    "convert": "Convertir",
+    "converting": "Conversion...",
+    "copy": "Copier",
+    "original": "Original",
+    "converted": "Converti",
+    "convertError": "Échec de la conversion d'image : {{error}}",
+    "copyError": "Échec de la copie : {{error}}",
+    "copySuccess": "Image convertie copiée dans le presse-papiers",
+    "originalAlt": "Image originale",
+    "convertedAlt": "Image convertie"
+  }
+}

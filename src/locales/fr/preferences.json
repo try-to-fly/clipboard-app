@@ -1,0 +1,119 @@
+{
+  "title": "Préférences",
+  "tabs": {
+    "text": "Paramètres du texte",
+    "image": "Paramètres de l'image",
+    "security": "Sécurité",
+    "shortcuts": "Raccourcis",
+    "system": "Système",
+    "language": "Langue",
+    "analytics": "Analyse"
+  },
+  "text": {
+    "title": "Limites du texte",
+    "maxSize": "Taille maximale du texte",
+    "maxSizeValue": "Taille maximale du texte : {{value}} MB",
+    "maxSizeDescription": "Le texte dépassant cette taille ne sera pas enregistré",
+    "expiration": "Expiration du texte",
+    "expirationOptions": {
+      "7days": "7 Jours",
+      "14days": "14 Jours",
+      "30days": "30 Jours",
+      "never": "Pour toujours"
+    }
+  },
+  "image": {
+    "title": "Paramètres de l'image",
+    "expiration": "Expiration de l'image",
+    "expirationOptions": {
+      "7days": "7 Jours",
+      "14days": "14 Jours",
+      "30days": "30 Jours",
+      "never": "Pour toujours"
+    }
+  },
+  "security": {
+    "excludedApps": "Applications exclues",
+    "excludedAppsDescription": "Le contenu du presse-papiers de ces applications ne sera pas enregistré pour protéger les informations sensibles.",
+    "addApp": "Ajouter une application",
+    "selectApp": "Sélectionner une application à exclure..."
+  },
+  "shortcuts": {
+    "title": "Raccourcis globaux",
+    "activationShortcut": "Raccourci d'activation de l'application"
+  },
+  "system": {
+    "startup": {
+      "title": "Paramètres de démarrage",
+      "runAtStartup": "Exécuter au démarrage"
+    },
+    "update": {
+      "title": "Paramètres de mise à jour",
+      "autoCheck": "Vérification automatique des mises à jour",
+      "autoCheckDescription": "Lorsqu'activé, l'application vérifiera automatiquement les mises à jour au premier lancement de chaque jour",
+      "checkNow": "Vérifier les mises à jour maintenant",
+      "checking": "Vérification...",
+      "checkComplete": "Vérification de mise à jour terminée",
+      "checkFailed": "Échec de la vérification de mise à jour",
+      "upToDate": "Vous avez la dernière version v{{version}}",
+      "newVersionAvailable": "Nouvelle version {{version}} disponible !",
+      "updateNow": "Mettre à jour maintenant",
+      "later": "Plus tard",
+      "updateTitle": "Mise à jour logicielle",
+      "installFailed": "Échec de l'installation de la mise à jour, veuillez réessayer plus tard",
+      "updateError": "Erreur de mise à jour",
+      "networkError": "Échec de la connexion réseau, veuillez vérifier votre connexion et réessayer",
+      "checkError": "Échec de la vérification des mises à jour : {{error}}",
+      "updateNotes": "Contenu de la mise à jour :\n- Optimisation des performances\n- Corrections de bugs"
+    },
+    "cache": {
+      "title": "Statistiques du cache",
+      "databaseSize": "Taille de la base de données",
+      "imageCache": "Cache d'images",
+      "totalEntries": "Total des entrées",
+      "textEntries": "Entrées de texte",
+      "imageEntries": "Entrées d'image"
+    }
+  },
+  "analytics": {
+    "title": "Analyse d'utilisation",
+    "description": "Aidez-nous à améliorer l'expérience de l'application. Toutes les données sont anonymes et n'incluent aucun contenu du presse-papiers ni informations personnelles.",
+    "enable": "Activer l'analyse d'utilisation anonyme",
+    "dataCollected": {
+      "title": "Données que nous collectons",
+      "items": [
+        "Informations sur la version de l'application et la plateforme",
+        "Fréquence de lancement et d'utilisation de l'application",
+        "Utilisation des fonctionnalités (recherche, favori, suppression, etc.)",
+        "Métriques de performance (temps de démarrage, vitesse de réponse)",
+        "Rapports d'erreurs et de plantages"
+      ]
+    },
+    "dataNotCollected": {
+      "title": "Nous ne collectons jamais",
+      "items": [
+        "Contenu du presse-papiers",
+        "Informations d'identité personnelle",
+        "Contenu ou chemins de fichiers",
+        "Historique de navigation web",
+        "Toute donnée sensible"
+      ]
+    },
+    "provider": "Analyse fournie par <link>Aptabase</link>, entièrement conforme aux réglementations de confidentialité GDPR et CCPA."
+  },
+  "language": {
+    "title": "Paramètres de langue",
+    "description": "Choisissez la langue de l'interface de l'application",
+    "systemDefault": "Suivre le système",
+    "chinese": "中文",
+    "english": "English",
+    "japanese": "日本語",
+    "spanish": "Español",
+    "french": "Français",
+    "german": "Deutsch",
+    "korean": "한국어",
+    "portuguese": "Português",
+    "russian": "Русский",
+    "italian": "Italiano"
+  }
+}

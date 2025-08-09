@@ -1,4 +1,5 @@
 import { Copy, Globe, ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useClipboardStore } from '../../../stores/clipboardStore';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
@@ -9,6 +10,7 @@ interface IpRendererProps {
 }
 
 export function IpRenderer({ content }: IpRendererProps) {
+  const { t } = useTranslation(['common']);
   const { copyToClipboard } = useClipboardStore();
 
   const handleCopy = async () => {
@@ -25,12 +27,12 @@ export function IpRenderer({ content }: IpRendererProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4" />
-            <Badge variant="secondary">{ipType} 地址</Badge>
+            <Badge variant="secondary">{t('renderers.ip.title', { type: ipType })}</Badge>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleCopy} size="sm" variant="outline">
               <Copy className="w-4 h-4 mr-2" />
-              复制IP地址
+              {t('renderers.ip.copy')}
             </Button>
             <Button 
               onClick={() => window.open(`https://www.ipaddress.com/ipv4/${content}`, '_blank')}
@@ -38,7 +40,7 @@ export function IpRenderer({ content }: IpRendererProps) {
               variant="outline"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              查询IP信息
+              {t('renderers.ip.query')}
             </Button>
           </div>
         </div>
@@ -53,13 +55,13 @@ export function IpRenderer({ content }: IpRendererProps) {
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">类型:</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('renderers.ip.type')}</span>
             <Badge variant="outline">{ipType}</Badge>
           </div>
           
           {!isIPv6 && (
             <div className="space-y-2">
-              <span className="text-sm font-medium text-muted-foreground">IPv4 格式分解:</span>
+              <span className="text-sm font-medium text-muted-foreground">{t('renderers.ip.ipv4Format')}</span>
               <div className="flex items-center justify-center gap-1 p-3 bg-muted rounded">
                 {content.split('.').map((octet, i) => (
                   <div key={i} className="flex items-center">

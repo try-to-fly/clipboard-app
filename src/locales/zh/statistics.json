@@ -1,0 +1,9 @@
+{
+  "title": "剪切板统计",
+  "totalEntries": "总条目数",
+  "totalCopies": "总复制次数",
+  "mostCopied": "最常复制的内容",
+  "appUsage": "应用使用统计",
+  "copiedTimes": "复制 {{count}} 次",
+  "times": "{{count}} 次"
+}

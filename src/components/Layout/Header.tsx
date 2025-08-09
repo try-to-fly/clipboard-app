@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { Play, Pause, Trash2, BarChart } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tooltip from '@radix-ui/react-tooltip';
+import { useTranslation } from 'react-i18next';
 import { useClipboardStore } from '../../stores/clipboardStore';
 import { StatisticsModal } from '../Statistics/StatisticsModal';
+import { LanguageSwitcher } from '../LanguageSwitcher/LanguageSwitcher';
 
 export const Header: React.FC = () => {
+  const { t } = useTranslation(['common', 'clipboard']);
   const { isMonitoring, startMonitoring, stopMonitoring, clearHistory, fetchStatistics } = useClipboardStore();
   const [showStatistics, setShowStatistics] = useState(false);
 
@@ -25,7 +28,7 @@ export const Header: React.FC = () => {
   return (
     <header className="header">
       <div className="header-left">
-        <h1 className="app-title">剪切板管理器</h1>
+        <h1 className="app-title">{t('common:appTitle')}</h1>
       </div>
       
       <div className="header-right">
@@ -40,7 +43,7 @@ export const Header: React.FC = () => {
               </button>
             </Tooltip.Trigger>
             <Tooltip.Content className="tooltip-content">
-              {isMonitoring ? '停止监听' : '开始监听'}
+              {isMonitoring ? t('clipboard:actions.stopMonitoring') : t('clipboard:actions.startMonitoring')}
             </Tooltip.Content>
           </Tooltip.Root>
 
@@ -54,7 +57,7 @@ export const Header: React.FC = () => {
               </button>
             </Tooltip.Trigger>
             <Tooltip.Content className="tooltip-content">
-              查看统计
+              {t('clipboard:actions.viewStatistics')}
             </Tooltip.Content>
           </Tooltip.Root>
 
@@ -68,30 +71,32 @@ export const Header: React.FC = () => {
                 </Dialog.Trigger>
               </Tooltip.Trigger>
               <Tooltip.Content className="tooltip-content">
-                清空历史
+                {t('clipboard:actions.clearHistory')}
               </Tooltip.Content>
             </Tooltip.Root>
 
             <Dialog.Portal>
               <Dialog.Overlay className="dialog-overlay" />
               <Dialog.Content className="dialog-content">
-                <Dialog.Title>确认清空</Dialog.Title>
+                <Dialog.Title>{t('clipboard:actions.confirmClear')}</Dialog.Title>
                 <Dialog.Description>
-                  确定要清空所有剪切板历史记录吗？此操作不可恢复。
+                  {t('clipboard:actions.clearConfirmMessage')}
                 </Dialog.Description>
                 <div className="dialog-actions">
                   <Dialog.Close asChild>
-                    <button className="button button-secondary">取消</button>
+                    <button className="button button-secondary">{t('common:cancel')}</button>
                   </Dialog.Close>
                   <Dialog.Close asChild>
                     <button className="button button-danger" onClick={clearHistory}>
-                      确认清空
+                      {t('clipboard:actions.confirmClear')}
                     </button>
                   </Dialog.Close>
                 </div>
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
+          
+          <LanguageSwitcher />
         </Tooltip.Provider>
       </div>
       

@@ -28,6 +28,7 @@ export interface AppConfig {
   auto_startup: boolean;
   auto_update: boolean;
   last_update_check?: string; // ISO 8601 date string
+  language: string; // Language preference (zh or en)
 }
 
 export interface CacheStatistics {
@@ -83,6 +84,7 @@ const defaultConfig: AppConfig = {
   auto_startup: false,
   auto_update: true,
   last_update_check: undefined,
+  language: 'system',
 };
 
 export const useConfigStore = create<ConfigStore>((set, get) => ({

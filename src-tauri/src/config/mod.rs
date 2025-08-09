@@ -24,6 +24,12 @@ pub struct AppConfig {
     pub auto_update: bool,
     #[serde(default)]
     pub last_update_check: Option<String>, // ISO 8601 date string
+    #[serde(default = "default_language")]
+    pub language: String, // Language preference (zh or en)
+}
+
+fn default_language() -> String {
+    "system".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -78,6 +84,7 @@ impl Default for AppConfig {
             auto_startup: false,
             auto_update: true,
             last_update_check: None,
+            language: default_language(),
         }
     }
 }

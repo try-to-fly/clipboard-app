@@ -1,0 +1,9 @@
+{
+  "title": "Estadísticas del Portapapeles",
+  "totalEntries": "Total de Entradas",
+  "totalCopies": "Total de Copias",
+  "mostCopied": "Contenido Más Copiado",
+  "appUsage": "Estadísticas de Uso de la Aplicación",
+  "copiedTimes": "Copiado {{count}} veces",
+  "times": "{{count}} veces"
+}

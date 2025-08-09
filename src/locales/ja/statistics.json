@@ -1,0 +1,9 @@
+{
+  "title": "クリップボード統計",
+  "totalEntries": "総エントリ数",
+  "totalCopies": "総コピー数",
+  "mostCopied": "最もコピーされた内容",
+  "appUsage": "アプリ使用統計",
+  "copiedTimes": "{{count}}回コピーされました",
+  "times": "{{count}}回"
+}

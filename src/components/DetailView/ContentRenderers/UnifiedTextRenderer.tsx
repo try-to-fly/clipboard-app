@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Copy } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
@@ -20,7 +21,7 @@ interface UnifiedTextRendererProps {
 const getLanguageForContentType = (contentSubType: ContentSubType, metadata?: string | null): string => {
   switch (contentSubType) {
     case 'code':
-      // 从metadata中获取检测到的语言
+      // Get detected language from metadata
       if (metadata) {
         try {
           const parsed = JSON.parse(metadata);
@@ -28,7 +29,7 @@ const getLanguageForContentType = (contentSubType: ContentSubType, metadata?: st
             return parsed.detected_language;
           }
         } catch (e) {
-          console.error('解析代码元数据失败:', e);
+          console.error('Failed to parse code metadata:', e);
         }
       }
       return 'plaintext';
@@ -45,23 +46,24 @@ const getLanguageForContentType = (contentSubType: ContentSubType, metadata?: st
 };
 
 // 内容类型到显示名称的映射
-const getDisplayNameForContentType = (contentSubType: ContentSubType): string => {
+const getDisplayNameForContentType = (contentSubType: ContentSubType, t: (key: string) => string): string => {
   switch (contentSubType) {
     case 'code':
-      return '代码';
+      return t('codeEditor.code');
     case 'json':
-      return 'JSON';
+      return t('codeEditor.json');
     case 'markdown':
-      return 'Markdown';
+      return t('codeEditor.markdown');
     case 'command':
-      return '命令';
+      return t('codeEditor.command');
     case 'plain_text':
     default:
-      return '文本';
+      return t('codeEditor.text');
   }
 };
 
 export function UnifiedTextRenderer({ content, contentSubType, metadata }: UnifiedTextRendererProps) {
+  const { t } = useTranslation(['common']);
   const [editedContent, setEditedContent] = useState(content);
   const [isCopied, setIsCopied] = useState(false);
   const resolvedTheme = useResolvedTheme();
@@ -72,7 +74,7 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
   }, [content]);
 
   const language = getLanguageForContentType(contentSubType, metadata);
-  const displayName = getDisplayNameForContentType(contentSubType);
+  const displayName = getDisplayNameForContentType(contentSubType, t);
   const monacoTheme = resolvedTheme === 'dark' ? 'clipboard-dark' : 'clipboard-light';
 
   const handleCopy = async () => {
@@ -81,7 +83,7 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
-      console.error('复制失败:', error);
+      console.error(t('codeEditor.copyFailed'), error);
     }
   };
 
@@ -101,7 +103,7 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
             </div>
             <Button id="text-renderer-copy-btn" onClick={handleCopy} size="sm" variant="outline">
               <Copy className="w-4 h-4 mr-2" />
-              {isCopied ? '已复制' : '复制'}
+              {isCopied ? t('codeEditor.copied') : t('codeEditor.copy')}
             </Button>
           </div>
         </CardHeader>
@@ -110,7 +112,7 @@ export function UnifiedTextRenderer({ content, contentSubType, metadata }: Unifi
           <div id="text-renderer-editor-container" className="border-t flex-1">
             <Suspense fallback={
               <div id="text-renderer-loading" className="flex items-center justify-center h-32">
-                <div className="text-sm text-muted-foreground">加载编辑器...</div>
+                <div className="text-sm text-muted-foreground">{t('codeEditor.loading')}</div>
               </div>
             }>
               <MonacoEditor

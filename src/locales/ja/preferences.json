@@ -1,0 +1,119 @@
+{
+  "title": "設定",
+  "tabs": {
+    "text": "テキスト設定",
+    "image": "画像設定",
+    "security": "セキュリティ",
+    "shortcuts": "ショートカット",
+    "system": "システム",
+    "language": "言語",
+    "analytics": "分析"
+  },
+  "text": {
+    "title": "テキスト制限",
+    "maxSize": "最大テキストサイズ",
+    "maxSizeValue": "最大テキストサイズ: {{value}} MB",
+    "maxSizeDescription": "このサイズを超えるテキストは記録されません",
+    "expiration": "テキストの有効期限",
+    "expirationOptions": {
+      "7days": "7日間",
+      "14days": "14日間",
+      "30days": "30日間",
+      "never": "無期限"
+    }
+  },
+  "image": {
+    "title": "画像設定",
+    "expiration": "画像の有効期限",
+    "expirationOptions": {
+      "7days": "7日間",
+      "14days": "14日間",
+      "30days": "30日間",
+      "never": "無期限"
+    }
+  },
+  "security": {
+    "excludedApps": "除外アプリケーション",
+    "excludedAppsDescription": "これらのアプリケーションからのクリップボード内容は機密情報保護のため記録されません。",
+    "addApp": "アプリケーションを追加",
+    "selectApp": "除外するアプリケーションを選択..."
+  },
+  "shortcuts": {
+    "title": "グローバルショートカット",
+    "activationShortcut": "アプリケーション起動ショートカット"
+  },
+  "system": {
+    "startup": {
+      "title": "起動設定",
+      "runAtStartup": "起動時に実行"
+    },
+    "update": {
+      "title": "更新設定",
+      "autoCheck": "自動更新チェック",
+      "autoCheckDescription": "有効にすると、アプリは毎日の初回起動時に自動的に更新をチェックします",
+      "checkNow": "今すぐ更新をチェック",
+      "checking": "チェック中...",
+      "checkComplete": "更新チェック完了",
+      "checkFailed": "更新チェックに失敗",
+      "upToDate": "最新バージョン v{{version}} をお使いです",
+      "newVersionAvailable": "新しいバージョン {{version}} が利用可能です！",
+      "updateNow": "今すぐ更新",
+      "later": "後で",
+      "updateTitle": "ソフトウェア更新",
+      "installFailed": "更新のインストールに失敗しました。後でもう一度お試しください",
+      "updateError": "更新エラー",
+      "networkError": "ネットワーク接続に失敗しました。接続を確認してもう一度お試しください",
+      "checkError": "更新チェックに失敗しました: {{error}}",
+      "updateNotes": "更新内容:\n- パフォーマンス最適化\n- バグ修正"
+    },
+    "cache": {
+      "title": "キャッシュ統計",
+      "databaseSize": "データベースサイズ",
+      "imageCache": "画像キャッシュ",
+      "totalEntries": "総エントリ数",
+      "textEntries": "テキストエントリ",
+      "imageEntries": "画像エントリ"
+    }
+  },
+  "analytics": {
+    "title": "使用状況分析",
+    "description": "アプリの体験向上にご協力ください。すべてのデータは匿名で、クリップボードの内容や個人情報は含まれません。",
+    "enable": "匿名使用状況分析を有効にする",
+    "dataCollected": {
+      "title": "収集するデータ",
+      "items": [
+        "アプリのバージョンとプラットフォーム情報",
+        "アプリの起動と使用頻度",
+        "機能の使用状況（検索、お気に入り、削除など）",
+        "パフォーマンス指標（起動時間、応答速度）",
+        "エラーとクラッシュレポート"
+      ]
+    },
+    "dataNotCollected": {
+      "title": "収集しないデータ",
+      "items": [
+        "クリップボードの内容",
+        "個人識別情報",
+        "ファイルの内容やパス",
+        "ウェブ閲覧履歴",
+        "機密データ全般"
+      ]
+    },
+    "provider": "分析は<link>Aptabase</link>によって提供され、GDPRとCCPAプライバシー規制に完全準拠しています。"
+  },
+  "language": {
+    "title": "言語設定",
+    "description": "アプリケーションのインターフェース言語を選択",
+    "systemDefault": "システムに従う",
+    "chinese": "中文",
+    "english": "English",
+    "japanese": "日本語",
+    "spanish": "Español",
+    "french": "Français",
+    "german": "Deutsch",
+    "korean": "한국어",
+    "portuguese": "Português",
+    "russian": "Русский",
+    "italian": "Italiano"
+  }
+}

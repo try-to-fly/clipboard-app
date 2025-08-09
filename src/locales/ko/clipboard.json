@@ -1,0 +1,34 @@
+{
+  "actions": {
+    "startMonitoring": "Start Monitoring",
+    "stopMonitoring": "Stop Monitoring",
+    "viewStatistics": "View Statistics",
+    "clearHistory": "Clear History",
+    "confirmClear": "Confirm Clear",
+    "clearConfirmMessage": "Are you sure you want to clear all clipboard history? This action cannot be undone.",
+    "copiedTimes": "Copied {{count}} times",
+    "favorite": "Favorite",
+    "unfavorite": "Unfavorite"
+  },
+  "contentTypes": {
+    "allTypes": "All Types",
+    "allText": "All Text",
+    "plainText": "Plain Text",
+    "url": "URL Link",
+    "ipAddress": "IP Address",
+    "email": "Email Address",
+    "color": "Color Value",
+    "codeSnippet": "Code Snippet",
+    "command": "Command Line",
+    "timestamp": "Timestamp",
+    "json": "JSON Data",
+    "markdown": "Markdown",
+    "image": "Image",
+    "file": "File"
+  },
+  "emptyState": {
+    "noHistory": "No clipboard history",
+    "clickToStart": "Click start button to begin monitoring",
+    "copyToStart": "Copy some content to get started"
+  }
+}

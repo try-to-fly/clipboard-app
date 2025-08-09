@@ -1,0 +1,55 @@
+{
+  "appTitle": "Zwischenablage-Manager",
+  "search": "Inhalt oder App suchen...",
+  "all": "Alle",
+  "confirm": "Bestätigen",
+  "cancel": "Abbrechen",
+  "save": "Speichern",
+  "saving": "Speichern...",
+  "copy": "Kopieren",
+  "delete": "Löschen",
+  "from": "Von",
+  "noData": "Keine Daten",
+  "unknownApp": "Unbekannte App",
+  "times": "mal",
+  "days": {
+    "7": "7 Tage",
+    "14": "14 Tage",
+    "30": "30 Tage"
+  },
+  "forever": "Für immer",
+  "detail": {
+    "title": "Detail-Vorschau",
+    "selectItem": "Element auswählen, um Details anzuzeigen",
+    "type": "Typ:",
+    "source": "Quelle:",
+    "time": "Zeit:",
+    "copyCount": "Anzahl Kopien:",
+    "loading": "Bild wird geladen...",
+    "unknown": "Unbekannt",
+    "contentTypes": {
+      "plain_text": "Klartext",
+      "url": "URL-Link",
+      "ip_address": "IP-Adresse",
+      "email": "E-Mail-Adresse",
+      "color": "Farbwert",
+      "code": "Code-Snippet",
+      "command": "Kommandozeile",
+      "timestamp": "Zeitstempel",
+      "json": "JSON-Daten",
+      "markdown": "Markdown",
+      "text": "Text",
+      "image": "Bild",
+      "file": "Datei"
+    }
+  },
+  "theme": {
+    "toggle": "Design wechseln",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System"
+  },
+  "settings": {
+    "open": "Einstellungen öffnen"
+  }
+}

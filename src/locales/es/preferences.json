@@ -1,0 +1,119 @@
+{
+  "title": "Preferencias",
+  "tabs": {
+    "text": "Configuración de Texto",
+    "image": "Configuración de Imagen",
+    "security": "Seguridad",
+    "shortcuts": "Atajos",
+    "system": "Sistema",
+    "language": "Idioma",
+    "analytics": "Análisis"
+  },
+  "text": {
+    "title": "Límites de Texto",
+    "maxSize": "Tamaño Máximo de Texto",
+    "maxSizeValue": "Tamaño Máximo de Texto: {{value}} MB",
+    "maxSizeDescription": "El texto que exceda este tamaño no será registrado",
+    "expiration": "Expiración de Texto",
+    "expirationOptions": {
+      "7days": "7 Días",
+      "14days": "14 Días",
+      "30days": "30 Días",
+      "never": "Para Siempre"
+    }
+  },
+  "image": {
+    "title": "Configuración de Imagen",
+    "expiration": "Expiración de Imagen",
+    "expirationOptions": {
+      "7days": "7 Días",
+      "14days": "14 Días",
+      "30days": "30 Días",
+      "never": "Para Siempre"
+    }
+  },
+  "security": {
+    "excludedApps": "Aplicaciones Excluidas",
+    "excludedAppsDescription": "El contenido del portapapeles de estas aplicaciones no será registrado para proteger información sensible.",
+    "addApp": "Agregar Aplicación",
+    "selectApp": "Seleccionar aplicación para excluir..."
+  },
+  "shortcuts": {
+    "title": "Atajos Globales",
+    "activationShortcut": "Atajo de Activación de la Aplicación"
+  },
+  "system": {
+    "startup": {
+      "title": "Configuración de Inicio",
+      "runAtStartup": "Ejecutar al Inicio"
+    },
+    "update": {
+      "title": "Configuración de Actualización",
+      "autoCheck": "Verificar Actualizaciones Automáticamente",
+      "autoCheckDescription": "Cuando esté habilitado, la aplicación verificará automáticamente actualizaciones en el primer inicio de cada día",
+      "checkNow": "Verificar Actualizaciones Ahora",
+      "checking": "Verificando...",
+      "checkComplete": "Verificación de Actualización Completa",
+      "checkFailed": "Verificación de Actualización Fallida",
+      "upToDate": "Tienes la versión más reciente v{{version}}",
+      "newVersionAvailable": "¡Nueva versión {{version}} disponible!",
+      "updateNow": "Actualizar Ahora",
+      "later": "Más Tarde",
+      "updateTitle": "Actualización de Software",
+      "installFailed": "Instalación de actualización fallida, intenta de nuevo más tarde",
+      "updateError": "Error de Actualización",
+      "networkError": "Conexión de red fallida, verifica tu conexión e intenta de nuevo",
+      "checkError": "Error al verificar actualizaciones: {{error}}",
+      "updateNotes": "Contenido de actualización:\n- Optimización de rendimiento\n- Corrección de errores"
+    },
+    "cache": {
+      "title": "Estadísticas de Caché",
+      "databaseSize": "Tamaño de Base de Datos",
+      "imageCache": "Caché de Imágenes",
+      "totalEntries": "Total de Entradas",
+      "textEntries": "Entradas de Texto",
+      "imageEntries": "Entradas de Imagen"
+    }
+  },
+  "analytics": {
+    "title": "Análisis de Uso",
+    "description": "Ayúdanos a mejorar la experiencia de la aplicación. Todos los datos son anónimos y no incluyen contenido del portapapeles ni información personal.",
+    "enable": "Habilitar Análisis de Uso Anónimo",
+    "dataCollected": {
+      "title": "Datos que Recopilamos",
+      "items": [
+        "Información de versión de la aplicación y plataforma",
+        "Frecuencia de inicio y uso de la aplicación",
+        "Uso de características (búsqueda, favorito, eliminar, etc.)",
+        "Métricas de rendimiento (tiempo de inicio, velocidad de respuesta)",
+        "Reportes de errores y fallos"
+      ]
+    },
+    "dataNotCollected": {
+      "title": "Nunca Recopilamos",
+      "items": [
+        "Contenido del portapapeles",
+        "Información de identidad personal",
+        "Contenido o rutas de archivos",
+        "Historial de navegación web",
+        "Cualquier dato sensible"
+      ]
+    },
+    "provider": "Análisis proporcionado por <link>Aptabase</link>, totalmente compatible con las regulaciones de privacidad GDPR y CCPA."
+  },
+  "language": {
+    "title": "Configuración de Idioma",
+    "description": "Elige el idioma de la interfaz de la aplicación",
+    "systemDefault": "Seguir Sistema",
+    "chinese": "中文",
+    "english": "English",
+    "japanese": "日本語",
+    "spanish": "Español",
+    "french": "Français",
+    "german": "Deutsch",
+    "korean": "한국어",
+    "portuguese": "Português",
+    "russian": "Русский",
+    "italian": "Italiano"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "actions": {
+    "startMonitoring": "开始监听",
+    "stopMonitoring": "停止监听",
+    "viewStatistics": "查看统计",
+    "clearHistory": "清空历史",
+    "confirmClear": "确认清空",
+    "clearConfirmMessage": "确定要清空所有剪切板历史记录吗？此操作不可恢复。",
+    "copiedTimes": "复制 {{count}} 次",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏"
+  },
+  "contentTypes": {
+    "allTypes": "全部类型",
+    "allText": "全部文本",
+    "plainText": "纯文本",
+    "url": "URL链接",
+    "ipAddress": "IP地址",
+    "email": "邮箱地址",
+    "color": "颜色值",
+    "codeSnippet": "代码片段",
+    "command": "命令行",
+    "timestamp": "时间戳",
+    "json": "JSON数据",
+    "markdown": "Markdown",
+    "image": "图片",
+    "file": "文件"
+  },
+  "emptyState": {
+    "noHistory": "暂无剪切板记录",
+    "clickToStart": "点击开始按钮启动剪切板监听",
+    "copyToStart": "复制一些内容试试吧"
+  }
+}

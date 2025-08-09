@@ -1,0 +1,30 @@
+{
+  "appTitle": "Gerenciador da Área de Transferência",
+  "search": "Pesquisar conteúdo ou aplicativo...",
+  "all": "Todos",
+  "confirm": "Confirmar",
+  "cancel": "Cancelar",
+  "save": "Salvar",
+  "saving": "Salvando...",
+  "copy": "Copiar",
+  "delete": "Excluir",
+  "from": "De",
+  "noData": "Sem dados",
+  "unknownApp": "Aplicativo desconhecido",
+  "times": "vezes",
+  "days": {
+    "7": "7 Dias",
+    "14": "14 Dias", 
+    "30": "30 Dias"
+  },
+  "forever": "Para sempre",
+  "theme": {
+    "toggle": "Alternar tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "settings": {
+    "open": "Abrir configurações"
+  }
+}

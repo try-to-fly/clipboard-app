@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { 
   FileText, 
   Image, 
@@ -55,6 +56,7 @@ const parseMetadata = (metadataString?: string | null): ContentMetadata | null =
 };
 
 export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected, onClick, showNumber, number }) => {
+  const { t } = useTranslation(['common', 'clipboard']);
   const { toggleFavorite, deleteEntry, copyToClipboard, getImageUrl, pasteSelectedEntry, getAppIcon } = useClipboardStore();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [appIconUrl, setAppIconUrl] = useState<string | null>(null);
@@ -187,14 +189,14 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
     <>
       <ContextMenuItem className="flex items-center gap-2" onClick={handleCopy}>
         <Copy className="w-4 h-4" />
-        <span>复制</span>
+        <span>{t('common:copy')}</span>
       </ContextMenuItem>
       <ContextMenuItem 
         className="flex items-center gap-2" 
         onClick={() => toggleFavorite(entry.id)}
       >
         <Star className="w-4 h-4" fill={entry.is_favorite ? 'currentColor' : 'none'} />
-        <span>{entry.is_favorite ? '取消收藏' : '收藏'}</span>
+        <span>{entry.is_favorite ? t('clipboard:actions.unfavorite') : t('clipboard:actions.favorite')}</span>
       </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem 
@@ -202,7 +204,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
         onClick={() => deleteEntry(entry.id)}
       >
         <Trash2 className="w-4 h-4" />
-        <span>删除</span>
+        <span>{t('common:delete')}</span>
       </ContextMenuItem>
     </>
   );
@@ -244,7 +246,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
                     'flex items-center gap-1',
                     isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'
                   )}>
-                    来自
+                    {t('common:from')}
                     {appIconUrl && (
                       <img 
                         src={appIconUrl} 
@@ -257,7 +259,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
                 )}
                 {entry.copy_count > 1 && (
                   <Badge variant="secondary" className="text-xs px-2 py-0">
-                    复制 {entry.copy_count} 次
+                    {t('clipboard:actions.copiedTimes', { count: entry.copy_count })}
                   </Badge>
                 )}
               </div>
@@ -290,14 +292,14 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
                 <DropdownMenuContent>
                   <DropdownMenuItem className="flex items-center gap-2" onClick={handleCopy}>
                     <Copy className="w-4 h-4" />
-                    <span>复制</span>
+                    <span>{t('common:copy')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     className="flex items-center gap-2" 
                     onClick={() => toggleFavorite(entry.id)}
                   >
                     <Star className="w-4 h-4" fill={entry.is_favorite ? 'currentColor' : 'none'} />
-                    <span>{entry.is_favorite ? '取消收藏' : '收藏'}</span>
+                    <span>{entry.is_favorite ? t('clipboard:actions.unfavorite') : t('clipboard:actions.favorite')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
@@ -305,7 +307,7 @@ export const ClipboardItem: React.FC<ClipboardItemProps> = ({ entry, isSelected,
                     onClick={() => deleteEntry(entry.id)}
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span>删除</span>
+                    <span>{t('common:delete')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

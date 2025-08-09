@@ -1,0 +1,30 @@
+{
+  "appTitle": "Gestore degli Appunti",
+  "search": "Cerca contenuto o app...",
+  "all": "Tutto",
+  "confirm": "Conferma",
+  "cancel": "Annulla",
+  "save": "Salva",
+  "saving": "Salvataggio...",
+  "copy": "Copia",
+  "delete": "Elimina",
+  "from": "Da",
+  "noData": "Nessun dato",
+  "unknownApp": "App sconosciuta",
+  "times": "volte",
+  "days": {
+    "7": "7 Giorni",
+    "14": "14 Giorni",
+    "30": "30 Giorni"
+  },
+  "forever": "Per sempre",
+  "theme": {
+    "toggle": "Cambia tema",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "system": "Sistema"
+  },
+  "settings": {
+    "open": "Apri impostazioni"
+  }
+}

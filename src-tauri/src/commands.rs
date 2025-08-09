@@ -7,7 +7,7 @@ use crate::utils::app_list::{AppListManager, InstalledApp};
 use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{State, Window};
 use tauri_plugin_aptabase::EventTracker;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -700,6 +700,11 @@ pub async fn should_check_for_updates(state: State<'_, AppState>) -> Result<bool
     Ok(UpdateManager::should_check_for_updates(
         config.last_update_check.as_deref(),
     ))
+}
+
+#[tauri::command]
+pub async fn set_window_title(window: Window, title: String) -> Result<(), String> {
+    window.set_title(&title).map_err(|e| e.to_string())
 }
 
 

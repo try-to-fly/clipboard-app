@@ -1,0 +1,34 @@
+{
+  "actions": {
+    "startMonitoring": "監視を開始",
+    "stopMonitoring": "監視を停止",
+    "viewStatistics": "統計を表示",
+    "clearHistory": "履歴をクリア",
+    "confirmClear": "クリアを確認",
+    "clearConfirmMessage": "すべてのクリップボード履歴をクリアしてもよろしいですか？この操作は元に戻せません。",
+    "copiedTimes": "{{count}}回コピーされました",
+    "favorite": "お気に入り",
+    "unfavorite": "お気に入りから削除"
+  },
+  "contentTypes": {
+    "allTypes": "すべての種類",
+    "allText": "すべてのテキスト",
+    "plainText": "プレーンテキスト",
+    "url": "URLリンク",
+    "ipAddress": "IPアドレス",
+    "email": "メールアドレス",
+    "color": "カラー値",
+    "codeSnippet": "コードスニペット",
+    "command": "コマンドライン",
+    "timestamp": "タイムスタンプ",
+    "json": "JSONデータ",
+    "markdown": "Markdown",
+    "image": "画像",
+    "file": "ファイル"
+  },
+  "emptyState": {
+    "noHistory": "クリップボード履歴がありません",
+    "clickToStart": "開始ボタンをクリックして監視を開始",
+    "copyToStart": "何かをコピーして始めましょう"
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';
 import { Download, Copy, Maximize2 } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -32,6 +33,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
   metadata,
   onOpenWithSystem,
 }) => {
+  const { t } = useTranslation(['common']);
   const [selectedFormat, setSelectedFormat] = useState<string>('png');
   const [selectedScale, setSelectedScale] = useState<number>(1.0);
   const [previewUrl, setPreviewUrl] = useState<string>(imageUrl);
@@ -77,7 +79,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
       }
     } catch (error) {
       console.error('Failed to convert image:', error);
-      alert('图片转换失败: ' + error);
+      alert(t('imagePreview.convertError', { error: String(error) }));
     } finally {
       setIsConverting(false);
     }
@@ -93,7 +95,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
       // 显示成功提示
       const toast = document.createElement('div');
       toast.className = 'toast-notification';
-      toast.textContent = '已复制转换后的图片到剪贴板';
+      toast.textContent = t('imagePreview.copySuccess');
       document.body.appendChild(toast);
       
       setTimeout(() => {
@@ -101,7 +103,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
       }, 2000);
     } catch (error) {
       console.error('Failed to copy converted image:', error);
-      alert('复制失败: ' + error);
+      alert(t('imagePreview.copyError', { error: String(error) }));
     }
   };
 
@@ -123,7 +125,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
         <CardContent id="image-preview-controls-content" className="p-4">
           <div id="image-preview-toolbar" className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">格式:</span>
+              <span className="text-sm font-medium">{t('imagePreview.format')}</span>
               <Select value={selectedFormat} onValueChange={setSelectedFormat}>
                 <SelectTrigger className="w-24">
                   <SelectValue />
@@ -137,7 +139,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
             </div>
             
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">缩放:</span>
+              <span className="text-sm font-medium">{t('imagePreview.scale')}</span>
               <Select value={selectedScale.toString()} onValueChange={(value) => setSelectedScale(parseFloat(value))}>
                 <SelectTrigger className="w-20">
                   <SelectValue />
@@ -156,7 +158,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
               disabled={isConverting}
               size="sm"
             >
-              {isConverting ? '转换中...' : '转换'}
+              {isConverting ? t('imagePreview.converting') : t('imagePreview.convert')}
             </Button>
 
             {convertedMetadata && (
@@ -167,7 +169,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
                   variant="outline"
                 >
                   <Copy className="w-4 h-4 mr-1" />
-                  复制
+                  {t('imagePreview.copy')}
                 </Button>
                 <Button 
                   onClick={handleDownload}
@@ -204,7 +206,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
                 setPreviewUrl(imageUrl);
               }}
             >
-              <Badge variant="secondary" className="mr-2">原图</Badge>
+              <Badge variant="secondary" className="mr-2">{t('imagePreview.original')}</Badge>
               {metadata.width}×{metadata.height} · {formatFileSize(metadata.file_size)}
             </Button>
           )}
@@ -216,7 +218,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
                 setShowOriginal(false);
               }}
             >
-              <Badge variant="secondary" className="mr-2">转换后</Badge>
+              <Badge variant="secondary" className="mr-2">{t('imagePreview.converted')}</Badge>
               {convertedMetadata.width}×{convertedMetadata.height} · {formatFileSize(convertedMetadata.size)}
             </Button>
           )}
@@ -231,7 +233,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
               <img 
                 id="image-preview-img"
                 src={showOriginal ? imageUrl : previewUrl} 
-                alt={showOriginal ? "原图" : "转换后的图片"} 
+                alt={showOriginal ? t('imagePreview.originalAlt') : t('imagePreview.convertedAlt')} 
                 className="max-w-full h-auto rounded-md border cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={onOpenWithSystem}
               />

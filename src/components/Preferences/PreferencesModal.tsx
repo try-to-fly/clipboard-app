@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Switch } from "../ui/switch";
@@ -22,14 +23,18 @@ import {
   Plus,
   X,
   CheckCircle,
+  Globe,
+  BarChart3,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useConfigStore } from "../../stores/configStore";
 import { ShortcutRecorder } from "./ShortcutRecorder";
 import * as Toast from "@radix-ui/react-toast";
 import { analytics } from "../../services/analytics";
+import { getSystemLanguage } from "../../i18n/config";
 
 export function PreferencesModal() {
+  const { t, i18n } = useTranslation(['preferences', 'common']);
   const {
     config,
     cacheStats,
@@ -65,6 +70,9 @@ export function PreferencesModal() {
   const [analyticsEnabled, setAnalyticsEnabled] = useState(
     analytics.isEnabled(),
   );
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    return config?.language || i18n.language || getSystemLanguage();
+  });
 
   useEffect(() => {
     if (showPreferences && !config) {
@@ -77,6 +85,8 @@ export function PreferencesModal() {
     if (config) {
       setLocalConfig(config);
       setAutoUpdateEnabled(config.auto_update ?? true);
+      // Set language selection based on config, defaulting to system if not set
+      setSelectedLanguage(config.language || 'system');
     }
   }, [config]);
 
@@ -113,10 +123,11 @@ export function PreferencesModal() {
     if (!localConfig) return;
 
     try {
-      // Update config with auto_update setting
+      // Update config with auto_update and language settings
       const updatedConfig = {
         ...localConfig,
         auto_update: autoUpdateEnabled,
+        language: selectedLanguage,
       };
 
       await updateConfig(updatedConfig);
@@ -137,6 +148,12 @@ export function PreferencesModal() {
         await setAutoStartup(autoStartupEnabled);
       }
 
+      // Update language if changed
+      const targetLanguage = selectedLanguage === 'system' ? getSystemLanguage() : selectedLanguage;
+      if (targetLanguage !== i18n.language) {
+        await i18n.changeLanguage(targetLanguage);
+      }
+
       setShowPreferences(false);
     } catch (error) {
       console.error("Failed to save preferences:", error);
@@ -145,6 +162,7 @@ export function PreferencesModal() {
 
   const handleCancel = () => {
     setLocalConfig(config);
+    setSelectedLanguage(config?.language || 'system');
     setShortcutError(null);
     setShowPreferences(false);
   };
@@ -160,7 +178,7 @@ export function PreferencesModal() {
           <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Settings className="w-5 h-5" />
-              偏好设置
+              {t('title')}
             </DialogTitle>
           </DialogHeader>
 
@@ -169,31 +187,35 @@ export function PreferencesModal() {
               defaultValue="text"
               className="w-full flex-1 flex flex-col min-h-0"
             >
-              <TabsList className="grid w-full grid-cols-6 mb-4 flex-shrink-0">
-                <TabsTrigger value="text">文本设置</TabsTrigger>
-                <TabsTrigger value="image">图片设置</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-7 mb-4 flex-shrink-0">
+                <TabsTrigger value="text">{t('tabs.text')}</TabsTrigger>
+                <TabsTrigger value="image">{t('tabs.image')}</TabsTrigger>
                 <TabsTrigger
                   value="security"
                   className="flex items-center gap-1"
                 >
                   <Shield className="w-4 h-4" />
-                  安全
+                  {t('tabs.security')}
                 </TabsTrigger>
                 <TabsTrigger
                   value="shortcuts"
                   className="flex items-center gap-1"
                 >
                   <Keyboard className="w-4 h-4" />
-                  快捷键
+                  {t('tabs.shortcuts')}
                 </TabsTrigger>
                 <TabsTrigger value="system" className="flex items-center gap-1">
                   <Power className="w-4 h-4" />
-                  系统
+                  {t('tabs.system')}
                 </TabsTrigger>
-                {/* <TabsTrigger value="analytics" className="flex items-center gap-1"> */}
-                {/*   <BarChart className="w-4 h-4" /> */}
-                {/*   统计 */}
-                {/* </TabsTrigger> */}
+                <TabsTrigger value="language" className="flex items-center gap-1">
+                  <Globe className="w-4 h-4" />
+                  {t('tabs.language')}
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex items-center gap-1">
+                  <BarChart3 className="w-4 h-4" />
+                  {t('tabs.analytics')}
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent
@@ -202,11 +224,11 @@ export function PreferencesModal() {
               >
                 <div className="space-y-6 pb-4">
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">文本限制</h3>
+                    <h3 className="text-lg font-semibold mb-4">{t('text.title')}</h3>
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">
-                          最大文本大小: {localConfig.text.max_size_mb} MB
+                          {t('text.maxSizeValue', { value: localConfig.text.max_size_mb })}
                         </Label>
                         <Slider
                           value={[localConfig.text.max_size_mb]}
@@ -226,13 +248,13 @@ export function PreferencesModal() {
                           className="w-full"
                         />
                         <p className="text-sm text-muted-foreground">
-                          超过此大小的文本将不会被记录
+                          {t('text.maxSizeDescription')}
                         </p>
                       </div>
 
                       <div className="space-y-3">
                         <Label className="text-sm font-medium">
-                          文本过期时间
+                          {t('text.expiration')}
                         </Label>
                         <RadioGroup
                           value={getExpiryDisplayValue(localConfig.text.expiry)}
@@ -252,10 +274,10 @@ export function PreferencesModal() {
                           className="grid grid-cols-2 gap-4"
                         >
                           {[
-                            { value: "7", label: "7 天" },
-                            { value: "14", label: "14 天" },
-                            { value: "30", label: "30 天" },
-                            { value: "never", label: "永久" },
+                            { value: "7", label: t('text.expirationOptions.7days') },
+                            { value: "14", label: t('text.expirationOptions.14days') },
+                            { value: "30", label: t('text.expirationOptions.30days') },
+                            { value: "never", label: t('text.expirationOptions.never') },
                           ].map((option) => (
                             <div
                               key={option.value}
@@ -286,10 +308,10 @@ export function PreferencesModal() {
               >
                 <div className="space-y-6 pb-4">
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">图片设置</h3>
+                    <h3 className="text-lg font-semibold mb-4">{t('image.title')}</h3>
                     <div className="space-y-3">
                       <Label className="text-sm font-medium">
-                        图片过期时间
+                        {t('image.expiration')}
                       </Label>
                       <RadioGroup
                         value={getExpiryDisplayValue(localConfig.image.expiry)}
@@ -309,10 +331,10 @@ export function PreferencesModal() {
                         className="grid grid-cols-2 gap-4"
                       >
                         {[
-                          { value: "7", label: "7 天" },
-                          { value: "14", label: "14 天" },
-                          { value: "30", label: "30 天" },
-                          { value: "never", label: "永久" },
+                          { value: "7", label: t('image.expirationOptions.7days') },
+                          { value: "14", label: t('image.expirationOptions.14days') },
+                          { value: "30", label: t('image.expirationOptions.30days') },
+                          { value: "never", label: t('image.expirationOptions.never') },
                         ].map((option) => (
                           <div
                             key={option.value}
@@ -342,9 +364,9 @@ export function PreferencesModal() {
               >
                 <div className="space-y-6 pb-4">
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">应用排除</h3>
+                    <h3 className="text-lg font-semibold mb-4">{t('security.excludedApps')}</h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      这些应用的剪贴板内容将不会被记录，以保护敏感信息。
+                      {t('security.excludedAppsDescription')}
                     </p>
 
                     <div className="space-y-3">
@@ -389,7 +411,7 @@ export function PreferencesModal() {
                       <div className="space-y-2">
                         <Label className="text-sm font-medium flex items-center gap-2">
                           <Plus className="h-4 w-4" />
-                          添加应用
+                          {t('security.addApp')}
                         </Label>
                         <Select
                           value=""
@@ -418,7 +440,7 @@ export function PreferencesModal() {
                           }}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="选择要排除的应用..." />
+                            <SelectValue placeholder={t('security.selectApp')} />
                           </SelectTrigger>
                           <SelectContent>
                             {availableApps
@@ -452,10 +474,10 @@ export function PreferencesModal() {
               >
                 <div className="space-y-6 pb-4">
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">全局快捷键</h3>
+                    <h3 className="text-lg font-semibold mb-4">{t('shortcuts.title')}</h3>
                     <div className="space-y-3">
                       <Label className="text-sm font-medium">
-                        唤起应用快捷键
+                        {t('shortcuts.activationShortcut')}
                       </Label>
                       <ShortcutRecorder
                         value={localConfig.global_shortcut}
@@ -487,20 +509,20 @@ export function PreferencesModal() {
               >
                 <div className="space-y-6 pb-4">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">启动设置</h3>
+                    <h3 className="text-lg font-semibold">{t('system.startup.title')}</h3>
                     <div className="flex items-center space-x-2">
                       <Switch
                         checked={autoStartupEnabled}
                         onCheckedChange={setAutoStartupEnabled}
                       />
                       <Label className="text-sm font-medium">
-                        开机自动启动
+                        {t('system.startup.runAtStartup')}
                       </Label>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">更新设置</h3>
+                    <h3 className="text-lg font-semibold">{t('system.update.title')}</h3>
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
                         <Switch
@@ -508,11 +530,11 @@ export function PreferencesModal() {
                           onCheckedChange={setAutoUpdateEnabled}
                         />
                         <Label className="text-sm font-medium">
-                          自动检查更新
+                          {t('system.update.autoCheck')}
                         </Label>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        启用后，应用将在每天首次启动时自动检查更新
+                        {t('system.update.autoCheckDescription')}
                       </p>
                       <Button
                         variant="secondary"
@@ -539,11 +561,11 @@ export function PreferencesModal() {
                             if (updateInfo.available === true) {
                               console.log("Update available, showing dialog");
                               const yes = await ask(
-                                `发现新版本 ${updateInfo.version}！\n\n${updateInfo.notes || "更新内容：\n- 性能优化\n- 错误修复"}\n\n是否立即更新？`,
+                                `${t('system.update.newVersionAvailable', { version: updateInfo.version })}!\n\n${updateInfo.notes || t('system.update.updateNotes')}\n\n是否立即更新？`,
                                 {
-                                  title: "软件更新",
-                                  okLabel: "立即更新",
-                                  cancelLabel: "稍后",
+                                  title: t('system.update.updateTitle'),
+                                  okLabel: t('system.update.updateNow'),
+                                  cancelLabel: t('system.update.later'),
                                 },
                               );
                               if (yes) {
@@ -555,8 +577,8 @@ export function PreferencesModal() {
                                     "Failed to install update:",
                                     installError,
                                   );
-                                  await message("更新安装失败，请稍后重试", {
-                                    title: "更新错误",
+                                  await message(t('system.update.installFailed'), {
+                                    title: t('system.update.updateError'),
                                   });
                                 }
                               }
@@ -565,7 +587,7 @@ export function PreferencesModal() {
                                 "No updates available, showing toast",
                               );
                               setUpdateToastMessage(
-                                `当前已是最新版本 v${currentVersion}`,
+                                t('system.update.upToDate', { version: currentVersion }),
                               );
                               setUpdateToastType("success");
                               setShowUpdateToast(true);
@@ -578,9 +600,9 @@ export function PreferencesModal() {
                             const errorMessage =
                               typeof error === "string"
                                 ? error
-                                : "网络连接失败，请检查网络连接后重试";
+                                : t('system.update.networkError');
                             setUpdateToastMessage(
-                              `检查更新失败：${errorMessage}`,
+                              t('system.update.checkError', { error: errorMessage }),
                             );
                             setUpdateToastType("error");
                             setShowUpdateToast(true);
@@ -590,19 +612,19 @@ export function PreferencesModal() {
                         }}
                         disabled={updateCheckLoading}
                       >
-                        {updateCheckLoading ? "检查中..." : "立即检查更新"}
+                        {updateCheckLoading ? t('system.update.checking') : t('system.update.checkNow')}
                       </Button>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">缓存统计</h3>
+                    <h3 className="text-lg font-semibold">{t('system.cache.title')}</h3>
                     {cacheStats && (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <Card>
                           <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                              数据库大小
+                              {t('system.cache.databaseSize')}
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="pt-0">
@@ -614,7 +636,7 @@ export function PreferencesModal() {
                         <Card>
                           <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                              图片缓存
+                              {t('system.cache.imageCache')}
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="pt-0">
@@ -626,7 +648,7 @@ export function PreferencesModal() {
                         <Card>
                           <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                              总记录数
+                              {t('system.cache.totalEntries')}
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="pt-0">
@@ -638,7 +660,7 @@ export function PreferencesModal() {
                         <Card>
                           <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                              文本记录
+                              {t('system.cache.textEntries')}
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="pt-0">
@@ -650,7 +672,7 @@ export function PreferencesModal() {
                         <Card>
                           <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">
-                              图片记录
+                              {t('system.cache.imageEntries')}
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="pt-0">
@@ -666,14 +688,183 @@ export function PreferencesModal() {
               </TabsContent>
 
               <TabsContent
+                value="language"
+                className="flex-1 overflow-y-auto pr-2 data-[state=active]:flex data-[state=active]:flex-col"
+              >
+                <div className="space-y-6 pb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">{t('language.title')}</h3>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      {t('language.description')}
+                    </p>
+
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">
+                        {t('language.title')}
+                      </Label>
+                      <RadioGroup
+                        value={selectedLanguage}
+                        onValueChange={setSelectedLanguage}
+                        className="grid grid-cols-1 gap-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="system"
+                            id="lang-system"
+                          />
+                          <Label
+                            htmlFor="lang-system"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.systemDefault')} ({
+                              getSystemLanguage() === 'zh' ? '中文' :
+                              getSystemLanguage() === 'ja' ? '日本語' :
+                              getSystemLanguage() === 'es' ? 'Español' :
+                              getSystemLanguage() === 'fr' ? 'Français' :
+                              getSystemLanguage() === 'de' ? 'Deutsch' :
+                              getSystemLanguage() === 'ko' ? '한국어' :
+                              getSystemLanguage() === 'pt' ? 'Português' :
+                              getSystemLanguage() === 'ru' ? 'Русский' :
+                              getSystemLanguage() === 'it' ? 'Italiano' :
+                              'English'
+                            })
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="zh"
+                            id="lang-zh"
+                          />
+                          <Label
+                            htmlFor="lang-zh"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.chinese')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="en"
+                            id="lang-en"
+                          />
+                          <Label
+                            htmlFor="lang-en"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.english')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="ja"
+                            id="lang-ja"
+                          />
+                          <Label
+                            htmlFor="lang-ja"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.japanese')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="es"
+                            id="lang-es"
+                          />
+                          <Label
+                            htmlFor="lang-es"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.spanish')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="fr"
+                            id="lang-fr"
+                          />
+                          <Label
+                            htmlFor="lang-fr"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.french')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="de"
+                            id="lang-de"
+                          />
+                          <Label
+                            htmlFor="lang-de"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.german')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="ko"
+                            id="lang-ko"
+                          />
+                          <Label
+                            htmlFor="lang-ko"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.korean')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="pt"
+                            id="lang-pt"
+                          />
+                          <Label
+                            htmlFor="lang-pt"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.portuguese')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="ru"
+                            id="lang-ru"
+                          />
+                          <Label
+                            htmlFor="lang-ru"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.russian')}
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="it"
+                            id="lang-it"
+                          />
+                          <Label
+                            htmlFor="lang-it"
+                            className="text-sm font-normal"
+                          >
+                            {t('language.italian')}
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent
                 value="analytics"
                 className="flex-1 overflow-y-auto pr-2 data-[state=active]:flex data-[state=active]:flex-col"
               >
                 <div className="space-y-6 pb-4">
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">使用统计</h3>
+                    <h3 className="text-lg font-semibold mb-4">{t('analytics.title')}</h3>
                     <p className="text-sm text-muted-foreground mb-6">
-                      帮助我们改进应用体验。所有数据都是匿名的，不包含任何剪贴板内容或个人信息。
+                      {t('analytics.description')}
                     </p>
 
                     <div className="space-y-4">
@@ -686,23 +877,21 @@ export function PreferencesModal() {
                           }}
                         />
                         <Label className="text-sm font-medium">
-                          启用匿名使用统计
+                          {t('analytics.enable')}
                         </Label>
                       </div>
 
                       <Card className="bg-secondary/50">
                         <CardHeader className="pb-3">
                           <CardTitle className="text-sm font-medium">
-                            我们收集的数据
+                            {t('analytics.dataCollected.title')}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
                           <ul className="text-sm text-muted-foreground space-y-1">
-                            <li>• 应用版本和平台信息</li>
-                            <li>• 应用启动和使用频率</li>
-                            <li>• 功能使用情况（搜索、收藏、删除等）</li>
-                            <li>• 性能指标（启动时间、响应速度）</li>
-                            <li>• 错误和崩溃报告</li>
+                            {t('analytics.dataCollected.items', { returnObjects: true }).map((item: string, index: number) => (
+                              <li key={index}>• {item}</li>
+                            ))}
                           </ul>
                         </CardContent>
                       </Card>
@@ -710,23 +899,21 @@ export function PreferencesModal() {
                       <Card className="bg-red-500/10 border-red-500/20">
                         <CardHeader className="pb-3">
                           <CardTitle className="text-sm font-medium text-red-600 dark:text-red-400">
-                            我们不会收集
+                            {t('analytics.dataNotCollected.title')}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
                           <ul className="text-sm text-red-600/80 dark:text-red-400/80 space-y-1">
-                            <li>• 剪贴板内容</li>
-                            <li>• 个人身份信息</li>
-                            <li>• 文件内容或路径</li>
-                            <li>• 网络浏览历史</li>
-                            <li>• 任何敏感数据</li>
+                            {t('analytics.dataNotCollected.items', { returnObjects: true }).map((item: string, index: number) => (
+                              <li key={index}>• {item}</li>
+                            ))}
                           </ul>
                         </CardContent>
                       </Card>
 
                       <div className="pt-2">
                         <p className="text-xs text-muted-foreground">
-                          统计服务由{" "}
+                          {t('analytics.provider').split('<link>')[0]}
                           <a
                             href="https://aptabase.com"
                             target="_blank"
@@ -735,7 +922,7 @@ export function PreferencesModal() {
                           >
                             Aptabase
                           </a>{" "}
-                          提供， 完全符合 GDPR 和 CCPA 隐私法规。
+                          {t('analytics.provider').split('</link>')[1]}
                         </p>
                       </div>
                     </div>
@@ -746,10 +933,10 @@ export function PreferencesModal() {
 
             <div className="flex justify-end gap-3 mt-4 pt-4 border-t flex-shrink-0 pb-6">
               <Button variant="secondary" onClick={handleCancel}>
-                取消
+                {t('common:cancel')}
               </Button>
               <Button onClick={handleSave} disabled={loading}>
-                {loading ? "保存中..." : "保存"}
+                {loading ? t('common:saving') : t('common:save')}
               </Button>
             </div>
           </div>
@@ -768,7 +955,7 @@ export function PreferencesModal() {
           ) : (
             <X className="h-4 w-4 text-red-600 dark:text-red-400" />
           )}
-          {updateToastType === "success" ? "检查更新完成" : "检查更新失败"}
+          {updateToastType === "success" ? t('system.update.checkComplete') : t('system.update.checkFailed')}
         </Toast.Title>
         <Toast.Description className="text-sm text-muted-foreground mt-1">
           {updateToastMessage}

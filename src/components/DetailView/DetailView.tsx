@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { useClipboardStore } from '../../stores/clipboardStore';
@@ -24,6 +25,7 @@ const parseMetadata = (metadataString?: string | null): ContentMetadata | null =
 };
 
 export function DetailView() {
+  const { t } = useTranslation(['common']);
   const { selectedEntry, getImageUrl, openFileWithSystem } = useClipboardStore();
   const [imageUrl, setImageUrl] = useState<string>('');
   const [contentSubType, setContentSubType] = useState<ContentSubType>('plain_text');
@@ -64,7 +66,7 @@ export function DetailView() {
       <Card id="detail-view-empty" className="flex-1 flex flex-col">
         <CardContent id="detail-view-empty-content" className="flex-1 flex items-center justify-center p-8">
           <div id="detail-view-empty-message" className="text-center text-muted-foreground">
-            <p>选择一个项目查看详情</p>
+            <p>{t('detail.selectItem')}</p>
           </div>
         </CardContent>
       </Card>
@@ -73,7 +75,7 @@ export function DetailView() {
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
-    return date.toLocaleString('zh-CN', {
+    return date.toLocaleString(undefined, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -88,24 +90,12 @@ export function DetailView() {
     
     // 如果是文本类型，显示具体的子类型
     if (type.includes('text') || type.includes('string')) {
-      const subtypeMap: Record<ContentSubType, string> = {
-        'plain_text': '纯文本',
-        'url': 'URL链接',
-        'ip_address': 'IP地址',
-        'email': '邮箱地址',
-        'color': '颜色值',
-        'code': '代码片段',
-        'command': '命令行',
-        'timestamp': '时间戳',
-        'json': 'JSON数据',
-        'markdown': 'Markdown',
-      };
-      return subtypeMap[contentSubType] || '文本';
+      return t(`detail.contentTypes.${contentSubType}`) || t('detail.contentTypes.text');
     }
     
-    if (type.includes('image')) return '图片';
-    if (type.includes('file')) return '文件';
-    return '未知';
+    if (type.includes('image')) return t('detail.contentTypes.image');
+    if (type.includes('file')) return t('detail.contentTypes.file');
+    return t('detail.unknown');
   };
 
   const handleImageClick = async () => {
@@ -139,7 +129,7 @@ export function DetailView() {
         return (
           <div className="flex flex-col items-center justify-center p-8 text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-muted-foreground">加载图片中...</p>
+            <p className="text-muted-foreground">{t('detail.loading')}</p>
             {selectedEntry.file_path && (
               <p className="text-xs text-muted-foreground mt-2 break-all">
                 {selectedEntry.file_path}
@@ -190,28 +180,28 @@ export function DetailView() {
   return (
     <Card id="detail-view" className="flex-1 flex flex-col overflow-hidden">
       <CardHeader id="detail-view-header" className="pb-3">
-        <CardTitle id="detail-view-title" className="text-lg">详情预览</CardTitle>
+        <CardTitle id="detail-view-title" className="text-lg">{t('detail.title')}</CardTitle>
         <div id="detail-view-metadata" className="grid grid-cols-2 gap-3 mt-3 text-sm">
           <div id="detail-view-type" className="flex items-center gap-2">
-            <span className="text-muted-foreground">类型:</span>
+            <span className="text-muted-foreground">{t('detail.type')}</span>
             <Badge variant="secondary" className="text-xs">
               {getContentType()}
             </Badge>
           </div>
           <div id="detail-view-source" className="flex items-center gap-2">
-            <span className="text-muted-foreground">来源:</span>
+            <span className="text-muted-foreground">{t('detail.source')}</span>
             <span className="text-foreground font-medium">
-              {selectedEntry.source_app || '未知'}
+              {selectedEntry.source_app || t('detail.unknown')}
             </span>
           </div>
           <div id="detail-view-time" className="flex items-center gap-2">
-            <span className="text-muted-foreground">时间:</span>
+            <span className="text-muted-foreground">{t('detail.time')}</span>
             <span className="text-foreground font-mono text-xs">
               {formatDate(selectedEntry.created_at)}
             </span>
           </div>
           <div id="detail-view-count" className="flex items-center gap-2">
-            <span className="text-muted-foreground">复制次数:</span>
+            <span className="text-muted-foreground">{t('detail.copyCount')}</span>
             <Badge variant="outline" className="text-xs">
               {selectedEntry.copy_count}
             </Badge>

@@ -1,0 +1,9 @@
+{
+  "title": "Clipboard Statistics",
+  "totalEntries": "Total Entries",
+  "totalCopies": "Total Copies",
+  "mostCopied": "Most Copied Content",
+  "appUsage": "App Usage Statistics",
+  "copiedTimes": "Copied {{count}} times",
+  "times": "{{count}} times"
+}

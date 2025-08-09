@@ -1,6 +1,8 @@
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useClipboardStore } from '../../stores/clipboardStore';
+import { useMemo } from 'react';
 
 interface FilterOption {
   value: string;
@@ -8,35 +10,36 @@ interface FilterOption {
   icon: string;
 }
 
-const filterOptions: FilterOption[] = [
-  { value: 'all', label: '全部类型', icon: '📋' },
-  { value: 'text', label: '全部文本', icon: '📝' },
-  { value: 'text:plain_text', label: '纯文本', icon: '📄' },
-  { value: 'text:url', label: 'URL链接', icon: '🔗' },
-  { value: 'text:ip_address', label: 'IP地址', icon: '🌐' },
-  { value: 'text:email', label: '邮箱地址', icon: '📧' },
-  { value: 'text:color', label: '颜色值', icon: '🎨' },
-  { value: 'text:code', label: '代码片段', icon: '💻' },
-  { value: 'text:command', label: '命令行', icon: '⌨️' },
-  { value: 'text:timestamp', label: '时间戳', icon: '🕐' },
-  { value: 'text:json', label: 'JSON数据', icon: '{}' },
-  { value: 'text:markdown', label: 'Markdown', icon: '📑' },
-  { value: 'image', label: '图片', icon: '🖼️' },
-  { value: 'file', label: '文件', icon: '📁' },
-];
-
 export function TypeFilter() {
+  const { t } = useTranslation('clipboard');
   const { selectedType, setSelectedType } = useClipboardStore();
+  
+  const filterOptions = useMemo((): FilterOption[] => [
+    { value: 'all', label: t('contentTypes.allTypes'), icon: '📋' },
+    { value: 'text', label: t('contentTypes.allText'), icon: '📝' },
+    { value: 'text:plain_text', label: t('contentTypes.plainText'), icon: '📄' },
+    { value: 'text:url', label: t('contentTypes.url'), icon: '🔗' },
+    { value: 'text:ip_address', label: t('contentTypes.ipAddress'), icon: '🌐' },
+    { value: 'text:email', label: t('contentTypes.email'), icon: '📧' },
+    { value: 'text:color', label: t('contentTypes.color'), icon: '🎨' },
+    { value: 'text:code', label: t('contentTypes.codeSnippet'), icon: '💻' },
+    { value: 'text:command', label: t('contentTypes.command'), icon: '⌨️' },
+    { value: 'text:timestamp', label: t('contentTypes.timestamp'), icon: '🕐' },
+    { value: 'text:json', label: t('contentTypes.json'), icon: '{}' },
+    { value: 'text:markdown', label: t('contentTypes.markdown'), icon: '📑' },
+    { value: 'image', label: t('contentTypes.image'), icon: '🖼️' },
+    { value: 'file', label: t('contentTypes.file'), icon: '📁' },
+  ], [t]);
 
   // 获取当前选中项的显示文本
   const getDisplayText = (value: string) => {
     const option = filterOptions.find(opt => opt.value === value);
-    return option ? `${option.icon} ${option.label}` : '📋 全部类型';
+    return option ? `${option.icon} ${option.label}` : `📋 ${t('contentTypes.allTypes')}`;
   };
 
   return (
     <div className="type-filter">
-      <h3 className="type-filter-title">类型筛选</h3>
+      <h3 className="type-filter-title">{t('contentTypes.allTypes')}</h3>
       <Select.Root value={selectedType} onValueChange={setSelectedType}>
         <Select.Trigger className="type-filter-trigger">
           <Select.Value>{getDisplayText(selectedType)}</Select.Value>

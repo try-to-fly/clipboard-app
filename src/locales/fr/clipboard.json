@@ -1,0 +1,34 @@
+{
+  "actions": {
+    "startMonitoring": "Démarrer la surveillance",
+    "stopMonitoring": "Arrêter la surveillance",
+    "viewStatistics": "Voir les statistiques",
+    "clearHistory": "Effacer l'historique",
+    "confirmClear": "Confirmer l'effacement",
+    "clearConfirmMessage": "Êtes-vous sûr de vouloir effacer tout l'historique du presse-papiers ? Cette action ne peut pas être annulée.",
+    "copiedTimes": "Copié {{count}} fois",
+    "favorite": "Favori",
+    "unfavorite": "Retirer des favoris"
+  },
+  "contentTypes": {
+    "allTypes": "Tous les types",
+    "allText": "Tout le texte",
+    "plainText": "Texte brut",
+    "url": "Lien URL",
+    "ipAddress": "Adresse IP",
+    "email": "Adresse email",
+    "color": "Valeur de couleur",
+    "codeSnippet": "Fragment de code",
+    "command": "Ligne de commande",
+    "timestamp": "Horodatage",
+    "json": "Données JSON",
+    "markdown": "Markdown",
+    "image": "Image",
+    "file": "Fichier"
+  },
+  "emptyState": {
+    "noHistory": "Aucun historique du presse-papiers",
+    "clickToStart": "Cliquez sur le bouton de démarrage pour commencer la surveillance",
+    "copyToStart": "Copiez du contenu pour commencer"
+  }
+}

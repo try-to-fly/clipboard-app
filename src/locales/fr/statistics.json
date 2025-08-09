@@ -1,0 +1,9 @@
+{
+  "title": "Statistiques du presse-papiers",
+  "totalEntries": "Total des entrées",
+  "totalCopies": "Total des copies",
+  "mostCopied": "Contenu le plus copié",
+  "appUsage": "Statistiques d'utilisation de l'application",
+  "copiedTimes": "Copié {{count}} fois",
+  "times": "{{count}} fois"
+}

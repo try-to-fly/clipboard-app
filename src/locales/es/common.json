@@ -1,0 +1,145 @@
+{
+  "appTitle": "Gestor de Portapapeles",
+  "search": "Buscar contenido o aplicación...",
+  "all": "Todo",
+  "confirm": "Confirmar",
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "saving": "Guardando...",
+  "copy": "Copiar",
+  "delete": "Eliminar",
+  "from": "De",
+  "noData": "Sin datos",
+  "unknownApp": "Aplicación desconocida",
+  "times": "veces",
+  "days": {
+    "7": "7 Días",
+    "14": "14 Días",
+    "30": "30 Días"
+  },
+  "forever": "Para siempre",
+  "detail": {
+    "title": "Vista Previa de Detalles",
+    "selectItem": "Selecciona un elemento para ver detalles",
+    "type": "Tipo:",
+    "source": "Origen:",
+    "time": "Hora:",
+    "copyCount": "Número de Copias:",
+    "loading": "Cargando imagen...",
+    "unknown": "Desconocido",
+    "contentTypes": {
+      "plain_text": "Texto Plano",
+      "url": "Enlace URL",
+      "ip_address": "Dirección IP",
+      "email": "Dirección de Email",
+      "color": "Valor de Color",
+      "code": "Fragmento de Código",
+      "command": "Línea de Comandos",
+      "timestamp": "Marca de Tiempo",
+      "json": "Datos JSON",
+      "markdown": "Markdown",
+      "text": "Texto",
+      "image": "Imagen",
+      "file": "Archivo"
+    }
+  },
+  "updateChecker": {
+    "newVersionTitle": "Nueva versión {{version}} disponible",
+    "newVersionMessage": "¡Nueva versión {{version}} disponible!\n\n{{notes}}\n\n¿Actualizar ahora?",
+    "updateTitle": "Actualización de Software",
+    "updateNow": "Actualizar Ahora",
+    "later": "Más Tarde",
+    "updating": "Descargando actualización... {{progress}}%",
+    "defaultNotes": "Contenido de la actualización:\n- Optimización de rendimiento\n- Corrección de errores",
+    "updateFailed": "Actualización fallida, intenta de nuevo más tarde",
+    "error": "Error",
+    "updateNotesDefault": "Incluye mejoras de rendimiento y corrección de errores"
+  },
+  "codeEditor": {
+    "code": "Código",
+    "json": "JSON", 
+    "markdown": "Markdown",
+    "command": "Comando",
+    "text": "Texto",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "loading": "Cargando editor...",
+    "copyFailed": "Copia fallida"
+  },
+  "renderers": {
+    "ip": {
+      "title": "Dirección {{type}}",
+      "copy": "Copiar Dirección IP",
+      "query": "Consultar Información IP",
+      "type": "Tipo:",
+      "ipv4Format": "Desglose del Formato IPv4:"
+    },
+    "email": {
+      "title": "Dirección de Email",
+      "copy": "Copiar Email",
+      "sendMail": "Enviar Email",
+      "username": "Usuario:",
+      "domain": "Dominio:"
+    },
+    "color": {
+      "title": "Valor de Color",
+      "copy": "Copiar Valor Original",
+      "rgbValues": "Valores RGB:",
+      "parseError": "Error al analizar metadatos de color",
+      "hexParseError": "Error al analizar color HEX"
+    },
+    "time": {
+      "title": "Marca de Tiempo",
+      "copy": "Copiar Valor Original",
+      "parseError": "Error al analizar metadatos de tiempo",
+      "invalidFormat": "No se puede analizar el formato de tiempo",
+      "formats": {
+        "standard": "Formato Estándar",
+        "chinese": "Formato Chino", 
+        "relative": "Tiempo Relativo",
+        "iso": "Formato ISO",
+        "unixSeconds": "Segundos Unix",
+        "unixMs": "Milisegundos Unix"
+      }
+    },
+    "url": {
+      "title": "Enlace URL",
+      "copy": "Copiar URL",
+      "open": "Abrir Enlace",
+      "fullUrl": "URL Completa:",
+      "protocol": "Protocolo:",
+      "host": "Host:",
+      "path": "Ruta:",
+      "queryParams": "Parámetros de Consulta:",
+      "imagePreview": "Vista Previa de Imagen",
+      "videoPreview": "Vista Previa de Video", 
+      "contentPreview": "Vista Previa de Contenido",
+      "fetchError": "Error al obtener contenido de URL",
+      "fetchErrorComment": "// No se puede obtener contenido de URL\n// Error: {{error}}",
+      "previewAlt": "Vista Previa"
+    }
+  },
+  "theme": {
+    "toggle": "Alternar tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "settings": {
+    "open": "Abrir configuración"
+  },
+  "imagePreview": {
+    "format": "Formato:",
+    "scale": "Escala:",
+    "convert": "Convertir",
+    "converting": "Convirtiendo...",
+    "copy": "Copiar",
+    "original": "Original",
+    "converted": "Convertido",
+    "convertError": "Error en conversión de imagen: {{error}}",
+    "copyError": "Error en copia: {{error}}",
+    "copySuccess": "Imagen convertida copiada al portapapeles",
+    "originalAlt": "Imagen original",
+    "convertedAlt": "Imagen convertida"
+  }
+}

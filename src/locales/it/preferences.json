@@ -1,0 +1,145 @@
+{
+  "title": "Preferences",
+  "tabs": {
+    "text": "Text Settings",
+    "image": "Image Settings",
+    "security": "Security",
+    "shortcuts": "Shortcuts",
+    "system": "System",
+    "language": "Language",
+    "analytics": "Analytics"
+  },
+  "text": {
+    "title": "Text Limits",
+    "maxSize": "Maximum Text Size",
+    "maxSizeValue": "Maximum Text Size: {{value}} MB",
+    "maxSizeDescription": "Text exceeding this size will not be recorded",
+    "expiration": "Text Expiration",
+    "expirationOptions": {
+      "7days": "7 Days",
+      "14days": "14 Days",
+      "30days": "30 Days",
+      "never": "Forever"
+    }
+  },
+  "image": {
+    "title": "Image Settings",
+    "expiration": "Image Expiration",
+    "expirationOptions": {
+      "7days": "7 Days",
+      "14days": "14 Days",
+      "30days": "30 Days",
+      "never": "Forever"
+    }
+  },
+  "security": {
+    "excludedApps": "Excluded Applications",
+    "excludedAppsDescription": "Clipboard content from these applications will not be recorded to protect sensitive information.",
+    "addApp": "Add Application",
+    "selectApp": "Select application to exclude..."
+  },
+  "shortcuts": {
+    "title": "Global Shortcuts",
+    "activationShortcut": "Application Activation Shortcut"
+  },
+  "system": {
+    "startup": {
+      "title": "Startup Settings",
+      "runAtStartup": "Run at Startup"
+    },
+    "update": {
+      "title": "Update Settings",
+      "autoCheck": "Auto Check for Updates",
+      "autoCheckDescription": "When enabled, the app will automatically check for updates on first launch each day",
+      "checkNow": "Check for Updates Now",
+      "checking": "Checking...",
+      "checkComplete": "Update Check Complete",
+      "checkFailed": "Update Check Failed",
+      "upToDate": "You have the latest version v{{version}}",
+      "newVersionAvailable": "New version {{version}} available!",
+      "updateNow": "Update Now",
+      "later": "Later",
+      "updateTitle": "Software Update",
+      "installFailed": "Update installation failed, please try again later",
+      "updateError": "Update Error",
+      "networkError": "Network connection failed, please check your connection and try again",
+      "checkError": "Failed to check for updates: {{error}}",
+      "updateNotes": "Update content:\n- Performance optimization\n- Bug fixes"
+    },
+    "cache": {
+      "title": "Cache Statistics",
+      "databaseSize": "Database Size",
+      "imageCache": "Image Cache",
+      "totalEntries": "Total Entries",
+      "textEntries": "Text Entries",
+      "imageEntries": "Image Entries"
+    }
+  },
+  "analytics": {
+    "title": "Usage Analytics",
+    "description": "Help us improve the app experience. All data is anonymous and doesn't include any clipboard content or personal information.",
+    "enable": "Enable Anonymous Usage Analytics",
+    "dataCollected": {
+      "title": "Data We Collect",
+      "items": [
+        "App version and platform information",
+        "App launch and usage frequency",
+        "Feature usage (search, favorite, delete, etc.)",
+        "Performance metrics (startup time, response speed)",
+        "Error and crash reports"
+      ]
+    },
+    "dataNotCollected": {
+      "title": "We Never Collect",
+      "items": [
+        "Clipboard content",
+        "Personal identity information",
+        "File content or paths",
+        "Web browsing history",
+        "Any sensitive data"
+      ]
+    },
+    "provider": "Analytics provided by <link>Aptabase</link>, fully compliant with GDPR and CCPA privacy regulations."
+  },
+  "language": {
+    "title": "Impostazioni Lingua",
+    "description": "Scegli la lingua dell'interfaccia dell'applicazione",
+    "systemDefault": "Segui Sistema",
+    "chinese": "中文",
+    "english": "English",
+    "japanese": "日本語",
+    "spanish": "Español",
+    "french": "Français",
+    "german": "Deutsch",
+    "korean": "한국어",
+    "portuguese": "Português",
+    "russian": "Русский",
+    "italian": "Italiano"
+  },
+  "analytics": {
+    "title": "Usage Analytics",
+    "description": "Help us improve the app experience. All data is anonymous and doesn't include any clipboard content or personal information.",
+    "enable": "Enable Anonymous Usage Analytics",
+    "dataCollected": {
+      "title": "Data We Collect",
+      "items": [
+        "App version and platform information",
+        "App launch and usage frequency",
+        "Feature usage (search, favorite, delete, etc.)",
+        "Performance metrics (startup time, response speed)",
+        "Error and crash reports"
+      ]
+    },
+    "dataNotCollected": {
+      "title": "We Never Collect",
+      "items": [
+        "Clipboard content",
+        "Personal identity information",
+        "File content or paths",
+        "Web browsing history",
+        "Any sensitive data"
+      ]
+    },
+    "provider": "Analytics provided by <link>Aptabase</link>, fully compliant with GDPR and CCPA privacy regulations."
+  }
+}

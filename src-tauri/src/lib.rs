@@ -289,7 +289,8 @@ pub fn run() {
             validate_shortcut,
             check_for_update,
             install_update,
-            should_check_for_updates
+            should_check_for_updates,
+            set_window_title
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

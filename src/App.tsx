@@ -1,5 +1,9 @@
 import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { invoke } from '@tauri-apps/api/core';
+import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getSystemLanguage } from './i18n/config';
 import { ThemeProvider } from './components/theme-provider';
 import { ThemeToggle } from './components/theme-toggle';
 import { SettingsButton } from './components/settings-button';
@@ -12,12 +16,33 @@ import { MenuEventHandler } from './components/MenuEventHandler/MenuEventHandler
 import { UpdateChecker } from './components/UpdateChecker/UpdateChecker';
 import { ClipboardMenuHandler } from './components/ClipboardMenuHandler';
 import { useClipboardStore } from './stores/clipboardStore';
+import { useConfigStore } from './stores/configStore';
 import { analytics, ANALYTICS_EVENTS } from './services/analytics';
 
 const queryClient = new QueryClient();
 
 function AppContent() {
+  const { i18n, t } = useTranslation(['common']);
   const { startMonitoring, setupEventListener } = useClipboardStore();
+  const { loadConfig } = useConfigStore();
+
+  // Function to update window title
+  const updateWindowTitle = async (language: string) => {
+    try {
+      // Get the translation without changing the current language
+      let title;
+      if (language === 'zh') {
+        title = '剪切板管理器';
+      } else {
+        title = 'Clipboard Manager';
+      }
+      
+      // Call the Tauri command to update window title
+      await invoke('set_window_title', { title });
+    } catch (error) {
+      console.error('Failed to update window title:', error);
+    }
+  };
 
   useEffect(() => {
     // Track app opened event
@@ -27,10 +52,38 @@ function AppContent() {
     setupEventListener();
     startMonitoring();
     
+    // Load config and set language
+    loadConfig().then(async () => {
+      // Config is loaded, check if we have a language preference
+      const savedConfig = useConfigStore.getState().config;
+      if (savedConfig?.language) {
+        const targetLanguage = savedConfig.language === 'system' ? getSystemLanguage() : savedConfig.language;
+        await i18n.changeLanguage(targetLanguage);
+        // Update window title after language change
+        await updateWindowTitle(targetLanguage);
+      } else {
+        // Set initial window title
+        await updateWindowTitle(i18n.language);
+      }
+    });
+    
     // Track startup time
     const startupTime = Date.now() - startTime;
     analytics.trackPerformance(ANALYTICS_EVENTS.STARTUP_TIME, startupTime);
-  }, [startMonitoring, setupEventListener]);
+  }, [startMonitoring, setupEventListener, loadConfig, i18n]);
+
+  // Listen for language changes and update window title
+  useEffect(() => {
+    const handleLanguageChange = async (language: string) => {
+      await updateWindowTitle(language);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   return (
     <MainLayout>

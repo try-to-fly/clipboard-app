@@ -1,0 +1,145 @@
+{
+  "appTitle": "剪切板管理器",
+  "search": "搜索内容或应用...",
+  "all": "全部",
+  "confirm": "确认",
+  "cancel": "取消",
+  "save": "保存",
+  "saving": "保存中...",
+  "copy": "复制",
+  "delete": "删除",
+  "from": "来自",
+  "noData": "暂无数据",
+  "unknownApp": "未知应用",
+  "times": "次",
+  "days": {
+    "7": "7 天",
+    "14": "14 天",
+    "30": "30 天"
+  },
+  "forever": "永久",
+  "detail": {
+    "title": "详情预览",
+    "selectItem": "选择一个项目查看详情",
+    "type": "类型:",
+    "source": "来源:",
+    "time": "时间:",
+    "copyCount": "复制次数:",
+    "loading": "加载图片中...",
+    "unknown": "未知",
+    "contentTypes": {
+      "plain_text": "纯文本",
+      "url": "URL链接",
+      "ip_address": "IP地址",
+      "email": "邮箱地址",
+      "color": "颜色值",
+      "code": "代码片段",
+      "command": "命令行",
+      "timestamp": "时间戳",
+      "json": "JSON数据",
+      "markdown": "Markdown",
+      "text": "文本",
+      "image": "图片",
+      "file": "文件"
+    }
+  },
+  "updateChecker": {
+    "newVersionTitle": "发现新版本 {{version}}",
+    "newVersionMessage": "发现新版本 {{version}}！\n\n{{notes}}\n\n是否立即更新？",
+    "updateTitle": "软件更新",
+    "updateNow": "立即更新",
+    "later": "稍后提醒",
+    "updating": "正在下载更新... {{progress}}%",
+    "defaultNotes": "更新内容：\n- 性能优化\n- 错误修复",
+    "updateFailed": "更新失败，请稍后重试",
+    "error": "错误",
+    "updateNotesDefault": "包含性能优化和错误修复"
+  },
+  "codeEditor": {
+    "code": "代码",
+    "json": "JSON",
+    "markdown": "Markdown",
+    "command": "命令",
+    "text": "文本",
+    "copy": "复制",
+    "copied": "已复制",
+    "loading": "加载编辑器...",
+    "copyFailed": "复制失败"
+  },
+  "renderers": {
+    "ip": {
+      "title": "{{type}} 地址",
+      "copy": "复制IP地址",
+      "query": "查询IP信息",
+      "type": "类型:",
+      "ipv4Format": "IPv4 格式分解:"
+    },
+    "email": {
+      "title": "邮箱地址",
+      "copy": "复制邮箱",
+      "sendMail": "发送邮件",
+      "username": "用户名:",
+      "domain": "域名:"
+    },
+    "color": {
+      "title": "颜色值",
+      "copy": "复制原始值",
+      "rgbValues": "RGB 值:",
+      "parseError": "解析颜色元数据失败",
+      "hexParseError": "解析HEX颜色失败"
+    },
+    "time": {
+      "title": "时间戳",
+      "copy": "复制原始值",
+      "parseError": "解析时间元数据失败",
+      "invalidFormat": "无法解析时间格式",
+      "formats": {
+        "standard": "标准格式",
+        "chinese": "中文格式",
+        "relative": "相对时间",
+        "iso": "ISO格式",
+        "unixSeconds": "Unix秒",
+        "unixMs": "Unix毫秒"
+      }
+    },
+    "url": {
+      "title": "URL链接",
+      "copy": "复制URL",
+      "open": "打开链接",
+      "fullUrl": "完整URL:",
+      "protocol": "协议:",
+      "host": "主机:",
+      "path": "路径:",
+      "queryParams": "查询参数:",
+      "imagePreview": "图片预览",
+      "videoPreview": "视频预览",
+      "contentPreview": "内容预览",
+      "fetchError": "获取URL内容失败",
+      "fetchErrorComment": "// 无法获取URL内容\n// 错误信息: {{error}}",
+      "previewAlt": "预览"
+    }
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
+  "settings": {
+    "open": "打开设置"
+  },
+  "imagePreview": {
+    "format": "格式:",
+    "scale": "缩放:",
+    "convert": "转换",
+    "converting": "转换中...",
+    "copy": "复制",
+    "original": "原图",
+    "converted": "转换后",
+    "convertError": "图片转换失败: {{error}}",
+    "copyError": "复制失败: {{error}}",
+    "copySuccess": "已复制转换后的图片到剪贴板",
+    "originalAlt": "原图",
+    "convertedAlt": "转换后的图片"
+  }
+}
