@@ -8,6 +8,8 @@
     "opener:default",
     "clipboard-manager:allow-read-text",
     "clipboard-manager:allow-write-text",
-    "aptabase:allow-track-event"
+    "aptabase:allow-track-event",
+    "dialog:allow-ask",
+    "dialog:allow-message"
   ]
 }

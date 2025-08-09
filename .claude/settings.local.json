@@ -20,7 +20,8 @@
       "Bash(pnpm run lint:fix:*)",
       "Bash(pnpm run lint:*)",
       "Bash(pnpm run build:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pnpm tauri:*)"
     ],
     "deny": []
   }
