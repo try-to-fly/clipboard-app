@@ -63,10 +63,14 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
-      - name: Create .env file for Tauri
-        working-directory: src-tauri
+      - name: Verify Aptabase Key is set
         run: |
-          echo "APTABASE_APP_KEY=${{ secrets.APTABASE_APP_KEY }}" > .env
+          if [ -n "${{ secrets.APTABASE_APP_KEY }}" ]; then
+            echo "✓ APTABASE_APP_KEY is configured in GitHub Secrets"
+            echo "Key prefix: $(echo "${{ secrets.APTABASE_APP_KEY }}" | cut -c1-5)..."
+          else
+            echo "✗ APTABASE_APP_KEY is not configured in GitHub Secrets"
+          fi
         shell: bash
 
       - name: Build the app (macOS Apple Silicon)

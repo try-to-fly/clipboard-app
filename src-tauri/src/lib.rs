@@ -239,6 +239,29 @@ pub fn run() {
                 let aptabase_key = std::env::var("APTABASE_APP_KEY")
                     .unwrap_or_else(|_| "A-DEV-0000000000".to_string());
 
+                // Log Aptabase configuration (with masked key for security)
+                let key_info = if aptabase_key == "A-DEV-0000000000" {
+                    "development key".to_string()
+                } else if aptabase_key.len() > 8 {
+                    format!(
+                        "{}...{}",
+                        &aptabase_key[..5],
+                        &aptabase_key[aptabase_key.len() - 4..]
+                    )
+                } else {
+                    "invalid key".to_string()
+                };
+
+                log::info!("Aptabase initialized with: {}", key_info);
+                log::info!(
+                    "Build mode: {}",
+                    if cfg!(debug_assertions) {
+                        "Debug"
+                    } else {
+                        "Release"
+                    }
+                );
+
                 let _ = app
                     .handle()
                     .plugin(tauri_plugin_aptabase::Builder::new(&aptabase_key).build());
