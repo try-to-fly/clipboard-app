@@ -23,7 +23,8 @@
       "Bash(find:*)",
       "Bash(pnpm tauri:*)",
       "Bash(cargo test:*)",
-      "Bash(cargo:*)"
+      "Bash(cargo:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
