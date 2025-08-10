@@ -9,6 +9,15 @@ mod state;
 mod updater;
 mod utils;
 
+#[cfg(test)]
+mod state_tests;
+
+#[cfg(test)]
+mod integration_tests;
+
+#[cfg(test)]
+mod performance_tests;
+
 use commands::*;
 use state::AppState;
 use tauri::{

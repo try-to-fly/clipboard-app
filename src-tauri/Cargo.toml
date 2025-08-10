@@ -57,3 +57,7 @@ objc = "0.2.7"
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3", features = ["winuser", "shellapi", "psapi", "processthreadsapi", "handleapi", "synchapi", "winbase", "errhandlingapi", "fileapi", "combaseapi", "objbase", "shobjidl_core", "winerror"] }
 
+[dev-dependencies]
+tempfile = "3.0"
+futures = "0.3"
+
