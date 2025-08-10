@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy } from 'lucide-react';
 import { Button } from '../../ui/button';
@@ -8,8 +8,7 @@ import { ContentSubType } from '../../../types/clipboard';
 import { useResolvedTheme } from '../../../hooks/useResolvedTheme';
 import { defineMonacoThemes } from '../../../utils/monacoTheme';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
-
-const MonacoEditor = lazy(() => import('@monaco-editor/react'));
+import MonacoEditor from '@monaco-editor/react';
 
 interface UnifiedTextRendererProps {
   content: string;
@@ -119,50 +118,42 @@ export function UnifiedTextRenderer({
 
         <CardContent id="text-renderer-content" className="p-0 flex-1 flex flex-col">
           <div id="text-renderer-editor-container" className="border-t flex-1">
-            <Suspense
-              fallback={
-                <div id="text-renderer-loading" className="flex items-center justify-center h-32">
-                  <div className="text-sm text-muted-foreground">{t('codeEditor.loading')}</div>
-                </div>
-              }
-            >
-              <MonacoEditor
-                key={`${language}-${resolvedTheme}-${content.substring(0, 50)}`}
-                height="100%"
-                language={language}
-                value={editedContent}
-                onChange={(value) => setEditedContent(value || '')}
-                theme={monacoTheme}
-                beforeMount={(monaco) => {
-                  defineMonacoThemes(monaco);
-                }}
-                options={{
-                  readOnly: false,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  fontSize: 13,
-                  lineNumbers: 'on',
-                  renderWhitespace: 'selection',
-                  automaticLayout: true,
-                  padding: { top: 16, bottom: 16 },
-                  tabSize: 2,
-                  insertSpaces: true,
-                  quickSuggestions: true,
-                  suggestOnTriggerCharacters: true,
-                  acceptSuggestionOnEnter: 'on',
-                  wordBasedSuggestions: 'currentDocument',
-                  parameterHints: { enabled: true },
-                  folding: true,
-                  foldingHighlight: true,
-                  unfoldOnClickAfterEndOfLine: true,
-                  selectOnLineNumbers: true,
-                  contextmenu: true,
-                  cursorBlinking: 'blink',
-                  cursorSmoothCaretAnimation: 'on',
-                }}
-              />
-            </Suspense>
+            <MonacoEditor
+              key={`${language}-${resolvedTheme}-${content.substring(0, 50)}`}
+              height="100%"
+              language={language}
+              value={editedContent}
+              onChange={(value) => setEditedContent(value || '')}
+              theme={monacoTheme}
+              beforeMount={(monaco) => {
+                defineMonacoThemes(monaco);
+              }}
+              options={{
+                readOnly: false,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                fontSize: 13,
+                lineNumbers: 'on',
+                renderWhitespace: 'selection',
+                automaticLayout: true,
+                padding: { top: 16, bottom: 16 },
+                tabSize: 2,
+                insertSpaces: true,
+                quickSuggestions: true,
+                suggestOnTriggerCharacters: true,
+                acceptSuggestionOnEnter: 'on',
+                wordBasedSuggestions: 'currentDocument',
+                parameterHints: { enabled: true },
+                folding: true,
+                foldingHighlight: true,
+                unfoldOnClickAfterEndOfLine: true,
+                selectOnLineNumbers: true,
+                contextmenu: true,
+                cursorBlinking: 'blink',
+                cursorSmoothCaretAnimation: 'on',
+              }}
+            />
           </div>
         </CardContent>
       </Card>
