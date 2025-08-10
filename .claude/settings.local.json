@@ -21,7 +21,9 @@
       "Bash(pnpm run lint:*)",
       "Bash(pnpm run build:*)",
       "Bash(find:*)",
-      "Bash(pnpm tauri:*)"
+      "Bash(pnpm tauri:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo:*)"
     ],
     "deny": []
   }

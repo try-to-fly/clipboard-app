@@ -7,10 +7,12 @@ pnpm exec lint-staged
 if git diff --cached --name-only | grep -q "\.rs$"; then
   echo "Running Rust formatting and linting..."
   
-  # Run cargo fmt check
-  cd src-tauri && cargo fmt --check
+  # Run cargo fmt to automatically format Rust files
+  cd src-tauri
+  cargo fmt
   if [ $? -ne 0 ]; then
-    echo "❌ Rust formatting check failed. Please run 'cd src-tauri && cargo fmt' to format your code."
+    echo "❌ Rust formatting failed."
+    cd ..
     exit 1
   fi
   
@@ -18,9 +20,13 @@ if git diff --cached --name-only | grep -q "\.rs$"; then
   cargo clippy -- -D warnings
   if [ $? -ne 0 ]; then
     echo "❌ Rust clippy check failed. Please fix the warnings."
+    cd ..
     exit 1
   fi
   
   cd ..
+  
+  # Add any formatted files back to the staging area
+  git add src-tauri/src/
   echo "✅ Rust checks passed!"
 fi
