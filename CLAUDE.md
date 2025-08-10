@@ -5,70 +5,85 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Critical Directory Navigation Rules
 
 **IMPORTANT**: This project has two main directories:
+
 - **Project Root**: `./` (contains package.json, CLAUDE.md, src/, src-tauri/)
 - **Rust Backend**: `./src-tauri/` (contains Cargo.toml, src/, target/)
 
 **Working Directory Context**:
-- The project root contains package.json and CLAUDE.md 
+
+- The project root contains package.json and CLAUDE.md
 - Most commands assume you're already in the project root directory
 - Always verify your current working directory before running commands
 
 **Command Execution Guidelines**:
+
 1. **Frontend commands** (pnpm, npm, node) require project root as working directory
-2. **Rust commands** (cargo) require `src-tauri/` directory as working directory  
+2. **Rust commands** (cargo) require `src-tauri/` directory as working directory
 3. **ALWAYS** check current directory before executing commands
 4. Use `pwd` or equivalent to verify your location if unsure
 
 **Correct Command Patterns**:
+
 - ✅ From project root: `cd src-tauri && cargo fmt`
-- ✅ From project root: `pnpm build`  
+- ✅ From project root: `pnpm build`
 - ❌ From wrong directory: `cargo fmt` (will fail if not in src-tauri)
 - ❌ From src-tauri: `pnpm build` (will fail, no package.json)
 
 ## Development Commands
 
 ### Frontend (React + TypeScript)
+
 **Working Directory**: Project root (where package.json is located)
+
 - `pnpm install` - Install all dependencies
 - `pnpm dev` - Start Vite development server (frontend only)
 - `pnpm build` - Build production frontend bundle (TypeScript compilation + Vite build)
 - `pnpm preview` - Preview production build
 
 ### Code Quality & Linting
+
 **Note**: Always run from project root, then navigate to appropriate directory
+
 - `cd src-tauri && cargo fmt` - Format Rust code
 - `cd src-tauri && cargo clippy` - Run Rust linter
 - TypeScript checking is included in `pnpm build` command
 
 ### Full Application (Tauri)
+
 **Working Directory**: Project root (where package.json and start.sh are located)
+
 - `./start.sh` - Automated startup script (installs deps + runs dev)
 - `pnpm tauri dev` - Start full development environment (Rust backend + React frontend)
 - `pnpm tauri build` - Build production application bundle
 
 ### Rust Backend
+
 **Working Directory**: Project root, then navigate to src-tauri/
+
 - `cd src-tauri && cargo check` - Verify Rust code compiles
 - `cd src-tauri && cargo test` - Run Rust unit tests (if any)
 
 ## Architecture Overview
 
-This is a macOS clipboard management application built with a Tauri (Rust + React) hybrid architecture.
+Dance is a macOS clipboard management application built with a Tauri (Rust + React) hybrid architecture.
 
 ### Backend Architecture (Rust)
+
 The Rust backend (`src-tauri/`) follows a modular async architecture:
 
 - **AppState**: Central application state using `Arc<T>` and `tokio::sync` primitives for thread-safe async operations
 - **Clipboard Monitor**: Uses macOS NSPasteboard API directly via `cocoa` and `objc` crates for system-level clipboard monitoring (non-polling)
-- **Database Layer**: SQLx with SQLite for async database operations, stored in `~/Library/Application Support/clipboard-app/`
+- **Database Layer**: SQLx with SQLite for async database operations, stored in `~/Library/Application Support/dance/`
 - **Event System**: Tauri's built-in event system for real-time frontend-backend communication via `tauri::Emitter`
 
 Key async patterns:
+
 - `tokio::sync::Mutex` instead of `std::sync::Mutex` for async-safe locking
 - `broadcast::channel` for event distribution between clipboard monitor and database workers
 - `spawn_blocking` for CPU-bound operations (clipboard access, file I/O)
 
 ### Frontend Architecture (React)
+
 The React frontend (`src/`) uses modern patterns:
 
 - **State Management**: Zustand store (`clipboardStore.ts`) with async actions that call Tauri commands
@@ -104,20 +119,22 @@ The React frontend (`src/`) uses modern patterns:
 ### Common Patterns
 
 When adding new Tauri commands:
+
 1. Add async function to `commands.rs` with `#[tauri::command]`
 2. Add to `invoke_handler` in `lib.rs`
 3. Create corresponding frontend action in `clipboardStore.ts`
 4. Use TypeScript types from `types/clipboard.ts`
 
 When modifying database schema:
+
 - Update `database/mod.rs` init method
 - Ensure migrations are backwards compatible
 - Update `models/mod.rs` structs with `sqlx::FromRow` derive
 
 ### Key File Locations
 
-- Database: `~/Library/Application Support/clipboard-app/clipboard.db`
-- Images: `~/Library/Application Support/clipboard-app/imgs/`
+- Database: `~/Library/Application Support/dance/clipboard.db`
+- Images: `~/Library/Application Support/dance/imgs/`
 - Main Zustand store: `src/stores/clipboardStore.ts`
 - Tauri commands: `src-tauri/src/commands.rs`
 - TypeScript types: `src/types/clipboard.ts`

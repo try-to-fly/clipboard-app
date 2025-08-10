@@ -1,4 +1,6 @@
-# 剪切板管理器
+# Dance
+
+让每一次复制粘贴都成为一场优雅的数据之舞，让效率与美感在您的工作流中和谐共舞。
 
 一个基于 Tauri + React + @radix-ui 的 macOS 剪切板管理工具。
 <img width="1800" height="1406" alt="17448f00d5f3f2d3afd2c17773d06adb" src="https://github.com/user-attachments/assets/fc399fe1-20a0-42a9-baa5-f0b281687b16" />
@@ -106,6 +108,7 @@ sudo xattr -rd com.apple.quarantine /path/to/clipboard-app.app
 ```
 
 #### 方法三：开发者签名
+
 如果您是开发者，可以对应用进行代码签名：
 
 ```bash

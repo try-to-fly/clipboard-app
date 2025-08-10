@@ -61,11 +61,8 @@ impl ClipboardMonitor {
                 // 先检查当前应用是否是自己
                 let app_info = get_active_app_info();
                 let is_self_app = if let Some(ref info) = app_info {
-                    let is_self = info.bundle_id
-                        == Some("com.clipboard-app.clipboardmanager".to_string())
-                        || info.name.contains("clipboard-app")
-                        || info.name.contains("Clipboard App")
-                        || info.name.contains("剪切板管理器");
+                    let is_self = info.bundle_id == Some("com.dance.app".to_string())
+                        || info.name.to_lowercase().contains("dance");
 
                     if is_self {
                         log::trace!("[ClipboardMonitor] 检测到自身应用: {}", info.name);

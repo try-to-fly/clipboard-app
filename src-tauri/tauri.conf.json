@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "clipboard-app",
+  "productName": "Dance",
   "version": "0.1.13",
-  "identifier": "com.clipboard-app.clipboardmanager",
+  "identifier": "com.dance.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "剪切板管理器",
+        "title": "Dance",
         "width": 900,
         "height": 700,
         "minWidth": 600,
@@ -52,9 +52,7 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDMwN0U5MEI1NEFCMzAxMkYKUldRdkFiTkt0WkIrTUE3UWNEalFXeVhid29sQko2eVZUbDlOTGJVWU1jTVJHRUpMWi8wUmRUWVIK",
-      "endpoints": [
-        "https://github.com/try-to-fly/clipboard-app/releases/latest/download/latest.json"
-      ]
+      "endpoints": ["https://github.com/try-to-fly/dance/releases/latest/download/latest.json"]
     }
   }
 }

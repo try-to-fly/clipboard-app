@@ -880,8 +880,8 @@ pub async fn get_log_content() -> Result<String, String> {
         .ok_or("无法获取用户目录")?
         .join("Library")
         .join("Logs")
-        .join("com.clipboard-app.clipboardmanager")
-        .join("clipboard-app.log");
+        .join("com.dance.app")
+        .join("dance.log");
 
     if !log_file.exists() {
         return Ok(String::new());
@@ -900,8 +900,8 @@ pub async fn clear_logs() -> Result<(), String> {
         .ok_or("无法获取用户目录")?
         .join("Library")
         .join("Logs")
-        .join("com.clipboard-app.clipboardmanager")
-        .join("clipboard-app.log");
+        .join("com.dance.app")
+        .join("dance.log");
 
     if log_file.exists() {
         fs::write(&log_file, "").map_err(|e| format!("清空日志文件失败: {}", e))?;

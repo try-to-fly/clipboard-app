@@ -37,7 +37,7 @@ impl Database {
     fn get_db_path() -> Result<PathBuf> {
         let config_dir = dirs::config_dir().ok_or_else(|| anyhow::anyhow!("无法获取配置目录"))?;
 
-        let app_dir = config_dir.join("clipboard-app");
+        let app_dir = config_dir.join("dance");
         Ok(app_dir.join("clipboard.db"))
     }
 

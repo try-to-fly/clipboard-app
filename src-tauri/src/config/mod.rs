@@ -149,7 +149,7 @@ impl ConfigManager {
     fn get_config_path() -> Result<PathBuf> {
         let config_dir =
             dirs::config_dir().ok_or_else(|| anyhow::anyhow!("Unable to get config directory"))?;
-        Ok(config_dir.join("clipboard-app").join("config.json"))
+        Ok(config_dir.join("dance").join("config.json"))
     }
 
     async fn load_config(path: &PathBuf) -> Result<AppConfig> {

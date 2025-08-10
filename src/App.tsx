@@ -31,9 +31,9 @@ function AppContent() {
       // Get the translation without changing the current language
       let title;
       if (language === 'zh') {
-        title = '剪切板管理器';
+        title = 'Dance';
       } else {
-        title = 'Clipboard Manager';
+        title = 'Dance';
       }
 
       // Call the Tauri command to update window title
