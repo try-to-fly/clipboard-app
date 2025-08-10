@@ -117,20 +117,38 @@ jobs:
           echo "APTABASE_APP_KEY=${{ secrets.APTABASE_APP_KEY || 'A-DEV-0000000000' }}" > .env
         shell: bash
 
-      - name: Test Build (macOS) - With Signing
+      - name: Test Build (macOS Apple Silicon) - With Signing
         if: inputs.use_signing
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY || 'A-DEV-0000000000' }}
-        run: pnpm tauri build --target universal-apple-darwin
+        run: pnpm tauri build --target aarch64-apple-darwin
 
-      - name: Test Build (macOS) - Without Signing
+      - name: Test Build (macOS Intel) - With Signing
+        if: inputs.use_signing
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY || 'A-DEV-0000000000' }}
+        run: pnpm tauri build --target x86_64-apple-darwin
+
+      - name: Test Build (macOS Apple Silicon) - Without Signing
         if: ${{ !inputs.use_signing }}
-        run: pnpm tauri build --target universal-apple-darwin --config src-tauri/tauri.test.conf.json
+        run: pnpm tauri build --target aarch64-apple-darwin --config src-tauri/tauri.test.conf.json
 
-      - name: Upload build artifacts (macOS)
+      - name: Test Build (macOS Intel) - Without Signing
+        if: ${{ !inputs.use_signing }}
+        run: pnpm tauri build --target x86_64-apple-darwin --config src-tauri/tauri.test.conf.json
+
+      - name: Upload build artifacts (macOS Apple Silicon)
         uses: actions/upload-artifact@v4
         with:
-          name: macos-build
-          path: src-tauri/target/universal-apple-darwin/release/bundle/
+          name: macos-aarch64-build
+          path: src-tauri/target/aarch64-apple-darwin/release/bundle/
+
+      - name: Upload build artifacts (macOS Intel)
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-x86_64-build
+          path: src-tauri/target/x86_64-apple-darwin/release/bundle/

@@ -69,7 +69,7 @@ jobs:
           echo "APTABASE_APP_KEY=${{ secrets.APTABASE_APP_KEY }}" > .env
         shell: bash
 
-      - name: Build the app (Universal macOS)
+      - name: Build the app (macOS Apple Silicon)
         if: matrix.platform == 'macos-latest'
         uses: tauri-apps/tauri-action@v0
         env:
@@ -83,7 +83,23 @@ jobs:
           releaseBody: 'See the assets to download and install this version.'
           releaseDraft: false
           prerelease: false
-          args: --target universal-apple-darwin
+          args: --target aarch64-apple-darwin
+
+      - name: Build the app (macOS Intel)
+        if: matrix.platform == 'macos-latest'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY }}
+        with:
+          tagName: ${{ github.event_name == 'push' && github.ref_name || format('v{0}', github.run_number) }}
+          releaseName: 'Clipboard Manager v__VERSION__'
+          releaseBody: 'See the assets to download and install this version.'
+          releaseDraft: false
+          prerelease: false
+          args: --target x86_64-apple-darwin
 
       - name: Build the app (Windows)
         if: matrix.platform == 'windows-latest'
