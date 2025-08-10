@@ -143,13 +143,14 @@ export const ClipboardList: React.FC = () => {
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
-          const prevIndex = currentIndex > 0 ? currentIndex - 1 : entries.length - 1;
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : 0;
           setSelectedEntry(entries[prevIndex]);
           scrollToSelectedEntry(prevIndex, 'up');
           break;
         case 'ArrowDown':
           e.preventDefault();
-          const nextIndex = currentIndex < entries.length - 1 ? currentIndex + 1 : 0;
+          const nextIndex =
+            currentIndex < entries.length - 1 ? currentIndex + 1 : entries.length - 1;
           setSelectedEntry(entries[nextIndex]);
           scrollToSelectedEntry(nextIndex, 'down');
           break;
