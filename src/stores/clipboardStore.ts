@@ -15,11 +15,14 @@ interface ClipboardStore {
   selectedEntry: ClipboardEntry | null;
   urlContentCache: Map<string, { content: string; timestamp: number }>;
   mediaMetadataCache: Map<string, { metadata: any; timestamp: number }>;
+  hasMore: boolean;
+  isLoadingMore: boolean;
 
   // Actions
   startMonitoring: () => Promise<void>;
   stopMonitoring: () => Promise<void>;
   fetchHistory: (limit?: number, offset?: number) => Promise<void>;
+  loadMoreEntries: () => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
   clearHistory: () => Promise<void>;
@@ -50,6 +53,8 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
   selectedEntry: null,
   urlContentCache: new Map(),
   mediaMetadataCache: new Map(),
+  hasMore: true,
+  isLoadingMore: false,
 
   startMonitoring: async () => {
     try {
@@ -81,11 +86,38 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
         offset,
         search: get().searchTerm || undefined,
       });
-      set({ entries });
+      set({
+        entries,
+        hasMore: entries.length === limit,
+      });
     } catch (error) {
       set({ error: String(error) });
     } finally {
       set({ loading: false });
+    }
+  },
+
+  loadMoreEntries: async () => {
+    const state = get();
+    if (state.isLoadingMore || !state.hasMore) {
+      return;
+    }
+
+    try {
+      set({ isLoadingMore: true, error: null });
+      const newEntries = await invoke<ClipboardEntry[]>('get_clipboard_history', {
+        limit: 50,
+        offset: state.entries.length,
+        search: state.searchTerm || undefined,
+      });
+
+      set({
+        entries: [...state.entries, ...newEntries],
+        hasMore: newEntries.length === 50,
+        isLoadingMore: false,
+      });
+    } catch (error) {
+      set({ error: String(error), isLoadingMore: false });
     }
   },
 
@@ -248,7 +280,7 @@ export const useClipboardStore = create<ClipboardStore>((set, get) => ({
   },
 
   setSearchTerm: (term: string) => {
-    set({ searchTerm: term });
+    set({ searchTerm: term, hasMore: true });
     get().fetchHistory();
   },
 

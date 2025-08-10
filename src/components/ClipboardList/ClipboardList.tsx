@@ -14,6 +14,9 @@ export const ClipboardList: React.FC = () => {
     selectedEntry,
     setSelectedEntry,
     pasteSelectedEntry,
+    loadMoreEntries,
+    hasMore,
+    isLoadingMore,
   } = useClipboardStore();
   const entries = getFilteredEntries();
   const [showNumbers, setShowNumbers] = React.useState(false);
@@ -48,6 +51,32 @@ export const ClipboardList: React.FC = () => {
       }
     }
   }, [selectedEntry, entries, virtualizer]);
+
+  // Infinite scroll detection
+  useEffect(() => {
+    if (!hasMore || isLoadingMore || loading) {
+      return;
+    }
+
+    const handleScroll = () => {
+      const scrollElement = scrollContainerRef.current;
+      if (!scrollElement) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+      const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+
+      // Load more when user scrolls to 90% of the content
+      if (scrollPercentage > 0.9) {
+        loadMoreEntries();
+      }
+    };
+
+    const scrollElement = scrollContainerRef.current;
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll);
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [hasMore, isLoadingMore, loading, loadMoreEntries]);
 
   const scrollToSelectedEntry = useCallback(
     (index: number, direction?: 'up' | 'down') => {
@@ -153,7 +182,7 @@ export const ClipboardList: React.FC = () => {
           id="clipboard-list-items"
           className="relative"
           style={{
-            height: `${virtualizer.getTotalSize()}px`,
+            height: `${virtualizer.getTotalSize() + (isLoadingMore ? 60 : 0)}px`,
           }}
         >
           {virtualItems.map((virtualItem) => {
@@ -184,6 +213,23 @@ export const ClipboardList: React.FC = () => {
               </div>
             );
           })}
+
+          {/* Loading indicator for infinite scroll */}
+          {isLoadingMore && (
+            <div
+              className="flex justify-center items-center py-4"
+              style={{
+                position: 'absolute',
+                top: virtualizer.getTotalSize(),
+                left: 0,
+                width: '100%',
+                height: '60px',
+              }}
+            >
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="ml-2 text-sm text-muted-foreground">加载更多...</span>
+            </div>
+          )}
         </div>
       </div>
     </Card>
