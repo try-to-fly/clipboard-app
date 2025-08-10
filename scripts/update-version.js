@@ -132,11 +132,22 @@ function runQualityChecks() {
 
 // Main function
 function main() {
-  const versionType = process.argv[2] || 'patch';
+  // Parse command line arguments
+  const args = process.argv.slice(2);
+  let versionType = 'patch';
+  let autoPush = true;
 
-  if (!['patch', 'minor', 'major'].includes(versionType)) {
-    console.error('❌ Invalid version type. Use: patch, minor, or major');
-    process.exit(1);
+  // Process arguments
+  for (const arg of args) {
+    if (['patch', 'minor', 'major'].includes(arg)) {
+      versionType = arg;
+    } else if (arg === '--no-push') {
+      autoPush = false;
+    } else {
+      console.error(`❌ Invalid argument: ${arg}`);
+      console.error('Usage: node update-version.js [patch|minor|major] [--no-push]');
+      process.exit(1);
+    }
   }
 
   try {
@@ -169,11 +180,37 @@ function main() {
     console.log('\n🏷️  Creating git tag...');
     execSync(`git tag -a v${newVersion} -m "Release version ${newVersion}"`, { stdio: 'inherit' });
 
-    console.log(`\n✨ Version update complete!`);
-    console.log(`📋 Next steps:`);
-    console.log(`   1. Push changes: git push origin main`);
-    console.log(`   2. Push tag: git push origin v${newVersion}`);
-    console.log(`   3. GitHub Actions will automatically build and release`);
+    // Auto push if enabled
+    if (autoPush) {
+      console.log('\n🚀 Pushing changes to remote repository...');
+
+      try {
+        // Push commits
+        console.log('📤 Pushing commits to origin main...');
+        execSync('git push origin main', { stdio: 'inherit' });
+        console.log('✅ Commits pushed successfully');
+
+        // Push tag
+        console.log(`📤 Pushing tag v${newVersion} to origin...`);
+        execSync(`git push origin v${newVersion}`, { stdio: 'inherit' });
+        console.log('✅ Tag pushed successfully');
+
+        console.log(`\n✨ Version update and push complete!`);
+        console.log(`🎉 Version ${newVersion} has been released!`);
+        console.log(`📦 GitHub Actions will now automatically build and create the release.`);
+      } catch (pushError) {
+        console.error('\n⚠️  Push failed:', pushError.message);
+        console.log('📋 You can manually push with:');
+        console.log(`   1. git push origin main`);
+        console.log(`   2. git push origin v${newVersion}`);
+      }
+    } else {
+      console.log(`\n✨ Version update complete!`);
+      console.log(`📋 Next steps (manual push required):`);
+      console.log(`   1. Push changes: git push origin main`);
+      console.log(`   2. Push tag: git push origin v${newVersion}`);
+      console.log(`   3. GitHub Actions will automatically build and release`);
+    }
   } catch (error) {
     console.error('❌ Error updating version:', error.message);
     process.exit(1);
