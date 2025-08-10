@@ -43,6 +43,8 @@ interface ConfigStore {
   loading: boolean;
   error: string | null;
   showPreferences: boolean;
+  cacheStatsLoading: boolean;
+  cacheStatsError: string | null;
 
   // Actions
   loadConfig: () => Promise<void>;
@@ -91,6 +93,8 @@ export const useConfigStore = create<ConfigStore>((set, get) => ({
   loading: false,
   error: null,
   showPreferences: false,
+  cacheStatsLoading: false,
+  cacheStatsError: null,
 
   loadConfig: async () => {
     try {
@@ -119,12 +123,20 @@ export const useConfigStore = create<ConfigStore>((set, get) => ({
   },
 
   loadCacheStatistics: async () => {
+    console.log('[ConfigStore] Auto-loading cache statistics...');
     try {
+      set({ cacheStatsLoading: true, cacheStatsError: null });
       const stats = await invoke<CacheStatistics>('get_cache_statistics');
-      set({ cacheStats: stats });
+      console.log('[ConfigStore] Cache statistics loaded successfully:', stats);
+      set({ cacheStats: stats, cacheStatsLoading: false });
     } catch (error) {
-      console.error('Failed to load cache statistics:', error);
-      set({ error: String(error) });
+      console.error('[ConfigStore] Failed to load cache statistics:', error);
+      const errorMessage = String(error);
+      set({
+        cacheStatsError: errorMessage,
+        cacheStatsLoading: false,
+        cacheStats: null,
+      });
     }
   },
 

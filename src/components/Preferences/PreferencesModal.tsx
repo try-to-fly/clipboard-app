@@ -36,6 +36,8 @@ export function PreferencesModal() {
     cacheStats,
     loading,
     showPreferences,
+    cacheStatsLoading,
+    cacheStatsError,
     loadConfig,
     updateConfig,
     loadCacheStatistics,
@@ -64,8 +66,11 @@ export function PreferencesModal() {
   const [showLogViewer, setShowLogViewer] = useState(false);
 
   useEffect(() => {
-    if (showPreferences && !config) {
-      loadConfig();
+    if (showPreferences) {
+      if (!config) {
+        loadConfig();
+      }
+      // Always refresh cache statistics when preferences open
       loadCacheStatistics();
     }
   }, [showPreferences, config, loadConfig, loadCacheStatistics]);
@@ -568,7 +573,38 @@ export function PreferencesModal() {
 
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">{t('system.cache.title')}</h3>
-                      {cacheStats && (
+
+                      {cacheStatsLoading && (
+                        <div className="flex items-center justify-center py-8">
+                          <div className="text-sm text-muted-foreground">
+                            {t('common:loading', 'Loading...')}
+                          </div>
+                        </div>
+                      )}
+
+                      {cacheStatsError && (
+                        <Card className="border-destructive/50 bg-destructive/10">
+                          <CardContent className="pt-6">
+                            <div className="text-sm text-destructive">
+                              <p className="font-medium mb-2">
+                                {t('system.cache.loadError', 'Failed to load cache statistics')}
+                              </p>
+                              <p className="text-xs opacity-80">{cacheStatsError}</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="mt-3"
+                                onClick={() => loadCacheStatistics()}
+                                disabled={cacheStatsLoading}
+                              >
+                                {t('common:retry', 'Retry')}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {cacheStats && !cacheStatsLoading && !cacheStatsError && (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                           <Card>
                             <CardHeader className="pb-2">
@@ -631,6 +667,16 @@ export function PreferencesModal() {
                             </CardContent>
                           </Card>
                         </div>
+                      )}
+
+                      {!cacheStats && !cacheStatsLoading && !cacheStatsError && (
+                        <Card>
+                          <CardContent className="pt-6">
+                            <div className="text-center text-sm text-muted-foreground">
+                              <p>{t('system.cache.noData', 'No cache data available')}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
                       )}
                     </div>
                   </div>
