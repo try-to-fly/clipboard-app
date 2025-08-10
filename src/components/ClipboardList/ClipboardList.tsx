@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Card } from '../ui/card';
 import { useClipboardStore } from '../../stores/clipboardStore';
 import { ClipboardItem } from './ClipboardItem';
@@ -16,9 +17,15 @@ export const ClipboardList: React.FC = () => {
   } = useClipboardStore();
   const entries = getFilteredEntries();
   const [showNumbers, setShowNumbers] = React.useState(false);
-  const [visibleRange, setVisibleRange] = React.useState({ start: 0, end: 9 });
-  const scrollViewportRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize virtualizer
+  const virtualizer = useVirtualizer({
+    count: entries.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => 82, // Estimated height of each item
+    overscan: 3, // Render 3 items outside of the visible area
+  });
 
   useEffect(() => {
     fetchHistory();
@@ -37,101 +44,17 @@ export const ClipboardList: React.FC = () => {
       const selectedIndex = entries.findIndex((entry) => entry.id === selectedEntry.id);
       if (selectedIndex >= 0 && selectedIndex === 0) {
         // Only auto-scroll if the selected entry is at the top (newly added)
-        const scrollContainer = scrollContainerRef.current;
-        if (scrollContainer) {
-          const scrollToTop = () => {
-            scrollContainer.scrollTop = 0;
-            scrollContainer.scrollTo({
-              top: 0,
-              behavior: 'smooth',
-            });
-          };
-
-          // Execute immediately and with a small delay to ensure DOM updates
-          scrollToTop();
-          setTimeout(scrollToTop, 50);
-          setTimeout(scrollToTop, 200);
-        }
+        virtualizer.scrollToIndex(0, { behavior: 'smooth' });
       }
     }
-  }, [selectedEntry, entries]);
-
-  const updateVisibleRange = useCallback(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer || entries.length === 0) return;
-
-    const itemHeight = 82; // 预估每个item的高度（包含margin）
-    const viewportHeight = scrollContainer.clientHeight;
-    const scrollTop = scrollContainer.scrollTop;
-
-    const start = Math.floor(scrollTop / itemHeight);
-    const visibleItemsCount = Math.ceil(viewportHeight / itemHeight) + 1; // +1 for partial items
-    const end = Math.min(start + visibleItemsCount, entries.length);
-
-    setVisibleRange({ start, end });
-  }, [entries.length]);
+  }, [selectedEntry, entries, virtualizer]);
 
   const scrollToSelectedEntry = useCallback(
     (index: number, direction?: 'up' | 'down') => {
-      const items = document.querySelectorAll('.clipboard-item');
-      const item = items[index] as HTMLElement;
-
-      if (item) {
-        // 找到滚动容器
-        const scrollContainer = scrollContainerRef.current;
-
-        if (!scrollContainer) {
-          item.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-          });
-          setTimeout(updateVisibleRange, 150);
-          return;
-        }
-
-        // 检查元素是否在滚动容器的视口内
-        const itemRect = item.getBoundingClientRect();
-        const containerRect = scrollContainer.getBoundingClientRect();
-
-        const isInViewport =
-          itemRect.top >= containerRect.top && itemRect.bottom <= containerRect.bottom;
-
-        // 如果元素已经在视口内，不需要滚动
-        if (isInViewport) {
-          setTimeout(updateVisibleRange, 50);
-          return;
-        }
-
-        // 决定滚动位置
-        let block: ScrollLogicalPosition = 'nearest';
-
-        if (direction === 'up') {
-          if (index === 0) {
-            // 第一个元素滚动到顶部
-            block = 'start';
-          } else {
-            // 其他向上情况，滚动到视口顶部附近
-            block = 'start';
-          }
-        } else if (direction === 'down') {
-          if (index === entries.length - 1) {
-            // 最后一个元素滚动到底部
-            block = 'end';
-          } else {
-            // 其他向下情况，滚动到视口底部附近
-            block = 'end';
-          }
-        }
-
-        item.scrollIntoView({
-          behavior: 'smooth',
-          block: block,
-        });
-
-        setTimeout(updateVisibleRange, 150);
-      }
+      const align = direction === 'up' ? 'start' : direction === 'down' ? 'end' : 'auto';
+      virtualizer.scrollToIndex(index, { align, behavior: 'smooth' });
     },
-    [updateVisibleRange, entries.length]
+    [virtualizer]
   );
 
   const handleKeyDown = useCallback(
@@ -161,9 +84,10 @@ export const ClipboardList: React.FC = () => {
           // 检查是否是Alt+数字组合
           if (e.altKey && e.key >= '1' && e.key <= '9') {
             e.preventDefault();
+            const visibleItems = virtualizer.getVirtualItems();
             const visibleIndex = parseInt(e.key) - 1;
-            const actualIndex = visibleRange.start + visibleIndex;
-            if (actualIndex < entries.length && actualIndex < visibleRange.end) {
+            if (visibleIndex < visibleItems.length) {
+              const actualIndex = visibleItems[visibleIndex].index;
               setSelectedEntry(entries[actualIndex]);
               if (pasteSelectedEntry) {
                 pasteSelectedEntry(entries[actualIndex]);
@@ -178,7 +102,7 @@ export const ClipboardList: React.FC = () => {
       selectedEntry,
       setSelectedEntry,
       pasteSelectedEntry,
-      visibleRange,
+      virtualizer,
       scrollToSelectedEntry,
     ]
   );
@@ -199,19 +123,6 @@ export const ClipboardList: React.FC = () => {
     };
   }, [handleKeyDown, handleKeyUp]);
 
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', updateVisibleRange);
-      // 初始化时计算可见范围
-      setTimeout(updateVisibleRange, 100);
-
-      return () => {
-        scrollContainer.removeEventListener('scroll', updateVisibleRange);
-      };
-    }
-  }, [updateVisibleRange]);
-
   if (loading && entries.length === 0) {
     return (
       <Card className="flex-1 flex flex-col items-center justify-center p-8">
@@ -225,6 +136,8 @@ export const ClipboardList: React.FC = () => {
     return <EmptyState />;
   }
 
+  const virtualItems = virtualizer.getVirtualItems();
+
   return (
     <Card id="clipboard-list" className="flex-1 flex flex-col overflow-hidden border">
       <div
@@ -236,20 +149,39 @@ export const ClipboardList: React.FC = () => {
           scrollbarColor: 'rgba(155, 155, 155, 0.5) transparent',
         }}
       >
-        <div id="clipboard-list-items" className="p-2 space-y-2" ref={scrollViewportRef}>
-          {entries.map((entry, index) => {
-            const isVisible = index >= visibleRange.start && index < visibleRange.end;
-            const visibleIndex = index - visibleRange.start + 1;
+        <div
+          id="clipboard-list-items"
+          className="relative"
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+          }}
+        >
+          {virtualItems.map((virtualItem) => {
+            const entry = entries[virtualItem.index];
+            const visibleIndex = virtualItems.findIndex((vi) => vi.index === virtualItem.index) + 1;
 
             return (
-              <ClipboardItem
-                key={entry.id}
-                entry={entry}
-                isSelected={selectedEntry?.id === entry.id}
-                onClick={() => setSelectedEntry(entry)}
-                showNumber={showNumbers && isVisible && visibleIndex <= 9}
-                number={visibleIndex}
-              />
+              <div
+                key={virtualItem.key}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualItem.start}px)`,
+                  padding: '0 8px',
+                }}
+              >
+                <div style={{ paddingBottom: '8px' }}>
+                  <ClipboardItem
+                    entry={entry}
+                    isSelected={selectedEntry?.id === entry.id}
+                    onClick={() => setSelectedEntry(entry)}
+                    showNumber={showNumbers && visibleIndex <= 9}
+                    number={visibleIndex}
+                  />
+                </div>
+              </div>
             );
           })}
         </div>
