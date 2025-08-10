@@ -24,7 +24,8 @@
       "Bash(pnpm tauri:*)",
       "Bash(cargo test:*)",
       "Bash(cargo:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(pnpm list:*)"
     ],
     "deny": []
   }

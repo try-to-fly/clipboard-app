@@ -8,7 +8,11 @@ import { ContentSubType } from '../../../types/clipboard';
 import { useResolvedTheme } from '../../../hooks/useResolvedTheme';
 import { defineMonacoThemes } from '../../../utils/monacoTheme';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
-import MonacoEditor from '@monaco-editor/react';
+import MonacoEditor, { loader } from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
+
+// Configure Monaco to use local files instead of CDN
+loader.config({ monaco });
 
 interface UnifiedTextRendererProps {
   content: string;
