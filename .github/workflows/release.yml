@@ -22,8 +22,34 @@ on:
         type: boolean
 
 jobs:
+  get-latest-tag:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      latest_tag: ${{ steps.get_tag.outputs.tag }}
+      release_id: ${{ steps.get_release.outputs.release_id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0)
+          echo "tag=$latest_tag" >> $GITHUB_OUTPUT
+          echo "Latest tag: $latest_tag"
+      - name: Get existing release
+        id: get_release
+        run: |
+          release_id=$(gh release view ${{ steps.get_tag.outputs.tag }} --json id --jq '.id')
+          echo "release_id=$release_id" >> $GITHUB_OUTPUT
+          echo "Release ID: $release_id"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   create-release:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+    if: github.event_name == 'push'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -36,15 +62,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.event_name == 'push' && github.ref_name || format('v{0}', github.run_number) }}
-          name: ${{ github.event_name == 'push' && format('Dance {0}', github.ref_name) || format('Dance v{0}', github.run_number) }}
+          tag_name: ${{ github.ref_name }}
+          name: ${{ format('Dance {0}', github.ref_name) }}
           body: 'See the assets to download and install this version.'
           draft: false
           prerelease: false
 
   release:
-    needs: [create-release]
-    if: always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped')
+    needs: [create-release, get-latest-tag]
+    if: always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped' || needs.get-latest-tag.result == 'success')
     permissions:
       contents: write
     strategy:
@@ -109,11 +135,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY }}
         with:
-          releaseId: ${{ needs.create-release.outputs.release_id }}
-          tagName: ${{ needs.create-release.result == 'skipped' && format('v{0}', github.run_number) || '' }}
-          releaseName: ${{ needs.create-release.result == 'skipped' && format('Dance Build v{0}', github.run_number) || '' }}
-          releaseBody: ${{ needs.create-release.result == 'skipped' && 'Manual build artifacts' || '' }}
-          releaseDraft: ${{ needs.create-release.result == 'skipped' && true || false }}
+          releaseId: ${{ github.event_name == 'workflow_dispatch' && needs.get-latest-tag.outputs.release_id || needs.create-release.outputs.release_id }}
           args: --target aarch64-apple-darwin
 
       - name: Build the app (macOS Intel)
@@ -125,11 +147,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY }}
         with:
-          releaseId: ${{ needs.create-release.outputs.release_id }}
-          tagName: ${{ needs.create-release.result == 'skipped' && format('v{0}', github.run_number) || '' }}
-          releaseName: ${{ needs.create-release.result == 'skipped' && format('Dance Build v{0}', github.run_number) || '' }}
-          releaseBody: ${{ needs.create-release.result == 'skipped' && 'Manual build artifacts' || '' }}
-          releaseDraft: ${{ needs.create-release.result == 'skipped' && true || false }}
+          releaseId: ${{ github.event_name == 'workflow_dispatch' && needs.get-latest-tag.outputs.release_id || needs.create-release.outputs.release_id }}
           args: --target x86_64-apple-darwin
 
       - name: Build the app (Windows)
@@ -141,9 +159,5 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY }}
         with:
-          releaseId: ${{ needs.create-release.outputs.release_id }}
-          tagName: ${{ needs.create-release.result == 'skipped' && format('v{0}', github.run_number) || '' }}
-          releaseName: ${{ needs.create-release.result == 'skipped' && format('Dance Build v{0}', github.run_number) || '' }}
-          releaseBody: ${{ needs.create-release.result == 'skipped' && 'Manual build artifacts' || '' }}
-          releaseDraft: ${{ needs.create-release.result == 'skipped' && true || false }}
+          releaseId: ${{ github.event_name == 'workflow_dispatch' && needs.get-latest-tag.outputs.release_id || needs.create-release.outputs.release_id }}
           args: --target x86_64-pc-windows-msvc
