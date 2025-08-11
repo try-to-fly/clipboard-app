@@ -58,31 +58,16 @@ impl ClipboardMonitor {
 
         tokio::spawn(async move {
             loop {
-                // 先检查当前应用是否是自己
+                // 获取当前应用信息，用于记录剪贴板内容来源
                 let app_info = get_active_app_info();
-                let is_self_app = if let Some(ref info) = app_info {
-                    let is_self = info.bundle_id == Some("com.dance.app".to_string())
-                        || info.name.to_lowercase().contains("dance");
-
-                    if is_self {
-                        log::trace!("[ClipboardMonitor] 检测到自身应用: {}", info.name);
-                    } else {
-                        log::trace!(
-                            "[ClipboardMonitor] 当前活跃应用: {} ({})",
-                            info.name,
-                            info.bundle_id.as_deref().unwrap_or("unknown")
-                        );
-                    }
-                    is_self
+                if let Some(ref info) = app_info {
+                    log::trace!(
+                        "[ClipboardMonitor] 当前活跃应用: {} ({})",
+                        info.name,
+                        info.bundle_id.as_deref().unwrap_or("unknown")
+                    );
                 } else {
                     log::trace!("[ClipboardMonitor] 无法获取当前活跃应用信息");
-                    false
-                };
-
-                // 如果当前应用是自己，延长检查间隔，减少干扰
-                if is_self_app {
-                    sleep(Duration::from_millis(2000)).await;
-                    continue;
                 }
 
                 if let Err(e) =
