@@ -6,6 +6,7 @@ mod config;
 mod database;
 mod models;
 mod state;
+mod tray;
 mod updater;
 mod utils;
 
@@ -24,6 +25,9 @@ use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
     AppHandle, Emitter, Manager, Window, WindowEvent,
 };
+
+#[cfg(target_os = "macos")]
+use tauri::ActivationPolicy;
 
 async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
     log::info!("Menu event: {}", event_id);
@@ -167,6 +171,9 @@ pub fn run() {
             Some(vec![]),
         ))
         .setup(|app| {
+            // Set macOS app to accessory mode (hide dock icon)
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(ActivationPolicy::Accessory);
             // Create macOS menu
             #[cfg(target_os = "macos")]
             {
@@ -316,6 +323,9 @@ pub fn run() {
                 }
 
                 app.manage(state);
+
+                // Create system tray
+                tray::create_tray_icon(app.handle())?;
 
                 Ok::<(), Box<dyn std::error::Error>>(())
             })?;

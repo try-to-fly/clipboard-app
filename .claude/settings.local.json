@@ -26,7 +26,9 @@
       "Bash(cargo:*)",
       "Bash(git add:*)",
       "Bash(pnpm list:*)",
-      "WebFetch(domain:docs.rs)"
+      "WebFetch(domain:docs.rs)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": []
   }
