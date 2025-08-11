@@ -15,9 +15,15 @@ on:
           - all
           - macos-latest
           - windows-latest
+      create_release:
+        description: 'Create a new release'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   create-release:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -31,13 +37,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.event_name == 'push' && github.ref_name || format('v{0}', github.run_number) }}
-          name: 'Dance v${{ github.event_name == 'push' && github.ref_name || github.run_number }}'
+          name: ${{ github.event_name == 'push' && format('Dance {0}', github.ref_name) || format('Dance v{0}', github.run_number) }}
           body: 'See the assets to download and install this version.'
           draft: false
           prerelease: false
 
   release:
-    needs: create-release
+    needs: [create-release]
+    if: always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped')
     permissions:
       contents: write
     strategy:
@@ -103,6 +110,10 @@ jobs:
           APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY }}
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
+          tagName: ${{ needs.create-release.result == 'skipped' && format('v{0}', github.run_number) || '' }}
+          releaseName: ${{ needs.create-release.result == 'skipped' && format('Dance Build v{0}', github.run_number) || '' }}
+          releaseBody: ${{ needs.create-release.result == 'skipped' && 'Manual build artifacts' || '' }}
+          releaseDraft: ${{ needs.create-release.result == 'skipped' && true || false }}
           args: --target aarch64-apple-darwin
 
       - name: Build the app (macOS Intel)
@@ -115,6 +126,10 @@ jobs:
           APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY }}
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
+          tagName: ${{ needs.create-release.result == 'skipped' && format('v{0}', github.run_number) || '' }}
+          releaseName: ${{ needs.create-release.result == 'skipped' && format('Dance Build v{0}', github.run_number) || '' }}
+          releaseBody: ${{ needs.create-release.result == 'skipped' && 'Manual build artifacts' || '' }}
+          releaseDraft: ${{ needs.create-release.result == 'skipped' && true || false }}
           args: --target x86_64-apple-darwin
 
       - name: Build the app (Windows)
@@ -127,4 +142,8 @@ jobs:
           APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY }}
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
+          tagName: ${{ needs.create-release.result == 'skipped' && format('v{0}', github.run_number) || '' }}
+          releaseName: ${{ needs.create-release.result == 'skipped' && format('Dance Build v{0}', github.run_number) || '' }}
+          releaseBody: ${{ needs.create-release.result == 'skipped' && 'Manual build artifacts' || '' }}
+          releaseDraft: ${{ needs.create-release.result == 'skipped' && true || false }}
           args: --target x86_64-pc-windows-msvc
