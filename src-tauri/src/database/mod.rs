@@ -608,7 +608,7 @@ mod tests {
     async fn test_unicode_content_storage() {
         let (db, _temp_dir) = create_test_db().await;
 
-        let unicode_contents = vec![
+        let unicode_contents = [
             "Hello 世界! 🌍",
             "Привет мир! 🇷🇺",
             "مرحبا بالعالم! 🇸🇦",

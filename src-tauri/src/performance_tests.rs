@@ -72,7 +72,7 @@ mod performance_tests {
 
             for _ in 0..iterations {
                 let start = Instant::now();
-                let (subtype, metadata) = ContentDetector::detect(&content);
+                let (subtype, metadata) = ContentDetector::detect(content);
                 let duration = start.elapsed();
 
                 total_duration += duration;

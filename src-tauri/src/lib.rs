@@ -22,7 +22,7 @@ use commands::*;
 use state::AppState;
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
-    AppHandle, Emitter, Manager,
+    AppHandle, Emitter, Manager, Window, WindowEvent,
 };
 
 async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
@@ -98,6 +98,30 @@ async fn handle_menu_event(app_handle: &AppHandle, event_id: &str) {
         }
         _ => {
             log::warn!("Unknown menu event: {}", event_id);
+        }
+    }
+}
+
+fn handle_window_event(window: &Window, event: &WindowEvent) {
+    if let WindowEvent::CloseRequested { api, .. } = event {
+        log::info!("Window close requested, hiding instead of closing");
+        // Prevent the default close behavior
+        api.prevent_close();
+
+        // On macOS, use AppHandle::hide() for better system integration
+        #[cfg(target_os = "macos")]
+        {
+            if let Err(e) = window.app_handle().hide() {
+                log::error!("Failed to hide app: {}", e);
+            }
+        }
+
+        // On other platforms, use window.hide()
+        #[cfg(not(target_os = "macos"))]
+        {
+            if let Err(e) = window.hide() {
+                log::error!("Failed to hide window: {}", e);
+            }
         }
     }
 }
@@ -305,6 +329,9 @@ pub fn run() {
                 handle_menu_event(&app_handle, &event_id).await;
             });
         })
+        .on_window_event(|window, event| {
+            handle_window_event(window, event);
+        })
         .invoke_handler(tauri::generate_handler![
             start_monitoring,
             stop_monitoring,
@@ -361,6 +388,29 @@ pub fn run() {
                 }
                 tauri::RunEvent::Exit => {
                     let _ = app_handle.track_event("app_exited", None);
+                }
+                tauri::RunEvent::Reopen {
+                    has_visible_windows,
+                    ..
+                } => {
+                    log::info!(
+                        "App reopened from dock, showing main window (has_visible_windows: {})",
+                        has_visible_windows
+                    );
+                    // Show the main window when dock icon is clicked
+                    if let Some(window) = app_handle.get_webview_window("main") {
+                        if let Err(e) = window.show() {
+                            log::error!("Failed to show window: {}", e);
+                        }
+                        if let Err(e) = window.set_focus() {
+                            log::error!("Failed to set window focus: {}", e);
+                        }
+                        if let Err(e) = window.unminimize() {
+                            log::error!("Failed to unminimize window: {}", e);
+                        }
+                    } else {
+                        log::error!("Main window not found");
+                    }
                 }
                 _ => {}
             }

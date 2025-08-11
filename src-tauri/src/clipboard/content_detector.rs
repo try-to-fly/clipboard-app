@@ -1273,7 +1273,7 @@ mod tests {
                     assert!(base64_meta
                         .content_hint
                         .as_ref()
-                        .map_or(false, |h| h.contains("PNG")));
+                        .is_some_and(|h| h.contains("PNG")));
                 }
             }
         }
